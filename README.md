@@ -8,6 +8,12 @@ tied to Datascope's.
 
 ## quickstart
 
+0. Create a virtualenv and install the requirements
+   ```sh
+   mkvirtualenv a-model
+   pip install -r requirements/python
+   ```
+
 1. Get a copy of `config.ini` from @deanmalmgren and put it in the root of this
    repository.
 
