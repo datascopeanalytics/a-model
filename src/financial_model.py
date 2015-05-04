@@ -33,7 +33,7 @@ class Person(object):
             pay = float(pay)
         except ValueError:
             pay = self.datascope.after_tax_salary
-            pay *= (1 + self.datascope.config.getfloat('parameters', 'n_months_after_tax_bonus')/12)
+            pay *= (1 + self.datascope.n_months_after_tax_bonus/12)
         return pay
 
     @property
@@ -74,6 +74,10 @@ class Datascope(object):
         for person in self.people:
             yield person
 
+    def __getattr__(self, name):
+        """This just accesses the value from the config.ini directly"""
+        return self.config.getfloat('parameters', name)
+
     @property
     def n_people(self):
         return len(self.people)
@@ -81,14 +85,6 @@ class Datascope(object):
     @property
     def n_partners(self):
         return len([person for person in self if person.is_partner])
-
-    @property
-    def fraction_profit_for_dividends(self):
-        return self.config.getfloat('parameters', 'fraction_profit_for_dividends')
-
-    @property
-    def after_tax_salary(self):
-        return self.config.getfloat('parameters', 'monthly_after_tax_pay')
 
     @property
     def after_tax_target_profit(self):
@@ -110,15 +106,12 @@ class Datascope(object):
 
     @property
     def before_tax_profit(self):
-        profit = 0.0
-        tax_rate = self.config.getfloat('parameters', 'tax_rate')
-
         # partners must pay taxes at tax_rate, so we need to make
         # 1/(1-tax_rate) more money to account for this
-        profit += self.after_tax_target_profit / (1 - tax_rate)
+        profit = self.after_tax_target_profit / (1 - self.tax_rate)
 
         # partners also pay taxes on their guaranteed payments
-        profit += self.n_partners * self.after_tax_salary / (1 - tax_rate) * tax_rate
+        profit += self.n_partners * self.after_tax_salary / (1 - self.tax_rate) * self.tax_rate
         return profit
 
     @property
@@ -127,7 +120,7 @@ class Datascope(object):
 
     @property
     def costs(self):
-        return self.config.getfloat('parameters', 'fixed_monthly_costs') + self.config.getfloat('parameters', 'per_datascoper_costs') * self.n_people
+        return self.fixed_monthly_costs + self.per_datascoper_costs * self.n_people
 
     @property
     def ebit(self):
@@ -143,7 +136,7 @@ class Datascope(object):
         """This is the minimum hourly rate necessary to meet our revenue
         targets for the year, without growing.
         """
-        return self.revenue * 12 / self.config.getfloat('parameters', 'billable_hours_per_year') / self.n_people
+        return self.revenue * 12 / self.billable_hours_per_year / self.n_people
 
 if __name__ == "__main__":
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
