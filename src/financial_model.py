@@ -3,15 +3,6 @@ import ConfigParser
 
 import numpy
 
-def median(a):
-    b = [_ for _ in a]
-    b.sort()
-    mid = len(b)/2
-    if len(b) % 2 == 1:
-        return b[mid]
-    else:
-        return (b[mid] + b[mid+1])/2.0
-
 
 class Person(object):
     def __init__(self, datascope, name):
@@ -117,16 +108,57 @@ class Datascope(object):
         return numpy.median(personal_after_tax_target_profits)
         # return max(personal_after_tax_target_profits)
 
+    @property
+    def before_tax_profit(self):
+        profit = 0.0
+        tax_rate = self.config.getfloat('parameters', 'tax_rate')
+
+        # partners must pay taxes at tax_rate, so we need to make
+        # 1/(1-tax_rate) more money to account for this
+        profit += self.after_tax_target_profit / (1 - tax_rate)
+
+        # partners also pay taxes on their guaranteed payments
+        profit += self.n_partners * self.after_tax_salary / (1 - tax_rate) * tax_rate
+        return profit
+
+    @property
+    def revenue(self):
+        return self.costs + self.before_tax_profit
+
+    @property
+    def costs(self):
+        return self.config.getfloat('parameters', 'fixed_monthly_costs') + self.config.getfloat('parameters', 'per_datascoper_costs') * self.n_people
+
+    @property
+    def ebit(self):
+        """earnings before interest and taxes (a.k.a. before tax profit rate)"""
+        return (self.revenue - self.costs) / self.revenue
+
+    @property
+    def revenue_per_person(self):
+        return self.revenue * 12 / self.n_people
+
+    @property
+    def minimum_hourly_rate(self):
+        """This is the minimum hourly rate necessary to meet our revenue
+        targets for the year, without growing.
+        """
+        return self.revenue * 12 / self.config.getfloat('parameters', 'billable_hours_per_year') / self.n_people
 
 if __name__ == "__main__":
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     datascope = Datascope(os.path.join(project_root, 'config.ini'))
-    print datascope.n_people, datascope.n_partners
-    for person in datascope:
-        print person.name, person.after_tax_target_salary, person.ownership, person.net_fraction_of_profits
+    # print datascope.n_people, datascope.n_partners
+    # for person in datascope:
+    #     print person.name, person.after_tax_target_salary, person.ownership, person.net_fraction_of_profits
+    #
+    # print "DATASCOPE AFTER TAX TARGET PROFIT"
+    # print datascope.after_tax_target_profit
 
-    print "DATASCOPE AFTER TAX TARGET PROFIT"
-    print datascope.after_tax_target_profit
 
     for person in datascope:
         print person.name, person.after_tax_target_salary, person.after_tax_salary
+
+    print "EBIT", datascope.ebit
+    print "REVENUE", datascope.revenue_per_person
+    print "MINIMUM HOURLY RATE", datascope.minimum_hourly_rate
