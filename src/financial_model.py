@@ -13,3 +13,7 @@ print "MINIMUM HOURLY RATE", datascope.minimum_hourly_rate
 
 for person in datascope:
     print person.name, person.after_tax_target_salary, person.after_tax_salary
+
+for x in range(5):
+    datascope.grow(new_people=2)
+    print "REVENUE", datascope.n_people, datascope.ebit, datascope.revenue_per_person

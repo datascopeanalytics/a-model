@@ -25,12 +25,12 @@ class Person(object):
         after tax pay and the number of months of after tax bonus expected at
         the end of the year.
         """
-        pay = self.datascope.config.get('take home pay', self.name)
+        default_pay = self.datascope.after_tax_salary
+        default_pay *= (1 + self.datascope.n_months_after_tax_bonus/12)
         try:
-            pay = float(pay)
-        except ValueError:
-            pay = self.datascope.after_tax_salary
-            pay *= (1 + self.datascope.n_months_after_tax_bonus/12)
+            pay = self.datascope.config.getfloat('take home pay', self.name)
+        except (ConfigParser.NoOptionError, ValueError):
+            pay = default_pay
         return pay
 
     @property

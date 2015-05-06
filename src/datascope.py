@@ -13,7 +13,7 @@ class Datascope(object):
         # iterate over the config to instantiate each person
         self.people = []
         for name, _ in self.config.items('take home pay'):
-            self.people.append(Person(self, name))
+            self.add_person(name)
 
     def __iter__(self):
         for person in self.people:
@@ -22,6 +22,17 @@ class Datascope(object):
     def __getattr__(self, name):
         """This just accesses the value from the config.ini directly"""
         return self.config.getfloat('parameters', name)
+
+    def add_person(self, name):
+        person = Person(self, name)
+        self.people.append(person)
+        return person
+
+    def grow(self, new_people=1):
+        # TODO: would be nice to adapt this to make it easy to simulate people
+        # becoming partners over time
+        for n in range(new_people):
+            self.add_person("joe")
 
     @property
     def n_people(self):
@@ -46,8 +57,8 @@ class Datascope(object):
         # least* their target take home pay. The median approach makes sure at
         # least half of everyone at datascope meets their personal target take
         # home pay goals.
-        return numpy.median(personal_after_tax_target_profits)
-        # return max(personal_after_tax_target_profits)
+        #return numpy.median(personal_after_tax_target_profits)
+        return max(personal_after_tax_target_profits)
 
     @property
     def before_tax_profit(self):
