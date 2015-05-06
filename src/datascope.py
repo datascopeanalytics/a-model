@@ -44,7 +44,8 @@ class Datascope(object):
 
     @property
     def after_tax_target_profit(self):
-        """
+        """Based on everyone's personal take-home pay goals, determine the
+        target profit for datascope after taxes
         """
         personal_after_tax_target_profits = []
         for person in self:
@@ -57,8 +58,8 @@ class Datascope(object):
         # least* their target take home pay. The median approach makes sure at
         # least half of everyone at datascope meets their personal target take
         # home pay goals.
-        #return numpy.median(personal_after_tax_target_profits)
-        return max(personal_after_tax_target_profits)
+        return numpy.median(personal_after_tax_target_profits)
+        #return max(personal_after_tax_target_profits)
 
     @property
     def before_tax_profit(self):
@@ -72,10 +73,13 @@ class Datascope(object):
 
     @property
     def revenue(self):
+        """Monthly revenue target to accomplish target after-tax take-home pay
+        """
         return self.costs + self.before_tax_profit
 
     @property
     def costs(self):
+        """Estimate rough monthly costs for Datascope"""
         return self.fixed_monthly_costs + self.per_datascoper_costs * self.n_people
 
     @property
@@ -85,6 +89,7 @@ class Datascope(object):
 
     @property
     def revenue_per_person(self):
+        """Annual revenue per person to meet revenue targets"""
         return self.revenue * 12 / self.n_people
 
     @property
