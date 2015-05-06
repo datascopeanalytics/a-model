@@ -1,4 +1,5 @@
 import ConfigParser
+import random
 
 import numpy
 
@@ -21,18 +22,15 @@ class Datascope(object):
 
     def __getattr__(self, name):
         """This just accesses the value from the config.ini directly"""
+        if name == 'historical_monthly_revenues':
+            val = self.config.get('parameters', name)
+            return map(float, val.split(','))
         return self.config.getfloat('parameters', name)
 
     def add_person(self, name):
         person = Person(self, name)
         self.people.append(person)
         return person
-
-    def grow(self, new_people=1):
-        # TODO: would be nice to adapt this to make it easy to simulate people
-        # becoming partners over time
-        for n in range(new_people):
-            self.add_person("joe")
 
     @property
     def n_people(self):
@@ -98,3 +96,11 @@ class Datascope(object):
         targets for the year, without growing.
         """
         return self.revenue * 12 / self.billable_hours_per_year / self.n_people
+
+    def simulate_revenue(self):
+        """Use the empirical data to simulate a payday from Datascope's
+        historical revenue projections. This is a v :hankey: model that does
+        not account for correlations in feast-famine cycles, but hey, you gotta
+        start somewhere.
+        """
+        return random.choice(self.historical_monthly_revenues)

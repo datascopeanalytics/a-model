@@ -21,4 +21,10 @@ tied to Datascope's.
 
 3. Run the model `python src/financial_model.py`
 
-4. Repeat from step 2.
+4. Repeat from step 2 and observe how changes to the financial basics impact
+   outcomes for everyone.
+
+You can optionally play with a few other scripts:
+
+* `src/hiring_confidence.py` simulates datascope's finances to better
+  understand when its appropriate to hire another datascoper and when its not
