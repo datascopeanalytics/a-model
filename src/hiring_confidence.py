@@ -1,28 +1,50 @@
-"""The goal of this script is to figure out when its appropriate to change our
+#!/usr/bin/env python
+__doc__ = """
+The goal of this script is to figure out when its appropriate to change our
 staffing so that we can be reasonably confident we're making a good decision.
-
-TODO: how to reasonably decide when its a good time to hire, just based on our
-cash in the bank. probably something to do with ROI
 """
+
+import argparse
 
 from datascope import Datascope
 
-
-n_months = 12
-n_universes = 1000
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument(
+    '--n-months',
+    metavar='M',
+    type=int,
+    help='the number of months to simulate',
+    default=12,
+)
+parser.add_argument(
+    '--n-universes',
+    metavar='U',
+    type=int,
+    help='the number of universes to simulate',
+    default=1000,
+)
+parser.add_argument(
+    '--n-n00bs',
+    metavar='N',
+    type=int,
+    help='the number of new people to add to Datascope',
+    default=1,
+)
+args = parser.parse_args()
 
 # simulate datascope revenues before adding a person
 datascope = Datascope()
 no_n00b_outcomes, no_n00b_cash = datascope.simulate_finances(
-    n_months=n_months,
-    n_universes=n_universes,
+    n_months=args.n_months,
+    n_universes=args.n_universes,
 )
 
 # simulate revenues after adding a person
-datascope.add_person("joe")
+for n00b in range(args.n_n00bs):
+    datascope.add_person("n00b_%d" % n00b)
 n00b_outcomes, n00b_cash = datascope.simulate_finances(
-    n_months=n_months,
-    n_universes=n_universes,
+    n_months=args.n_months,
+    n_universes=args.n_universes,
 )
 
 keys = set(n00b_outcomes.keys()).union(set(no_n00b_outcomes.keys()))
