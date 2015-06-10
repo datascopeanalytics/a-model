@@ -19,10 +19,10 @@ tied to Datascope's.
 
 3. Play with the models.
 
-    * [`profitability_and_salary.py`](blob/master/src/profitability_and_salary.py)
+    * [`profitability_and_salary.py`](src/profitability_and_salary.py)
       is useful for understanding the relationship between your desired salary
       and Datascope's profitability.
 
-    * [`hiring_confidence.py`](blob/master/src/profitability_and_salary.py)
+    * [`hiring_confidence.py`](src/profitability_and_salary.py)
       simulates our revenues based on historical data to gauge the risk in
       adding a new person to our team today.
