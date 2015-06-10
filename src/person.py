@@ -33,25 +33,20 @@ class Person(object):
             pay = default_pay
         return pay
 
-    @property
     def net_fraction_of_profits(self):
         return (
             self.datascope.fraction_profit_for_dividends * self.ownership +
             (1.0-self.datascope.fraction_profit_for_dividends) / self.datascope.n_people
         )
 
-    @property
     def after_tax_target_salary_from_bonus_dividends(self):
         return self.after_tax_target_salary - self.datascope.after_tax_salary
 
-    @property
     def after_tax_salary_from_bonus(self):
-        return (1.0-self.datascope.fraction_profit_for_dividends) / self.datascope.n_people * self.datascope.after_tax_target_profit
+        return (1.0-self.datascope.fraction_profit_for_dividends) / self.datascope.n_people * self.datascope.after_tax_target_profit()
 
-    @property
     def after_tax_salary_from_dividends(self):
-        return self.datascope.fraction_profit_for_dividends * self.ownership * self.datascope.after_tax_target_profit
+        return self.datascope.fraction_profit_for_dividends * self.ownership * self.datascope.after_tax_target_profit()
 
-    @property
     def after_tax_salary(self):
-        return self.after_tax_salary_from_bonus + self.after_tax_salary_from_dividends + self.datascope.after_tax_salary
+        return self.after_tax_salary_from_bonus() + self.after_tax_salary_from_dividends() + self.datascope.after_tax_salary
