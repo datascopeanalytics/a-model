@@ -22,6 +22,7 @@ n_months = 12
 counter = collections.Counter()
 simulations = []
 for universe in range(1000):
+    is_bankrupt = False
     no_cash = False
 
     # this game is a gross over simplification. each month datascope pays its
@@ -35,17 +36,21 @@ for universe in range(1000):
     for month in range(n_months):
         revenue = datascope.simulate_revenue()
         cash -= datascope.costs
-        if cash < 0:
+        if cash < -datascope.line_of_credit:
+            is_bankrupt = True
+        elif cash < 0:
             no_cash = True
         cash += revenue
-        simulations.append(cash)
+    simulations.append(cash)
 
     # how'd we do this year? if we didn't go bankrupt, are we able to give a
     # bonus? do we have excess profit beyond our target profit so we can grow
     # the business
     profit = cash - initial_cash
-    if no_cash:
+    if is_bankrupt:
         counter['bankrupt'] += 1
+    elif no_cash:
+        counter['survived with line of credit'] += 1
     else:
         counter['not bankrupt'] += 1
         if profit < 0:
