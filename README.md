@@ -8,23 +8,21 @@ tied to Datascope's.
 
 ## quickstart
 
-0. Create a virtualenv and install the requirements
+1. Create a virtualenv and install the requirements
    ```sh
    mkvirtualenv a-model
    pip install -r requirements/python
    ```
 
-1. Get a copy of `config.ini` from @deanmalmgren and put it in the root of this
-   repository.
+2. Get a copy of `config.ini` from @deanmalmgren and put it in the root of this
+   repository and edit at will.
 
-2. Edit config.ini
+3. Play with the models.
 
-3. Run the model `python src/financial_model.py`
+    * [`profitability_and_salary.py`](blob/master/src/profitability_and_salary.py)
+      is useful for understanding the relationship between your desired salary
+      and Datascope's profitability.
 
-4. Repeat from step 2 and observe how changes to the financial basics impact
-   outcomes for everyone.
-
-You can optionally play with a few other scripts:
-
-* `src/hiring_confidence.py` simulates datascope's finances to better
-  understand when its appropriate to hire another datascoper and when its not
+    * [`hiring_confidence.py`](blob/master/src/profitability_and_salary.py)
+      simulates our revenues based on historical data to gauge the risk in
+      adding a new person to our team today.
