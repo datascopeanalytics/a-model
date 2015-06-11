@@ -105,7 +105,7 @@ class Datascope(object):
         return random.choice(self.historical_monthly_revenues)
 
     def simulate_finances(self, n_months=12, n_universes=1000,
-        initial_cash=None):
+        initial_cash=None, verbose=False):
         """Simulate finances for datascope to quantify a few significant
         outcomes in what could happen.
         """
@@ -120,7 +120,7 @@ class Datascope(object):
         outcomes = collections.Counter()
         end_cash = []
         for universe in range(n_universes):
-            if universe % 100 == 0:
+            if verbose and universe % 100 == 0:
                 print >> sys.stderr, "simulation %d" % universe
             is_bankrupt = False
             no_cash = False
@@ -152,9 +152,9 @@ class Datascope(object):
                 outcomes['bankrupt'] += 1
                 outcomes['no bonus'] += 1
             else:
+                outcomes['not bankrupt'] += 1
                 if no_cash:
                     outcomes['survived with line of credit'] += 1
-                outcomes['not bankrupt'] += 1
                 if profit < 0:
                     outcomes['no bonus'] += 1
                 if profit > 0:

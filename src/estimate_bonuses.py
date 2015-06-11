@@ -23,6 +23,11 @@ parser.add_argument(
     help='the number of universes to simulate',
     default=1000,
 )
+parser.add_argument(
+    '-v', '--verbose',
+    action="store_true",
+    help='print more information during the simulations',
+)
 args = parser.parse_args()
 
 # instantiate datascope
@@ -35,6 +40,7 @@ eoy_outcomes, eoy_cash_list = datascope.simulate_finances(
     n_months=n_months,
     n_universes=args.n_universes,
     initial_cash=datascope.current_cash_in_bank,
+    verbose=args.verbose,
 )
 
 # print out data to be plotted in xmgrace
