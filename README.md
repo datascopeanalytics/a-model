@@ -23,6 +23,10 @@ tied to Datascope's.
       is useful for understanding the relationship between your desired salary
       and Datascope's profitability.
 
-    * [`hiring_confidence.py`](src/profitability_and_salary.py)
+    * [`hiring_confidence.py`](src/hiring_confidence.py)
       simulates our revenues based on historical data to gauge the risk in
       adding a new person to our team today.
+
+    * [`estimate_bonuses.py`](src/estimate_bonuses.py)
+      estimates our bonuses based on current cash in the bank and simulated
+      revenues for the remainder of the year.

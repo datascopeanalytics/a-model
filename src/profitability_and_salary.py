@@ -14,7 +14,7 @@ import argparse
 
 from datascope import Datascope
 
-#
+# parse command line arguments
 parser = argparse.ArgumentParser(description=__doc__)
 args = parser.parse_args()
 

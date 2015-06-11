@@ -2,6 +2,7 @@ import ConfigParser
 import random
 import os
 import collections
+import sys
 
 import numpy
 
@@ -103,10 +104,15 @@ class Datascope(object):
         """
         return random.choice(self.historical_monthly_revenues)
 
-    def simulate_finances(self, n_months=12, n_universes=1000):
+    def simulate_finances(self, n_months=12, n_universes=1000,
+        initial_cash=None):
         """Simulate finances for datascope to quantify a few significant
         outcomes in what could happen.
         """
+
+        # assume we're starting out with our full buffer if nothing is specified
+        if initial_cash is None:
+            initial_cash = self.n_months_buffer * self.costs()
 
         # basically what we want to do is simulate starting with a certain amount in
         # the bank, and getting paid X in any given month.
@@ -114,7 +120,7 @@ class Datascope(object):
         end_cash = []
         for universe in range(n_universes):
             if universe % 100 == 0:
-                print "simulation %d" % universe
+                print >> sys.stderr, "simulation %d" % universe
             is_bankrupt = False
             no_cash = False
 
@@ -125,7 +131,7 @@ class Datascope(object):
             # example, we have a sales pipeline, projects underway, and accounts
             # receivable, all of which give us confidence about the current state of
             # affairs beyond the cash on hand at the end of each month.
-            cash = initial_cash = self.n_months_buffer * self.costs()
+            cash = initial_cash
             for month in range(n_months):
                 revenue = self.simulate_revenue()
                 cash -= self.costs()

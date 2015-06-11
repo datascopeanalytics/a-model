@@ -8,6 +8,7 @@ import argparse
 
 from datascope import Datascope
 
+# parse command line arguments
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument(
     '--n-months',
