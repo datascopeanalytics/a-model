@@ -111,8 +111,9 @@ class Datascope(object):
         """
 
         # assume we're starting out with our full buffer if nothing is specified
+        cash_buffer = self.n_months_buffer * self.costs()
         if initial_cash is None:
-            initial_cash = self.n_months_buffer * self.costs()
+            initial_cash = cash_buffer
 
         # basically what we want to do is simulate starting with a certain amount in
         # the bank, and getting paid X in any given month.
@@ -137,6 +138,7 @@ class Datascope(object):
                 cash -= self.costs()
                 if cash < -self.line_of_credit:
                     is_bankrupt = True
+                    break
                 elif cash < 0:
                     no_cash = True
                 cash += revenue
@@ -145,12 +147,13 @@ class Datascope(object):
             # how'd we do this year? if we didn't go bankrupt, are we able to give a
             # bonus? do we have excess profit beyond our target profit so we can grow
             # the business
-            profit = cash - initial_cash
+            profit = cash - cash_buffer
             if is_bankrupt:
                 outcomes['bankrupt'] += 1
-            elif no_cash:
-                outcomes['survived with line of credit'] += 1
+                outcomes['no bonus'] += 1
             else:
+                if no_cash:
+                    outcomes['survived with line of credit'] += 1
                 outcomes['not bankrupt'] += 1
                 if profit < 0:
                     outcomes['no bonus'] += 1
