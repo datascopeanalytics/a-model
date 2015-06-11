@@ -10,6 +10,7 @@ import argparse
 import datetime
 from pprint import pprint
 import sys
+import numpy
 
 from datascope import Datascope
 
@@ -38,7 +39,6 @@ eoy_outcomes, eoy_cash_list = datascope.simulate_finances(
 
 # print out data to be plotted in xmgrace
 # ./estimate_bonuses.py | xmagrace -
-pprint(eoy_outcomes, sys.stderr)
 eoy_cash_list.sort()
 for i, eoy_cash in enumerate(eoy_cash_list):
     print eoy_cash, 1.0-float(i)/args.n_universes
@@ -59,3 +59,25 @@ print ''
 # target bonus level
 print cash_buffer + 12*datascope.before_tax_profit(), 0.0
 print cash_buffer + 12*datascope.before_tax_profit(), 1.0
+print ''
+
+# given that there will be a bonus, calculate the median bonus for each person
+print >> sys.stderr, "P(NO BONUS) =", float(eoy_outcomes['no bonus']) / args.n_universes
+print >> sys.stderr, "P(BONUS) =", float(eoy_outcomes['is bonus']) / args.n_universes
+for person in datascope.people:
+    person.bonus_outcomes = []
+for eoy_cash in eoy_cash_list:
+    profit = eoy_cash - cash_buffer
+    if profit > 0:
+        for person in datascope.people:
+            person.bonus_outcomes.append(profit * person.net_fraction_of_profits())
+print >> sys.stderr, "%10s %8s %8s %8s" % (
+    "name","25pct", "50pct", "75pct"
+)
+for person in datascope.people:
+    print >> sys.stderr, "%10s %8.0f %8.0f %8.0f" % (
+        person.name,
+        numpy.percentile(person.bonus_outcomes, 25),
+        numpy.percentile(person.bonus_outcomes, 50),
+        numpy.percentile(person.bonus_outcomes, 75),
+    )
