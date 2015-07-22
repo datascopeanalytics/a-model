@@ -57,6 +57,11 @@ n00b_outcomes, n00b_cash = datascope.simulate_finances(
 
 keys = set(n00b_outcomes.keys()).union(set(no_n00b_outcomes.keys()))
 for key in keys:
-    no_n00b = no_n00b_outcomes[key]
-    n00b = n00b_outcomes[key]
-    print "%30s%10d%10d%10d" % (key, no_n00b, n00b, n00b - no_n00b)
+    no_n00b = float(no_n00b_outcomes[key])
+    n00b = float(n00b_outcomes[key])
+    print "%30s%10.3f%10.3f%10.3f" % (
+        key,
+        no_n00b / args.n_universes,
+        n00b / args.n_universes,
+        (n00b - no_n00b) / args.n_universes,
+    )
