@@ -1,1 +1,4 @@
 numpy
+gspread
+oauth2client
+PyOpenSSL

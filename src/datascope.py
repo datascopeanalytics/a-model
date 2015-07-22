@@ -3,8 +3,11 @@ import random
 import os
 import collections
 import sys
+import json
 
 import numpy
+import gspread
+from oauth2client.client import SignedJwtAssertionCredentials
 
 from person import Person
 
@@ -13,6 +16,7 @@ class Datascope(object):
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     dropbox_root = os.path.join(project_root, 'Dropbox')
     config_filename = os.path.join(dropbox_root, 'config.ini')
+    gdrive_credentials_filename = os.path.join(dropbox_root, 'gdrive.json')
 
     def __init__(self):
         self.config = ConfigParser.ConfigParser()
@@ -23,6 +27,8 @@ class Datascope(object):
         for name, _ in self.config.items('take home pay'):
             self.add_person(name)
 
+        self._read_googlesheet()
+            
     def __iter__(self):
         for person in self.people:
             yield person
@@ -33,6 +39,28 @@ class Datascope(object):
             val = self.config.get('parameters', name)
             return map(float, val.split(','))
         return self.config.getfloat('parameters', name)
+
+    def _read_googlesheet(self):
+        """Using the gdrive credentials file, access the P&L google sheet and
+        read all of the content.
+
+        """
+        # read json from file
+        with open(self.gdrive_credentials_filename) as stream:
+            key = json.load(stream)
+
+        # authorize with credentials
+        credentials = SignedJwtAssertionCredentials(
+            key['client_email'],
+            key['private_key'],
+            ['https://spreadsheets.google.com/feeds'],
+        )
+        gdrive = gspread.authorize(credentials)
+
+        # open spreadsheet and read all content as a list of lists
+        spreadsheet = gdrive.open_by_url(key['url'])
+        worksheet = spreadsheet.get_worksheet(0)
+        self.googlesheet = worksheet.get_all_values()
 
     def add_person(self, name):
         person = Person(self, name)
