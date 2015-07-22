@@ -22,6 +22,9 @@ args = parser.parse_args()
 datascope = Datascope()
 
 # calculate the financials from the information provided in config.ini
+print "If we met the happiness goals we have, we would have the "
+print "following outcomes..."
+print ""
 print "EBIT", datascope.ebit()
 print "REVENUE", datascope.revenue_per_person()
 print "MINIMUM HOURLY RATE", datascope.minimum_hourly_rate()
