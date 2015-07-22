@@ -14,8 +14,10 @@ tied to Datascope's.
    pip install -r requirements/python
    ```
 
-2. Get a copy of `config.ini` from @deanmalmgren and put it in the root of this
-   repository and edit at will.
+2. Create a soft link to the `a-model` shared Dropbox folder
+   ```sh
+   ln -s ~/Dropbox/Library/a-model Dropbox
+   ```
 
 3. Play with the models.
 

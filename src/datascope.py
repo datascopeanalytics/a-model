@@ -11,7 +11,8 @@ from person import Person
 
 class Datascope(object):
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    config_filename = os.path.join(project_root, 'config.ini')
+    dropbox_root = os.path.join(project_root, 'Dropbox')
+    config_filename = os.path.join(dropbox_root, 'config.ini')
 
     def __init__(self):
         self.config = ConfigParser.ConfigParser()
@@ -47,9 +48,12 @@ class Datascope(object):
         return len([person for person in self if person.is_partner])
 
     def after_tax_target_profit(self):
-        """Based on everyone's personal take-home pay goals, determine the
-        target profit for datascope after taxes
+        """Based on everyone's personal take-home pay goals in config.ini,
+        determine the target profit for datascope after taxes
         """
+
+        # estimate how much profit datascope would have to make so that each
+        # person's personal goals are satisfied
         personal_after_tax_target_profits = []
         for person in self:
             personal_after_tax_target_profits.append(
@@ -62,7 +66,7 @@ class Datascope(object):
         # least half of everyone at datascope meets their personal target take
         # home pay goals.
         return numpy.median(personal_after_tax_target_profits)
-        #return max(personal_after_tax_target_profits)
+        # return max(personal_after_tax_target_profits)
 
     def before_tax_profit(self):
         # partners must pay taxes at tax_rate, so we need to make
@@ -134,14 +138,13 @@ class Datascope(object):
             # affairs beyond the cash on hand at the end of each month.
             cash = initial_cash
             for month in range(n_months):
-                revenue = self.simulate_revenue()
                 cash -= self.costs()
                 if cash < -self.line_of_credit:
                     is_bankrupt = True
                     break
                 elif cash < 0:
                     no_cash = True
-                cash += revenue
+                cash += self.simulate_revenue()
             end_cash.append(cash)
 
             # how'd we do this year? if we didn't go bankrupt, are we able to give a
