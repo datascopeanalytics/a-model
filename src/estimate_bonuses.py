@@ -69,7 +69,7 @@ print cash_buffer + 12*datascope.before_tax_profit(), 1.0
 print ''
 
 # given that there will be a bonus, calculate the median bonus for each person
-print >> sys.stderr, "This script just ran simulations until the end of the year"
+print >> sys.stderr, "This script just ran simulations over the next %d months" % n_months
 print >> sys.stderr, "and here are the different outcomes that we can expect..."
 print >> sys.stderr, ""
 print >> sys.stderr, "P(NO BONUS) =", float(eoy_outcomes['no bonus']) / args.n_universes

@@ -58,6 +58,9 @@ n00b_outcomes, n00b_cash = datascope.simulate_finances(
 )
 
 keys = set(n00b_outcomes.keys()).union(set(no_n00b_outcomes.keys()))
+print "This script ran simulations over the next %d months" % args.n_months
+print "and here are the results..."
+print ""
 print "%30s%10s%10s%10s" % (
     '',
     'current',

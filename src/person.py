@@ -8,7 +8,7 @@ class Person(object):
 
     def __repr__(self):
         return '<Person: %s>' % self.name.title()
-        
+
     @property
     def is_partner(self):
         return self.ownership > 0
