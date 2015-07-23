@@ -99,7 +99,7 @@ class Datascope(object):
                 self.historical_monthly_revenues.append((date, income))
             else:
                 self.projected_monthly_revenues.append((date, income))
-                
+
     def _parse_income_string(self, string):
         """Convert a string from spreadsheet into a float, for example
         "$504,234.12" will become 504234."""
@@ -116,7 +116,7 @@ class Datascope(object):
             return float(cleaned)
         else:
             return 0.0
-        
+
     def add_person(self, name):
         person = Person(self, name)
         self.people.append(person)
@@ -124,7 +124,7 @@ class Datascope(object):
 
     @property
     def n_people(self):
-        return len(self.people)
+        return len([person for person in self if person.is_active])
 
     @property
     def n_partners(self):
@@ -143,7 +143,7 @@ class Datascope(object):
                 person.after_tax_target_salary_from_bonus_dividends() /
                 person.net_fraction_of_profits()
             )
-            
+
         # if we take the maximum here, then everyone is guaranteed to make *at
         # least* their target take home pay. The median approach makes sure at
         # least half of everyone at datascope meets their personal target take

@@ -10,6 +10,10 @@ class Person(object):
         return '<Person: %s>' % self.name.title()
 
     @property
+    def is_active(self):
+        return self.after_tax_target_salary > 0
+
+    @property
     def is_partner(self):
         return self.ownership > 0
 
