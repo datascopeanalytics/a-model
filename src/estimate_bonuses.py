@@ -13,6 +13,7 @@ import sys
 import numpy
 
 from datascope import Datascope
+from utils import currency_str
 
 # parse command line arguments
 parser = argparse.ArgumentParser(description=__doc__)
@@ -77,13 +78,15 @@ for eoy_cash in eoy_cash_list:
     if profit > 0:
         for person in datascope.people:
             person.bonus_outcomes.append(profit * person.net_fraction_of_profits())
-print >> sys.stderr, "%10s %8s %8s %8s" % (
-    "name","25pct", "50pct", "75pct"
+print >> sys.stderr, ""
+print >> sys.stderr, "BONUS OUTCOMES EXPECTED AT THE END OF THIS YEAR"
+print >> sys.stderr, "%10s %15s %15s %15s" % (
+    "","25pct", "50pct", "75pct"
 )
 for person in datascope.people:
-    print >> sys.stderr, "%10s %8.0f %8.0f %8.0f" % (
+    print >> sys.stderr, "%10s %15s %15s %15s" % (
         person.name,
-        numpy.percentile(person.bonus_outcomes, 25),
-        numpy.percentile(person.bonus_outcomes, 50),
-        numpy.percentile(person.bonus_outcomes, 75),
+        currency_str(numpy.percentile(person.bonus_outcomes, 25)),
+        currency_str(numpy.percentile(person.bonus_outcomes, 50)),
+        currency_str(numpy.percentile(person.bonus_outcomes, 75)),
     )

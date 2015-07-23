@@ -13,6 +13,7 @@ are all working half-time.
 import argparse
 
 from datascope import Datascope
+from utils import currency_str
 
 # parse command line arguments
 parser = argparse.ArgumentParser(description=__doc__)
@@ -25,10 +26,20 @@ datascope = Datascope()
 print "If we met the happiness goals we have, we would have the "
 print "following outcomes..."
 print ""
-print "EBIT", datascope.ebit()
-print "REVENUE", datascope.revenue_per_person()
-print "MINIMUM HOURLY RATE", datascope.minimum_hourly_rate()
+print "%40s%16s" % ("EBIT", '{:.2%}'.format(datascope.ebit()))
+print "%40s%15s" % (
+    "REVENUE PER PERSON",
+    currency_str(datascope.revenue_per_person()),
+)
+print "%40s%15s" % (
+    "MINIMUM HOURLY RATE",
+    currency_str(datascope.minimum_hourly_rate()),
+)
 print ""
-print "PERSONAL TAKE HOME PAY:"
+print "PERSONAL MONTHLY TAKE HOME PAY:"
 for person in datascope:
-    print person.name, person.after_tax_target_salary, person.after_tax_salary()
+    print "%10s%15s%15s" % (
+        person.name,
+        currency_str(person.after_tax_target_salary),
+        currency_str(person.after_tax_salary()),
+    )
