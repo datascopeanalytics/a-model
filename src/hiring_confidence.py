@@ -43,6 +43,7 @@ datascope = Datascope()
 no_n00b_outcomes, no_n00b_cash = datascope.simulate_finances(
     n_months=args.n_months,
     n_universes=args.n_universes,
+    initial_cash=datascope.current_cash_in_bank,
     verbose=args.verbose,
 )
 
@@ -52,6 +53,7 @@ for n00b in range(args.n_n00bs):
 n00b_outcomes, n00b_cash = datascope.simulate_finances(
     n_months=args.n_months,
     n_universes=args.n_universes,
+    initial_cash=datascope.current_cash_in_bank,
     verbose=args.verbose,
 )
 
