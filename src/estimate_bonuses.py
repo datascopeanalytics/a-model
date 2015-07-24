@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-__doc__ = """
-
+"""
 The goal of this script is to, based on YTD cash and simulated cash flows,
 estimate the size of the bonus pool and each person's resulting salary.
-
 """
 
 import argparse
@@ -13,7 +11,8 @@ import sys
 import numpy
 
 from datascope import Datascope
-from utils import currency_str
+from utils import currency_str, print_err
+
 
 # parse command line arguments
 parser = argparse.ArgumentParser(description=__doc__)
@@ -69,29 +68,31 @@ print cash_buffer + 12*datascope.before_tax_profit(), 1.0
 print ''
 
 # given that there will be a bonus, calculate the median bonus for each person
-print >> sys.stderr, "This script just ran simulations over the next %d months" % n_months
-print >> sys.stderr, "and here are the different outcomes that we can expect..."
-print >> sys.stderr, ""
-print >> sys.stderr, "P(NO BONUS) =", float(eoy_outcomes['no bonus']) / args.n_universes
-print >> sys.stderr, "P(BONUS) =", float(eoy_outcomes['is bonus']) / args.n_universes
+print_err("This script just ran simulations for %d months" % n_months)
+print_err("and here are the different outcomes that we can expect...")
+print_err("")
+print_err("P(NO BONUS) =", float(eoy_outcomes['no bonus']) / args.n_universes)
+print_err("P(BONUS) =", float(eoy_outcomes['is bonus']) / args.n_universes)
 for person in datascope.people:
     person.bonus_outcomes = []
 for eoy_cash in eoy_cash_list:
     profit = eoy_cash - cash_buffer
     if profit > 0:
         for person in datascope.people:
-            person.bonus_outcomes.append(profit * person.net_fraction_of_profits())
-print >> sys.stderr, ""
-print >> sys.stderr, "BONUS OUTCOMES EXPECTED AT THE END OF THIS YEAR"
-print >> sys.stderr, "%10s %15s %15s %15s %15s %15s" % (
-    "","5pct", "25pct", "50pct", "75pct", "95pct",
-)
+            person.bonus_outcomes.append(
+                profit * person.net_fraction_of_profits()
+            )
+print_err("")
+print_err("BONUS OUTCOMES EXPECTED AT THE END OF THIS YEAR")
+print_err("%10s %15s %15s %15s %15s %15s" % (
+    "", "5pct", "25pct", "50pct", "75pct", "95pct",
+))
 for person in datascope.people:
-    print >> sys.stderr, "%10s %15s %15s %15s %15s %15s" % (
+    print_err("%10s %15s %15s %15s %15s %15s" % (
         person.name,
         currency_str(numpy.percentile(person.bonus_outcomes, 5)),
         currency_str(numpy.percentile(person.bonus_outcomes, 25)),
         currency_str(numpy.percentile(person.bonus_outcomes, 50)),
         currency_str(numpy.percentile(person.bonus_outcomes, 75)),
         currency_str(numpy.percentile(person.bonus_outcomes, 95)),
-    )
+    ))

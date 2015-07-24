@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-__doc__ = """
+"""
 The goal of this script is to figure out when its appropriate to change our
 staffing so that we can be reasonably confident we're making a good decision.
 """

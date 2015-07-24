@@ -40,20 +40,33 @@ class Person(object):
             pay = default_pay
         return pay
 
+    def fraction_dividends(self):
+        """Fraction of profits that come in the form of a dividend"""
+        return self.datascope.fraction_profit_for_dividends * self.ownership
+
+    def fraction_bonus(self):
+        """Fraction of profits that come in the form of a bonus"""
+        return (1.0-self.datascope.fraction_profit_for_dividends) /\
+            self.datascope.n_people
+
     def net_fraction_of_profits(self):
-        return (
-            self.datascope.fraction_profit_for_dividends * self.ownership +
-            (1.0-self.datascope.fraction_profit_for_dividends) / self.datascope.n_people
-        )
+        """Net fraction of all profits"""
+        return self.fraction_dividends() + self.fraction_bonus()
 
     def after_tax_target_salary_from_bonus_dividends(self):
         return self.after_tax_target_salary - self.datascope.after_tax_salary
 
     def after_tax_salary_from_bonus(self):
-        return (1.0-self.datascope.fraction_profit_for_dividends) / self.datascope.n_people * self.datascope.after_tax_target_profit()
+        return self.fraction_bonus() *\
+            self.datascope.after_tax_target_profit()
 
     def after_tax_salary_from_dividends(self):
-        return self.datascope.fraction_profit_for_dividends * self.ownership * self.datascope.after_tax_target_profit()
+        return self.fraction_dividends() *\
+            self.datascope.after_tax_target_profit()
 
     def after_tax_salary(self):
-        return self.after_tax_salary_from_bonus() + self.after_tax_salary_from_dividends() + self.datascope.after_tax_salary
+        return (
+            self.after_tax_salary_from_bonus() +
+            self.after_tax_salary_from_dividends() +
+            self.datascope.after_tax_salary
+        )

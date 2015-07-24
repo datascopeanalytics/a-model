@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-__doc__ = """
+"""
 The goal of this script is to make it easy to quickly explore how everyone's
 personal take-home pay goals impact Datascope's goals. To experiment,
 manipulate your personal goals by manipulating your desired take home pay to

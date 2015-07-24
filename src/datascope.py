@@ -157,7 +157,9 @@ class Datascope(object):
         profit = self.after_tax_target_profit() / (1 - self.tax_rate)
 
         # partners also pay taxes on their guaranteed payments
-        profit += self.n_partners * self.after_tax_salary / (1 - self.tax_rate) * self.tax_rate
+        guaranteed_payment = self.after_tax_salary / (1 - self.tax_rate)
+        guaranteed_payment_tax = guaranteed_payment * self.tax_rate
+        profit += self.n_partners * guaranteed_payment_tax
         return profit
 
     def revenue(self):
