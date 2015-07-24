@@ -83,13 +83,15 @@ for eoy_cash in eoy_cash_list:
             person.bonus_outcomes.append(profit * person.net_fraction_of_profits())
 print >> sys.stderr, ""
 print >> sys.stderr, "BONUS OUTCOMES EXPECTED AT THE END OF THIS YEAR"
-print >> sys.stderr, "%10s %15s %15s %15s" % (
-    "","25pct", "50pct", "75pct"
+print >> sys.stderr, "%10s %15s %15s %15s %15s %15s" % (
+    "","5pct", "25pct", "50pct", "75pct", "95pct",
 )
 for person in datascope.people:
-    print >> sys.stderr, "%10s %15s %15s %15s" % (
+    print >> sys.stderr, "%10s %15s %15s %15s %15s %15s" % (
         person.name,
+        currency_str(numpy.percentile(person.bonus_outcomes, 5)),
         currency_str(numpy.percentile(person.bonus_outcomes, 25)),
         currency_str(numpy.percentile(person.bonus_outcomes, 50)),
         currency_str(numpy.percentile(person.bonus_outcomes, 75)),
+        currency_str(numpy.percentile(person.bonus_outcomes, 95)),
     )

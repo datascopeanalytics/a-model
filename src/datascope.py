@@ -198,7 +198,7 @@ class Datascope(object):
         """
         revenue_projection = \
             self.projected_monthly_revenues[months_from_now][1]
-        noise_scale = min(1, (months_from_now + 1) / 12.0)
+        noise_scale = max(0, min(1, (months_from_now - 2) / 12.0))
         noise = noise_scale * \
             random.choice(self.historical_monthly_revenues[-24:])[1]
 
