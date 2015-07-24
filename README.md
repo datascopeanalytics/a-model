@@ -6,6 +6,8 @@ amount of time we work. To get a better sense of this, the goal of this model
 is to make it easier for everyone to understand how their personal goals are
 tied to Datascope's.
 
+[![Build Status](https://travis-ci.org/datascopeanalytics/a-model.svg?branch=master)](https://travis-ci.org/datascopeanalytics/a-model)
+
 ## quickstart
 
 1. Create a virtualenv and install the requirements
