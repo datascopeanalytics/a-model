@@ -6,7 +6,6 @@ amount of time we work. To get a better sense of this, the goal of this model
 is to make it easier for everyone to understand how their personal goals are
 tied to Datascope's.
 
-[![Build Status](https://travis-ci.org/datascopeanalytics/a-model.svg?branch=master)](https://travis-ci.org/datascopeanalytics/a-model)
 
 ## quickstart
 
@@ -34,3 +33,7 @@ tied to Datascope's.
     * [`estimate_bonuses.py`](src/estimate_bonuses.py)
       estimates our bonuses based on current cash in the bank and simulated
       revenues for the remainder of the year.
+
+4. [![Build
+   Status](https://travis-ci.org/datascopeanalytics/a-model.svg?branch=master)](https://travis-ci.org/datascopeanalytics/a-model)
+   See .travis.yml for details on the test suite 
