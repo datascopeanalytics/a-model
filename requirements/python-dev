@@ -1,0 +1,7 @@
+# this requirements file is used in development to also run the tests. by
+# default, this also includes the python requirements that are needed to run
+# the scripts.
+
+-r python
+pep8
+nose

@@ -11,7 +11,7 @@ tied to Datascope's.
 1. Create a virtualenv and install the requirements
    ```sh
    mkvirtualenv a-model
-   pip install -r requirements/python
+   pip install -r requirements/python-dev
    ```
 
 2. Create a soft link to the `a-model` shared Dropbox folder
