@@ -76,8 +76,8 @@ print ''
 print_err("This script just ran simulations for %d months" % n_months)
 print_err("and here are the different outcomes that we can expect...")
 print_err("")
-print_err("P(NO BONUS) =", float(eoy_outcomes['no bonus']) / args.n_universes)
-print_err("P(BONUS) =", float(eoy_outcomes['is bonus']) / args.n_universes)
+print_err("P(NO BONUS) = %.2f" % (float(eoy_outcomes['no bonus']) / args.n_universes))
+print_err("P(BONUS) = %.2f" % (float(eoy_outcomes['is bonus']) / args.n_universes))
 for person in datascope.people:
     person.bonus_outcomes = []
 for eoy_cash in eoy_cash_list:
