@@ -67,7 +67,7 @@ print cash_buffer + 12*datascope.before_tax_profit(), 0.0, '""'
 print cash_buffer + 12*datascope.before_tax_profit(), 1.0, '"target"'
 print ''
 # expected bonus
-index = len(eoy_cash_list) / 2 # hack
+index = len(eoy_cash_list) / 2  # hack
 print eoy_cash_list[index], 0.0, '""'
 print eoy_cash_list[index], 1.0, '"expected"'
 print ''
@@ -76,8 +76,10 @@ print ''
 print_err("This script just ran simulations for %d months" % n_months)
 print_err("and here are the different outcomes that we can expect...")
 print_err("")
-print_err("P(NO BONUS) = %.2f" % (float(eoy_outcomes['no bonus']) / args.n_universes))
-print_err("P(BONUS) = %.2f" % (float(eoy_outcomes['is bonus']) / args.n_universes))
+p_no_bonus = float(eoy_outcomes['no bonus']) / args.n_universes
+p_bonus = float(eoy_outcomes['is bonus']) / args.n_universes
+print_err("P(NO BONUS) = %.2f" % p_no_bonus)
+print_err("P(BONUS) = %.2f" % p_bonus)
 for person in datascope.people:
     person.bonus_outcomes = []
 for eoy_cash in eoy_cash_list:
