@@ -50,21 +50,26 @@ for i, eoy_cash in enumerate(eoy_cash_list):
     print eoy_cash, 1.0-float(i)/args.n_universes
 print ''
 # go bankrupt
-print -datascope.line_of_credit, 0.0
-print -datascope.line_of_credit, 1.0
+print -datascope.line_of_credit, 0.0, '""'
+print -datascope.line_of_credit, 1.0, '"busted"'
 print ''
 # current cash situation
-print datascope.current_cash_in_bank, 0.0
-print datascope.current_cash_in_bank, 1.0
+print datascope.current_cash_in_bank, 0.0, '""'
+print datascope.current_cash_in_bank, 1.0, '"bank"'
 print ''
 # six month buffer
 cash_buffer = datascope.n_months_buffer * datascope.costs()
-print cash_buffer, 0.0
-print cash_buffer, 1.0
+print cash_buffer, 0.0, '""'
+print cash_buffer, 1.0, r'"%i-month\nbuffer"' % datascope.n_months_buffer
 print ''
 # target bonus level
-print cash_buffer + 12*datascope.before_tax_profit(), 0.0
-print cash_buffer + 12*datascope.before_tax_profit(), 1.0
+print cash_buffer + 12*datascope.before_tax_profit(), 0.0, '""'
+print cash_buffer + 12*datascope.before_tax_profit(), 1.0, '"target"'
+print ''
+# expected bonus
+index = len(eoy_cash_list) / 2 # hack
+print eoy_cash_list[index], 0.0, '""'
+print eoy_cash_list[index], 1.0, '"expected"'
 print ''
 
 # given that there will be a bonus, calculate the median bonus for each person
