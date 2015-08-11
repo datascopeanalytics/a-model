@@ -15,12 +15,19 @@ tied to Datascope's.
    pip install -r requirements/python-dev
    ```
 
-2. Create a soft link to the `a-model` shared Dropbox folder
+2. Some of the scripts use selenium to download various things. Make sure you
+   have the most recent version of Firefox installed. [Upgrade instructions
+   here](https://support.mozilla.org/en-US/kb/update-firefox-latest-version).
+
+3. Create a soft link to the `a-model` shared Dropbox folder
    ```sh
    ln -s ~/Dropbox/Library/a-model Dropbox
    ```
 
-3. Play with the models.
+4. Run the [`update_budget_spreadsheet.py`](src/update_budget_spreadsheet.py)
+   to download the most up-to-date information from quickbooks.
+
+5. Play with the models.
 
     * [`profitability_and_salary.py`](src/profitability_and_salary.py)
       is useful for understanding the relationship between your desired salary
@@ -34,6 +41,6 @@ tied to Datascope's.
       estimates our bonuses based on current cash in the bank and simulated
       revenues for the remainder of the year.
 
-4. [![Build
+6. [![Build
    Status](https://travis-ci.org/datascopeanalytics/a-model.svg?branch=master)](https://travis-ci.org/datascopeanalytics/a-model)
-   See .travis.yml for details on the test suite 
+   See .travis.yml for details on the test suite

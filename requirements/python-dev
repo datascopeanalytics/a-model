@@ -5,3 +5,4 @@
 -r python
 pep8
 nose
+ipdb

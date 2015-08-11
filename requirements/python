@@ -6,3 +6,6 @@ gspread
 oauth2client
 PyOpenSSL
 arrow
+requests
+beautifulsoup4
+selenium
