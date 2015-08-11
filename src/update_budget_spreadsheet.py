@@ -22,8 +22,7 @@ import utils
 
 # prepare a bunch of urls for accessing different reports
 start_date = datetime.date(2014, 1, 1)
-today = datetime.date.today()
-end_date = datetime.date(today.year, today.month, 1)
+end_date = utils.end_of_last_month()
 pl_query_dict = {
     'rptId': 'reports/ProfitAndLossReport',
     'column': 'monthly',
