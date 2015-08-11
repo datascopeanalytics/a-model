@@ -12,9 +12,12 @@ import time
 import os
 import datetime
 import urllib
+import itertools
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+import gspread
+import openpyxl
 
 from datascope import Datascope
 import utils
@@ -37,7 +40,11 @@ pl_report_url = report_url + '?' + urllib.urlencode(pl_query_dict)
 
 # instantiate the datascope object
 datascope = Datascope()
+
+# basic filename manipulation
 download_dir = datascope.data_root
+qbo_xlsx_filename = os.path.join(download_dir, 'report1.xlsx')
+pl_xlsx_filename = os.path.join(download_dir, 'profit_loss.xlsx')
 
 # create a firefox profile to automatically download files (like excel files)
 # without having to approve of the download
@@ -88,3 +95,19 @@ xlsx_export.click()
 time.sleep(5)
 browser.switch_to_default_content()
 browser.close()
+os.rename(qbo_xlsx_filename, pl_xlsx_filename)
+
+# parse the resulting data from xlsx and upload it to a google spreadsheet
+excel_pl_workbook = openpyxl.load_workbook(pl_xlsx_filename)
+excel_pl_worksheet = excel_pl_workbook.active
+google_pl_workbook = datascope._open_google_workbook()
+google_pl_worksheet = google_pl_workbook.worksheet("P&L")
+google_cell_list = google_pl_worksheet.range(excel_pl_worksheet.calculate_dimension())
+excel_row_list = excel_pl_worksheet.range(excel_pl_worksheet.calculate_dimension())
+excel_cell_list = itertools.chain(*excel_row_list)
+for google_cell, excel_cell in zip(google_cell_list, excel_cell_list):
+    if excel_cell.value is None:
+        google_cell.value = ''
+    else:
+        google_cell.value = excel_cell.value
+google_pl_worksheet.update_cells(google_cell_list)

@@ -43,6 +43,23 @@ class Datascope(object):
         """This just accesses the value from the config.ini directly"""
         return self.config.getfloat('parameters', name)
 
+    def _open_google_workbook(self):
+        # read json from file
+        with open(self.gdrive_credentials_filename) as stream:
+            key = json.load(stream)
+
+        # authorize with credentials
+        credentials = SignedJwtAssertionCredentials(
+            key['client_email'],
+            key['private_key'],
+            ['https://spreadsheets.google.com/feeds'],
+        )
+        gdrive = gspread.authorize(credentials)
+
+        # open spreadsheet and read all content as a list of lists
+        spreadsheet = gdrive.open_by_url(key['url'])
+        return spreadsheet
+
     def _read_googlesheet(self):
         """Using the gdrive credentials file, access the P&L google sheet and
         read all of the content.
@@ -61,21 +78,10 @@ class Datascope(object):
 
         # otherwise, get it from the spreadsheet
         else:
-            # read json from file
-            with open(self.gdrive_credentials_filename) as stream:
-                key = json.load(stream)
-
-            # authorize with credentials
-            credentials = SignedJwtAssertionCredentials(
-                key['client_email'],
-                key['private_key'],
-                ['https://spreadsheets.google.com/feeds'],
-            )
-            gdrive = gspread.authorize(credentials)
 
             # open spreadsheet and read all content as a list of lists
-            spreadsheet = gdrive.open_by_url(key['url'])
-            worksheet = spreadsheet.get_worksheet(0)
+            workbook = self._open_google_workbook()
+            worksheet = workbook.get_worksheet(0)
             result = worksheet.get_all_values()
 
             # write result to cache

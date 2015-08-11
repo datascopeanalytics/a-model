@@ -1,11 +1,12 @@
 # this requirements file includes all of the code that is necessary to run the
 # scripts
 
-numpy
+arrow
+beautifulsoup4
 gspread
+openpyxl
+numpy
 oauth2client
 PyOpenSSL
-arrow
 requests
-beautifulsoup4
 selenium
