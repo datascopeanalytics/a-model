@@ -17,20 +17,24 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 from datascope import Datascope
+import utils
 
 
-# TODO: make P&L report url a function of a start date and end date
+# prepare a bunch of urls for accessing different reports
+start_date = datetime.date(2014, 1, 1)
+today = datetime.date.today()
+end_date = datetime.date(today.year, today.month, 1)
 pl_query_dict = {
     'rptId': 'reports/ProfitAndLossReport',
     'column': 'monthly',
     'date_macro': 'custom',
     'customized': 'yes',
-    'high_date': '08/10/2015',
-    'low_date': '01/01/2014',
+    'low_date': utils.qbo_date_str(start_date),
+    'high_date': utils.qbo_date_str(end_date),
 }
-report_url = 'https://qbo.intuit.com/app/report'
-pl_report_url = report_url + '?' + urllib.urlencode(pl_query_dict)
 homepage = 'http://qbo.intuit.com'
+report_url = homepage + '/app/report'
+pl_report_url = report_url + '?' + urllib.urlencode(pl_query_dict)
 
 # instantiate the datascope object
 datascope = Datascope()

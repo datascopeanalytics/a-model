@@ -13,3 +13,8 @@ def currency_str(x):
 def print_err(s):
     """print a string to stderr"""
     print >> sys.stderr, s
+
+
+def qbo_date_str(d):
+    """return the date in quickbooks online compatible format"""
+    return d.strftime('%Y/%m/%d')
