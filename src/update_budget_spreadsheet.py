@@ -37,7 +37,7 @@ pl_report_url = report_url + '?' + urllib.urlencode(pl_query_dict)
 
 # instantiate the datascope object
 datascope = Datascope()
-download_dir = os.path.dirname(os.path.abspath(__file__))
+download_dir = datascope.data_root
 
 # create a firefox profile to automatically download files (like excel files)
 # without having to approve of the download

@@ -17,6 +17,9 @@ from person import Person
 class Datascope(object):
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     dropbox_root = os.path.join(project_root, 'Dropbox')
+    data_root = os.path.join(project_root, '.data')
+    if not os.path.exists(data_root):
+        os.mkdir(data_root)
     config_filename = os.path.join(dropbox_root, 'config.ini')
     gdrive_credentials_filename = os.path.join(dropbox_root, 'gdrive.json')
     gdrive_cache_max_age = 60 * 30  # in seconds
@@ -46,7 +49,7 @@ class Datascope(object):
 
         """
         cache = {}
-        cache_filename = os.path.join(self.project_root, '.google.cache')
+        cache_filename = os.path.join(self.data_root, 'google.cache')
         if os.path.isfile(cache_filename):
             with open(cache_filename) as stream:
                 cache = json.load(stream)
