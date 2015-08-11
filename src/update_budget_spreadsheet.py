@@ -37,11 +37,11 @@ pl_report_url = report_url + '?' + urllib.urlencode(pl_query_dict)
 
 # instantiate the datascope object
 datascope = Datascope()
+download_dir = os.path.dirname(os.path.abspath(__file__))
 
 # create a firefox profile to automatically download files (like excel files)
 # without having to approve of the download
 # http://bit.ly/1WeZziv
-download_dir = os.path.dirname(os.path.abspath(__file__))
 profile = webdriver.FirefoxProfile()
 profile.set_preference("browser.download.folderList", 2)
 profile.set_preference("browser.download.manager.showWhenStarting", False)
@@ -61,8 +61,10 @@ profile.set_preference(
     ))
 )
 
-# instantiate a firefox instance
+# instantiate a firefox instance and implicitly wait for find_element_* methods
+# for 10 seconds in case content does not immediately appear
 browser = webdriver.Firefox(firefox_profile=profile)
+browser.implicitly_wait(10)
 
 # login to quickbooks
 browser.get(homepage)
@@ -74,9 +76,7 @@ button = browser.find_element_by_id("LoginButton")
 button.click()
 
 # go to the P&L page and download the report locally
-# TODO: detect when elements appear instead of sleeping for 5 seconds
 browser.get(pl_report_url)
-time.sleep(5)
 iframe = browser.find_element_by_tag_name('iframe')
 browser.switch_to_frame(iframe)
 iframe2 = browser.find_element_by_tag_name('iframe')

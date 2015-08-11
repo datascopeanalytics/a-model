@@ -1,7 +1,6 @@
 import locale
 import sys
 import datetime
-import calendar
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
