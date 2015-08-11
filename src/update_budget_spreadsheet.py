@@ -1,15 +1,17 @@
 """
-https://github.com/troolee/quickbooks-python
-
-https://developer.intuit.com/docs/0100_accounting/0400_references/reports/profitandloss
+This script is used to download data directly from quickbooks and update our
+budget spreadsheet for manual manipulation.
 """
 # NOTE: The quickbooks API is intended for webapps, not for people to download
 # their own data. A simple downloading scheme with requests didn't work because
-# of some janky ass javascript and iframe bullshit that quickbooks online has. Selenium was the best choice.
+# of some janky ass javascript and iframe bullshit that quickbooks online has.
+# Selenium was the best choice.
 
 import urlparse
 import time
 import os
+import datetime
+import urllib
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -18,8 +20,19 @@ from datascope import Datascope
 
 
 # TODO: make P&L report url a function of a start date and end date
-pl_report_url = "https://qbo.intuit.com/app/report?rptId=reports/ProfitAndLossReport&show_header_title=true&subcol_py=false&subcol_py_chg=false&token=PANDL&subcol_pp_pct_chg=false&length=597&show_footer_basis=true&show_header_company=true&subcol_pct_col=false&show_footer_time=true&negativered=false&subcol_pp_chg=false&show_header_range=true&subcol_py_pct_chg=false&subcol_pct_row=false&subcol_pp=false&exceptzeros=true&hidecents=false&show_footer_date=true&subcol_pct_ytd=false&column=monthly&divideby1000=false&subcol_ytd=false&subcol_pct_exp=false&subcol_pct_inc=false&high_date=08%2F10%2F2015&low_date=01%2F01%2F2014&date_macro=custom&customized=yes"
+pl_query_dict = {
+    'rptId': 'reports/ProfitAndLossReport',
+    'column': 'monthly',
+    'date_macro': 'custom',
+    'customized': 'yes',
+    'high_date': '08/10/2015',
+    'low_date': '01/01/2014',
+}
+report_url = 'https://qbo.intuit.com/app/report'
+pl_report_url = report_url + '?' + urllib.urlencode(pl_query_dict)
 homepage = 'http://qbo.intuit.com'
+
+# instantiate the datascope object
 datascope = Datascope()
 
 # create a firefox profile to automatically download files (like excel files)
