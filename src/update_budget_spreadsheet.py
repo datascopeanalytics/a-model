@@ -102,8 +102,9 @@ excel_pl_workbook = openpyxl.load_workbook(pl_xlsx_filename)
 excel_pl_worksheet = excel_pl_workbook.active
 google_pl_workbook = datascope._open_google_workbook()
 google_pl_worksheet = google_pl_workbook.worksheet("P&L")
-google_cell_list = google_pl_worksheet.range(excel_pl_worksheet.calculate_dimension())
-excel_row_list = excel_pl_worksheet.range(excel_pl_worksheet.calculate_dimension())
+pl_dimension = excel_pl_worksheet.calculate_dimension()
+google_cell_list = google_pl_worksheet.range(pl_dimension)
+excel_row_list = excel_pl_worksheet.range(pl_dimension)
 excel_cell_list = itertools.chain(*excel_row_list)
 for google_cell, excel_cell in zip(google_cell_list, excel_cell_list):
     if excel_cell.value is None:
