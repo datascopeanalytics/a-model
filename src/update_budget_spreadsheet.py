@@ -11,7 +11,6 @@ import urlparse
 import time
 import os
 import datetime
-import urllib
 import itertools
 
 from selenium import webdriver
@@ -26,17 +25,17 @@ import utils
 # prepare a bunch of urls for accessing different reports
 start_date = datetime.date(2014, 1, 1)
 end_date = utils.end_of_last_month()
-pl_query_dict = {
-    'rptId': 'reports/ProfitAndLossReport',
-    'column': 'monthly',
-    'date_macro': 'custom',
-    'customized': 'yes',
-    'low_date': utils.qbo_date_str(start_date),
-    'high_date': utils.qbo_date_str(end_date),
-}
+pl_query_params = (
+    ('rptId', 'reports/ProfitAndLossReport'),
+    ('column', 'monthly'),
+    ('high_date', utils.qbo_date_str(end_date)),
+    ('low_date', utils.qbo_date_str(start_date)),
+    ('date_macro', 'custom'),
+    ('customized', 'yes'),
+)
 homepage = 'http://qbo.intuit.com'
 report_url = homepage + '/app/report'
-pl_report_url = report_url + '?' + urllib.urlencode(pl_query_dict)
+pl_report_url = report_url + '?' + utils.urlencode(pl_query_params)
 
 # instantiate the datascope object
 datascope = Datascope()
