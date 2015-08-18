@@ -43,4 +43,4 @@ tied to Datascope's.
 
 6. [![Build
    Status](https://travis-ci.org/datascopeanalytics/a-model.svg?branch=master)](https://travis-ci.org/datascopeanalytics/a-model)
-   See .travis.yml for details on the test suite
+   See `.travis.yml` for details on the test suite
