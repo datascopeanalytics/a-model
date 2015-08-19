@@ -46,6 +46,9 @@ profit_loss_params = (
 ) + date_customized_params
 ar_aging_params = (
     ('rptId', 'AR_AGING'),
+    ('report_date', utils.qbo_date_str(end_date)),
+    ('date_macro', 'custom'),
+    ('customized', 'yes'),
 )
 balance_sheet_params = (
     ('rptId', 'reports/BalanceSheetReport'),
@@ -62,8 +65,6 @@ profit_loss_url = get_report_url(profit_loss_params)
 ar_aging_url = get_report_url(ar_aging_params)
 balance_sheet_url = get_report_url(balance_sheet_params)
 unpaid_invoices_url = get_report_url(unpaid_invoices_params)
-print balance_sheet_url
-exit()
 
 # instantiate the datascope object
 datascope = Datascope()
@@ -137,7 +138,7 @@ def download_report(browser, report_url, xlsx_filename):
     xlsx_export.click()
     browser.switch_to_default_content()
 
-    # TODO: find other way of making sure that the file downloaded correctly
+    # check to see if the file has been downloaded
     while not glob.glob(report_xlsx_regex):
         time.sleep(1)
     qbo_xlsx_filename = glob.glob(report_xlsx_regex)[0]
@@ -173,74 +174,6 @@ def sync_quickbooks_to_google(browser, report_url, xlsx_filename, tab_name):
     upload_report_to_google(xlsx_filename, tab_name)
 
 
-def unpaid_invoices2accounts_receivable(
-    unpaid_invoice_xlsx_filename,
-    accounts_receivable_xlsx_filename
-):
-
-    # instantiate the different workbooks
-    invoices_workbook = openpyxl.load_workbook(unpaid_invoice_xlsx_filename)
-    invoices_worksheet = invoices_workbook.active
-    accounts_receivable_workbook = openpyxl.Workbook()
-    accounts_receivable_worksheet = accounts_receivable_workbook.active
-
-    # get the maximum due date of all invoices
-    due_date_range = 'G6:G%d' % invoices_worksheet.max_row
-    dates = []
-    for row in invoices_worksheet.iter_rows(due_date_range):
-        for cell in row:
-            if cell.value is not None:
-                date = utils.qbo_date(cell.value)
-                dates.append(utils.end_of_month(date))
-    max_date = max(dates)
-
-    # add a row of all months during which we expect to get paid
-    month2column = {}
-    row_index = 1
-    for i, month in enumerate(utils.iter_end_of_months(start_date, max_date)):
-        column = i + 2
-        month2column[month] = column = i+2
-        accounts_receivable_worksheet.cell(
-            column=column, row=row_index, value=month,
-        )
-
-    # iterate over all of the invoices and add them to the
-    data_range = 'B6:I%d' % invoices_worksheet.max_row
-    row_index += 2
-    client_name2row_index = {}
-    for row in invoices_worksheet.iter_rows(data_range):
-        client_name = row[3].value
-        if client_name is None:
-            break
-        due_date = utils.qbo_date(row[5].value)
-        month_due = utils.end_of_month(due_date)
-        unpaid_balance = row[7].value
-        if client_name not in client_name2row_index:
-            client_name2row_index[client_name] = row_index
-            accounts_receivable_worksheet.cell(
-                column=1, row=row_index, value=client_name,
-            )
-            row_index += 1
-        accounts_receivable_worksheet.cell(
-            column=month2column[month_due],
-            row=client_name2row_index[client_name],
-            value=unpaid_balance
-        )
-
-    # create a total row
-    accounts_receivable_worksheet.cell(column=1, row=2, value="TOTAL")
-    for column in month2column.itervalues():
-        col = openpyxl.utils.get_column_letter(column)
-        accounts_receivable_worksheet.cell(
-            column=column,
-            row=2,
-            value="=SUM(%s3:%s%d)" % (col, col, row_index-1),
-        )
-
-    # save the accounts receivable report
-    accounts_receivable_workbook.save(accounts_receivable_xlsx_filename)
-
-
 if __name__ == '__main__':
     browser = open_browser()
     login(browser)
@@ -258,11 +191,9 @@ if __name__ == '__main__':
 
     # download the unpaid invoices report from quickbooks, which is used in
     # revenue projection simulations later
-    download_report(browser, unpaid_invoice_url, unpaid_invoice_xlsx_filename)
-    # unpaid_invoices2accounts_receivable(
-    #     unpaid_invoice_xlsx_filename,
-    #     accounts_receivable_xlsx_filename,
-    # )
+    download_report(
+        browser, unpaid_invoices_url, unpaid_invoices_filename,
+    )
 
     # close the browser
     browser.close()
