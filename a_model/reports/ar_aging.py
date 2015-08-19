@@ -1,6 +1,7 @@
 from .base import Report
 from .. import utils
 
+
 class ARAging(Report):
     report_name = 'ar_aging.xlsx'
     gsheet_tab_name = 'A/R Aging'

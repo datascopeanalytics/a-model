@@ -17,6 +17,17 @@ from oauth2client.client import SignedJwtAssertionCredentials
 from .. import utils
 
 QUICKBOOKS_ROOT_URL = 'http://qbo.intuit.com'
+EXCEL_MIMETYPES = (
+    'application/vnd.ms-excel',
+    'application/msexcel',
+    'application/x-msexcel',
+    'application/x-ms-excel',
+    'application/x-excel',
+    'application/x-dos_ms_excel',
+    'application/xls',
+    'application/x-xls',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+)
 
 
 class Browser(webdriver.Firefox):
@@ -25,28 +36,20 @@ class Browser(webdriver.Firefox):
     all done.
     """
     def __init__(self, *args, **kwargs):
-        excel_mimetypes = (
-            'application/vnd.ms-excel',
-            'application/msexcel',
-            'application/x-msexcel',
-            'application/x-ms-excel',
-            'application/x-excel',
-            'application/x-dos_ms_excel',
-            'application/xls',
-            'application/x-xls',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        )
 
         # create a firefox profile to automatically download files (like excel
         # files) without having to approve of the download
         # http://bit.ly/1WeZziv
         profile = webdriver.FirefoxProfile()
         profile.set_preference("browser.download.folderList", 2)
-        profile.set_preference("browser.download.manager.showWhenStarting", False)
+        profile.set_preference(
+            "browser.download.manager.showWhenStarting",
+            False,
+        )
         profile.set_preference("browser.download.dir", utils.DATA_ROOT)
         profile.set_preference(
             "browser.helperApps.neverAsk.saveToDisk",
-            ','.join(excel_mimetypes)
+            ','.join(EXCEL_MIMETYPES)
         )
 
         # instantiate a firefox instance and implicitly wait for find_element_*
@@ -114,8 +117,7 @@ class Report(object):
         browser.switch_to_frame(iframe)
         iframe2 = browser.find_element_by_tag_name('iframe')
         browser.switch_to_frame(iframe2)
-        xlsx_export = browser.find_element_by_css_selector('option[value=xlsx]')
-        xlsx_export.click()
+        browser.find_element_by_css_selector('option[value=xlsx]').click()
         browser.switch_to_default_content()
 
         # check to see if the file has been downloaded
@@ -144,7 +146,8 @@ class Report(object):
         return gdrive.open_by_url(key['url'])
 
     def upload_to_gdrive(self):
-        # parse the resulting data from xlsx and upload it to a google spreadsheet
+        # parse the resulting data from xlsx and upload it to a google
+        # spreadsheet
         excel_worksheet = self.open_worksheet()
         pl_dimension = excel_worksheet.calculate_dimension()
         excel_row_list = excel_worksheet.range(pl_dimension)
