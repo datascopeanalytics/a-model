@@ -18,3 +18,6 @@ class UnpaidInvoices(QuickbooksReport):
                 self.get_float_from_cell(balance_cell),
             ))
         return projected_payments
+
+    def __iter__(self):
+        return iter(self.get_projected_payments())

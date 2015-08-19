@@ -44,7 +44,6 @@ class Datascope(object):
         self.ar_aging = ARAging()
         self.balance_sheet = BalanceSheet()
         self.unpaid_invoices = UnpaidInvoices()
-        self._load_cached_quickbooks_data()
 
     def __iter__(self):
         for person in self.people:
@@ -73,45 +72,6 @@ class Datascope(object):
         # open spreadsheet and read all content as a list of lists
         spreadsheet = gdrive.open_by_url(key['url'])
         return spreadsheet
-
-    def _load_cached_quickbooks_data(self):
-        self.historical_monthly_revenues = \
-            self.profit_loss.get_historical_revenues()
-        self.unpaid_invoices = self.unpaid_invoices.get_projected_payments()
-
-    def _parse_googlesheet(self):
-        """Parse out the relevant information from the P&L spreadsheet."""
-
-        # abbreviation
-        sheet = self.googlesheet
-
-        # parse revenue by month
-        self.historical_monthly_revenues = []
-        self.projected_monthly_revenues = []
-        for date_string, income_string in zip(sheet[1], sheet[4])[1:]:
-            date = arrow.get(date_string)
-            income = self._parse_income_string(income_string)
-            if date < arrow.now():
-                self.historical_monthly_revenues.append((date, income))
-            else:
-                self.projected_monthly_revenues.append((date, income))
-
-    def _parse_income_string(self, string):
-        """Convert a string from spreadsheet into a float, for example
-        "$504,234.12" will become 504234."""
-
-        def good_character(char):
-            """Check to see if the character is a valid as part of a number"""
-            return char in {'.', '-', '+'} or char.isdigit()
-
-        # filter out bad characters
-        cleaned = ''.join(i for i in string if good_character(i))
-
-        # cast to float and return (zero if it's empty)
-        if cleaned:
-            return float(cleaned)
-        else:
-            return 0.0
 
     def add_person(self, name):
         person = Person(self, name)
@@ -185,22 +145,39 @@ class Datascope(object):
         yearly_billable_hours = self.billable_hours_per_year * self.n_people
         return yearly_revenue / yearly_billable_hours
 
-    def simulate_revenue(self, months_from_now):
-        """Use our projected revenues from the P&L sheet with some added
-        noise. The estimates are based on the past two years of
-        historical monthly data from the P&L sheet, but scaled
-        linearly up to the full amount over the course of a year). For
-        example, in the next month, the projection will be;
-
-        `next month projection` + 1/12 * noise
+    def simulate_revenues(self, n_months):
         """
-        revenue_projection = \
-            self.projected_monthly_revenues[months_from_now][1]
-        noise_scale = max(0, min(1, (months_from_now - 2) / 12.0))
-        noise = noise_scale * \
-            random.choice(self.historical_monthly_revenues[-24:])[1]
+        Simulate revenues from accounts receivable data.
 
-        return revenue_projection + noise
+        TODO:
+        * Add in projected revenue from signed projects from google spreadsheet
+        * Add in revenue from the 'Finalize (SOW/Legal)' Trello list
+        * add in revenue from the 'Proposal Process' Trello list
+        * do some analysis to come up with a good `delta_months` parameter
+        """
+        revenues = [0.0] * n_months
+        now = utils.end_of_last_month()
+        delta_months = 3
+        for date, balance in self.unpaid_invoices:
+
+            # we are presumably actively bugging people about overdue invoices,
+            # so these should be paid sometime over the next three months
+            if date < now:
+                month = random.randint(0, delta_months-1)
+
+            # for invoices that are not yet overdue, they should be paid within
+            # delta_months time (if not *on time*)
+            else:
+                delta = date - now
+                months_from_now = int(round(delta.days / 30.))
+                month = months_from_now + random.randint(0, delta_months-1)
+
+            # add this balance to the revenues if the revenue hits in the
+            # simulation time window
+            if month < n_months:
+                revenues[month] += balance
+
+        return revenues
 
     def simulate_finances(self, n_months=12, n_universes=1000,
                           initial_cash=None, verbose=False):
@@ -234,6 +211,7 @@ class Datascope(object):
             # give us confidence about the current state of affairs
             # beyond the cash on hand at the end of each month.
             cash = initial_cash
+            revenues = self.simulate_revenues(n_months)
             for month in range(n_months):
                 cash -= self.costs()
                 if cash < -self.line_of_credit:
@@ -241,7 +219,7 @@ class Datascope(object):
                     break
                 elif cash < 0:
                     no_cash = True
-                cash += self.simulate_revenue(month)
+                cash += revenues[month]
             end_cash.append(cash)
 
             # how'd we do this year? if we didn't go bankrupt, are we
@@ -263,6 +241,3 @@ class Datascope(object):
                     outcomes['can grow business'] += 1
 
         return outcomes, end_cash
-
-if __name__ == '__main__':
-    datascope = Datascope()
