@@ -6,7 +6,7 @@ staffing so that we can be reasonably confident we're making a good decision.
 
 import argparse
 
-from datascope import Datascope
+from a_model.datascope import Datascope
 
 # parse command line arguments
 parser = argparse.ArgumentParser(description=__doc__)

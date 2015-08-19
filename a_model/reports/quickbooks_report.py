@@ -3,7 +3,7 @@ import datetime
 
 import openpyxl
 
-import utils
+from .. import utils
 
 
 class QuickbooksReport(object):

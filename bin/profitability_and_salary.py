@@ -12,8 +12,8 @@ are all working half-time.
 
 import argparse
 
-from datascope import Datascope
-from utils import currency_str
+from a_model.datascope import Datascope
+from a_model.utils import currency_str
 
 # parse command line arguments
 parser = argparse.ArgumentParser(description=__doc__)

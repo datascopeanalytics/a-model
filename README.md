@@ -19,28 +19,35 @@ tied to Datascope's.
    have the most recent version of Firefox installed. [Upgrade instructions
    here](https://support.mozilla.org/en-US/kb/update-firefox-latest-version).
 
-3. Create a soft link to the `a-model` shared Dropbox folder
+3. Create a soft link to the `a-model` shared Dropbox folder, which has various
+   credentials you'll need for downloading things.
    ```sh
    ln -s ~/Dropbox/Library/a-model Dropbox
    ```
 
-4. Run the [`update_budget_spreadsheet.py`](src/update_budget_spreadsheet.py)
+4. Update some environment variables to be able to run the scripts in the `bin`
+   directory using the `a_model` python package
+   ```sh
+   export PYTHONPATH=`pwd`
+   ```
+
+5. Run the [`update_budget_spreadsheet.py`](src/update_budget_spreadsheet.py)
    to download the most up-to-date information from quickbooks.
 
-5. Play with the models.
+6. Play with the models.
 
-    * [`profitability_and_salary.py`](src/profitability_and_salary.py)
+    * [`bin/profitability_and_salary.py`](bin/profitability_and_salary.py)
       is useful for understanding the relationship between your desired salary
       and Datascope's profitability.
 
-    * [`hiring_confidence.py`](src/hiring_confidence.py)
+    * [`bin/hiring_confidence.py`](bin/hiring_confidence.py)
       simulates our revenues based on historical data to gauge the risk in
       adding a new person to our team today.
 
-    * [`estimate_bonuses.py`](src/estimate_bonuses.py)
+    * [`bin/estimate_bonuses.py`](bin/estimate_bonuses.py)
       estimates our bonuses based on current cash in the bank and simulated
       revenues for the remainder of the year.
 
-6. [![Build
+7. [![Build
    Status](https://travis-ci.org/datascopeanalytics/a-model.svg?branch=master)](https://travis-ci.org/datascopeanalytics/a-model)
    See `.travis.yml` for details on the test suite

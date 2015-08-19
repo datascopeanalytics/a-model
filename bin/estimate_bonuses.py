@@ -10,8 +10,8 @@ from pprint import pprint
 import sys
 import numpy
 
-from datascope import Datascope
-from utils import currency_str, print_err
+from a_model.datascope import Datascope
+from a_model.utils import currency_str, print_err
 
 
 # parse command line arguments
