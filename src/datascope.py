@@ -15,10 +15,7 @@ import openpyxl
 
 from person import Person
 import utils
-from profit_loss import ProfitLoss
-from unpaid_invoices import UnpaidInvoices
-from balance_sheet import BalanceSheet
-from ar_aging import ARAging
+import reports
 
 
 class Datascope(object):
@@ -40,10 +37,10 @@ class Datascope(object):
             os.mkdir(utils.DATA_ROOT)
 
         # update financial information from quickbooks cache
-        self.profit_loss = ProfitLoss()
-        self.ar_aging = ARAging()
-        self.balance_sheet = BalanceSheet()
-        self.unpaid_invoices = UnpaidInvoices()
+        self.profit_loss = reports.ProfitLoss()
+        self.ar_aging = reports.ARAging()
+        self.balance_sheet = reports.BalanceSheet()
+        self.unpaid_invoices = reports.UnpaidInvoices()
 
     def __iter__(self):
         for person in self.people:
