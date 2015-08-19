@@ -6,6 +6,7 @@ import calendar
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 QBO_DATE_FORMAT = '%m/%d/%Y'
 
+
 def currency_str(x):
     """prettify a float as a currency string"""
     # http://stackoverflow.com/a/320951/564709

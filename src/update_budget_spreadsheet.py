@@ -78,8 +78,20 @@ unpaid_invoices_filename = os.path.join(download_dir, 'unpaid_invoices.xlsx')
 
 def open_browser():
 
-    # create a firefox profile to automatically download files (like excel files)
-    # without having to approve of the download
+    excel_mimetypes = (
+        'application/vnd.ms-excel',
+        'application/msexcel',
+        'application/x-msexcel',
+        'application/x-ms-excel',
+        'application/x-excel',
+        'application/x-dos_ms_excel',
+        'application/xls',
+        'application/x-xls',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+
+    # create a firefox profile to automatically download files (like excel
+    # files) without having to approve of the download
     # http://bit.ly/1WeZziv
     profile = webdriver.FirefoxProfile()
     profile.set_preference("browser.download.folderList", 2)
@@ -87,21 +99,11 @@ def open_browser():
     profile.set_preference("browser.download.dir", download_dir)
     profile.set_preference(
         "browser.helperApps.neverAsk.saveToDisk",
-        ','.join((
-            'application/vnd.ms-excel',
-            'application/msexcel',
-            'application/x-msexcel',
-            'application/x-ms-excel',
-            'application/x-excel',
-            'application/x-dos_ms_excel',
-            'application/xls',
-            'application/x-xls',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ))
+        ','.join(excel_mimetypes)
     )
 
-    # instantiate a firefox instance and implicitly wait for find_element_* methods
-    # for 10 seconds in case content does not immediately appear
+    # instantiate a firefox instance and implicitly wait for find_element_*
+    # methods for 10 seconds in case content does not immediately appear
     browser = webdriver.Firefox(firefox_profile=profile)
     browser.implicitly_wait(10)
     return browser
@@ -164,14 +166,17 @@ def upload_report_to_google(xlsx_filename, gsheet_tab_name):
 
 
 def sync_quickbooks_to_google(browser, report_url, xlsx_filename, tab_name):
-    """Convenience method for syncing a report in quickbooks to google spreadsheet
+    """
+    Convenience method for syncing a report in quickbooks to google spreadsheet
     """
     download_report(browser, report_url, xlsx_filename)
     upload_report_to_google(xlsx_filename, tab_name)
 
 
-def unpaid_invoices2accounts_receivable(unpaid_invoice_xlsx_filename,
-    accounts_receivable_xlsx_filename):
+def unpaid_invoices2accounts_receivable(
+    unpaid_invoice_xlsx_filename,
+    accounts_receivable_xlsx_filename
+):
 
     # instantiate the different workbooks
     invoices_workbook = openpyxl.load_workbook(unpaid_invoice_xlsx_filename)
@@ -236,8 +241,7 @@ def unpaid_invoices2accounts_receivable(unpaid_invoice_xlsx_filename,
     accounts_receivable_workbook.save(accounts_receivable_xlsx_filename)
 
 
-
-if __name__=='__main__':
+if __name__ == '__main__':
     browser = open_browser()
     login(browser)
 
