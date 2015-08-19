@@ -12,6 +12,7 @@ import time
 import os
 import datetime
 import itertools
+import glob
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -21,43 +22,58 @@ import openpyxl
 from datascope import Datascope
 import utils
 
+# url for quickbooks homepage
+homepage = 'http://qbo.intuit.com'
+
+
+def get_report_url(params):
+    """convenience function for creating report urls"""
+    report_url = homepage + '/app/report'
+    return report_url + '?' + utils.urlencode(params)
 
 # prepare a bunch of urls for accessing different reports
 start_date = datetime.date(2014, 1, 1)
 end_date = utils.end_of_last_month()
-pl_query_params = (
+date_customized_params = (
+    ('high_date', utils.qbo_date_str(end_date)),
+    ('low_date', utils.qbo_date_str(start_date)),
+    ('date_macro', 'custom'),
+    ('customized', 'yes'),
+)
+profit_loss_params = (
     ('rptId', 'reports/ProfitAndLossReport'),
     ('column', 'monthly'),
-    ('high_date', utils.qbo_date_str(end_date)),
-    ('low_date', utils.qbo_date_str(start_date)),
-    ('date_macro', 'custom'),
-    ('customized', 'yes'),
+) + date_customized_params
+ar_aging_params = (
+    ('rptId', 'AR_AGING'),
 )
-unpaid_invoice_params = (
+balance_sheet_params = (
+    ('rptId', 'reports/BalanceSheetReport'),
+    ('token', 'BAL_SHEET'),
+    ('column', 'monthly'),
+    ('collapse_subs', 'true'),
+) + date_customized_params
+unpaid_invoices_params = (
     ('rptId', 'txreports/TxListReport'),
     ('arpaid', '2'),
-    ('high_date', utils.qbo_date_str(end_date)),
-    ('low_date', utils.qbo_date_str(start_date)),
-    ('date_macro', 'custom'),
-    ('customized', 'yes'),
     ('token', 'INVOICE_LIST'),
-)
-homepage = 'http://qbo.intuit.com'
-report_url = homepage + '/app/report'
-pl_report_url = report_url + '?' + utils.urlencode(pl_query_params)
-unpaid_invoice_url = report_url + '?' + utils.urlencode(unpaid_invoice_params)
+) + date_customized_params
+profit_loss_url = get_report_url(profit_loss_params)
+ar_aging_url = get_report_url(ar_aging_params)
+balance_sheet_url = get_report_url(balance_sheet_params)
+unpaid_invoices_url = get_report_url(unpaid_invoices_params)
+print balance_sheet_url
+exit()
 
 # instantiate the datascope object
 datascope = Datascope()
 
 # basic filename manipulation
 download_dir = datascope.data_root
-qbo_xlsx_filename = os.path.join(download_dir, 'report1.xlsx')
-pl_xlsx_filename = os.path.join(download_dir, 'profit_loss.xlsx')
-unpaid_invoice_xlsx_filename = os.path.join(
-    download_dir,
-    'unpaid_invoices.xlsx',
-)
+profit_loss_filename = os.path.join(download_dir, 'profit_loss.xlsx')
+ar_aging_filename = os.path.join(download_dir, 'ar_aging.xlsx')
+balance_sheet_filename = os.path.join(download_dir, 'balance_sheet.xlsx')
+unpaid_invoices_filename = os.path.join(download_dir, 'unpaid_invoices.xlsx')
 
 
 def open_browser():
@@ -103,6 +119,12 @@ def login(browser):
 
 
 def download_report(browser, report_url, xlsx_filename):
+    # remove all of the old report*.xlsx crappy filenames that quickbooks
+    # creates by default
+    report_xlsx_regex = os.path.join(download_dir, 'report*.xlsx')
+    for filename in glob.glob(report_xlsx_regex):
+        os.remove(filename)
+
     # go to the P&L page and download the report locally
     browser.get(report_url)
     iframe = browser.find_element_by_tag_name('iframe')
@@ -111,10 +133,12 @@ def download_report(browser, report_url, xlsx_filename):
     browser.switch_to_frame(iframe2)
     xlsx_export = browser.find_element_by_css_selector('option[value=xlsx]')
     xlsx_export.click()
+    browser.switch_to_default_content()
 
     # TODO: find other way of making sure that the file downloaded correctly
-    time.sleep(5)
-    browser.switch_to_default_content()
+    while not glob.glob(report_xlsx_regex):
+        time.sleep(1)
+    qbo_xlsx_filename = glob.glob(report_xlsx_regex)[0]
     os.rename(qbo_xlsx_filename, xlsx_filename)
 
 
@@ -137,6 +161,13 @@ def upload_report_to_google(xlsx_filename, gsheet_tab_name):
         else:
             google_cell.value = excel_cell.value
     google_worksheet.update_cells(google_cell_list)
+
+
+def sync_quickbooks_to_google(browser, report_url, xlsx_filename, tab_name):
+    """Convenience method for syncing a report in quickbooks to google spreadsheet
+    """
+    download_report(browser, report_url, xlsx_filename)
+    upload_report_to_google(xlsx_filename, tab_name)
 
 
 def unpaid_invoices2accounts_receivable(unpaid_invoice_xlsx_filename,
@@ -211,15 +242,23 @@ if __name__=='__main__':
     login(browser)
 
     # sync quickbooks report to google spreadsheet
-    download_report(browser, pl_report_url, pl_xlsx_filename)
-    upload_report_to_google(pl_xlsx_filename, "P&L")
-
-    # download the accounts receivable report
-    download_report(browser, unpaid_invoice_url, unpaid_invoice_xlsx_filename)
-    unpaid_invoices2accounts_receivable(
-        unpaid_invoice_xlsx_filename,
-        accounts_receivable_xlsx_filename,
+    sync_quickbooks_to_google(
+        browser, profit_loss_url, profit_loss_filename, "P&L",
     )
+    sync_quickbooks_to_google(
+        browser, ar_aging_url, ar_aging_filename, "A/R Aging",
+    )
+    sync_quickbooks_to_google(
+        browser, balance_sheet_url, balance_sheet_filename, "Balance Sheet",
+    )
+
+    # download the unpaid invoices report from quickbooks, which is used in
+    # revenue projection simulations later
+    download_report(browser, unpaid_invoice_url, unpaid_invoice_xlsx_filename)
+    # unpaid_invoices2accounts_receivable(
+    #     unpaid_invoice_xlsx_filename,
+    #     accounts_receivable_xlsx_filename,
+    # )
 
     # close the browser
     browser.close()
