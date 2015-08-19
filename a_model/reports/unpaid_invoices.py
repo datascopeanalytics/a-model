@@ -1,7 +1,7 @@
-from quickbooks_report import QuickbooksReport
+from .base import Report
 
 
-class UnpaidInvoices(QuickbooksReport):
+class UnpaidInvoices(Report):
     report_name = 'unpaid_invoices.xlsx'
 
     def get_projected_payments(self):
@@ -21,3 +21,10 @@ class UnpaidInvoices(QuickbooksReport):
 
     def __iter__(self):
         return iter(self.get_projected_payments())
+
+    def get_qbo_query_params(self):
+        return (
+            ('rptId', 'txreports/TxListReport'),
+            ('arpaid', '2'),
+            ('token', 'INVOICE_LIST'),
+        ) + self.get_date_customized_params()

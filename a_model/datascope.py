@@ -8,10 +8,6 @@ import time
 import datetime
 
 import numpy
-import gspread
-from oauth2client.client import SignedJwtAssertionCredentials
-import arrow
-import openpyxl
 
 from person import Person
 import utils
@@ -49,26 +45,6 @@ class Datascope(object):
     def __getattr__(self, name):
         """This just accesses the value from the config.ini directly"""
         return self.config.getfloat('parameters', name)
-
-    def open_google_workbook(self):
-        """Convenience method for opening up the google workbook"""
-
-        # read json from file
-        gdrive_credentials = os.path.join(utils.DROPBOX_ROOT, 'gdrive.json')
-        with open(gdrive_credentials) as stream:
-            key = json.load(stream)
-
-        # authorize with credentials
-        credentials = SignedJwtAssertionCredentials(
-            key['client_email'],
-            key['private_key'],
-            ['https://spreadsheets.google.com/feeds'],
-        )
-        gdrive = gspread.authorize(credentials)
-
-        # open spreadsheet and read all content as a list of lists
-        spreadsheet = gdrive.open_by_url(key['url'])
-        return spreadsheet
 
     def add_person(self, name):
         person = Person(self, name)

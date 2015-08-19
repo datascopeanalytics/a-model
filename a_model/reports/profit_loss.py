@@ -1,10 +1,11 @@
 import openpyxl
 
-from quickbooks_report import QuickbooksReport
+from .base import Report
 
 
-class ProfitLoss(QuickbooksReport):
+class ProfitLoss(Report):
     report_name = 'profit_loss.xlsx'
+    gsheet_tab_name = 'P&L'
 
     def get_historical_revenues(self):
         historical_revenues = []
@@ -23,3 +24,9 @@ class ProfitLoss(QuickbooksReport):
                 self.get_float_from_cell(income_cell),
             ))
         return historical_revenues
+
+    def get_qbo_query_params(self):
+        return (
+            ('rptId', 'reports/ProfitAndLossReport'),
+            ('column', 'monthly'),
+        ) + self.get_date_customized_params()
