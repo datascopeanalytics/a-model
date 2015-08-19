@@ -89,17 +89,20 @@ for eoy_cash in eoy_cash_list:
             person.bonus_outcomes.append(
                 profit * person.net_fraction_of_profits()
             )
-print_err("")
-print_err("BONUS OUTCOMES EXPECTED AT THE END OF THIS YEAR")
-print_err("%10s %15s %15s %15s %15s %15s" % (
-    "", "5pct", "25pct", "50pct", "75pct", "95pct",
-))
-for person in datascope.people:
+
+# only print out bonus outcomes if it ever happens (eek!)
+if person.bonus_outcomes:
+    print_err("")
+    print_err("BONUS OUTCOMES EXPECTED AT THE END OF THIS YEAR")
     print_err("%10s %15s %15s %15s %15s %15s" % (
-        person.name,
-        currency_str(numpy.percentile(person.bonus_outcomes, 5)),
-        currency_str(numpy.percentile(person.bonus_outcomes, 25)),
-        currency_str(numpy.percentile(person.bonus_outcomes, 50)),
-        currency_str(numpy.percentile(person.bonus_outcomes, 75)),
-        currency_str(numpy.percentile(person.bonus_outcomes, 95)),
+        "", "5pct", "25pct", "50pct", "75pct", "95pct",
     ))
+    for person in datascope.people:
+        print_err("%10s %15s %15s %15s %15s %15s" % (
+            person.name,
+            currency_str(numpy.percentile(person.bonus_outcomes, 5)),
+            currency_str(numpy.percentile(person.bonus_outcomes, 25)),
+            currency_str(numpy.percentile(person.bonus_outcomes, 50)),
+            currency_str(numpy.percentile(person.bonus_outcomes, 75)),
+            currency_str(numpy.percentile(person.bonus_outcomes, 95)),
+        ))
