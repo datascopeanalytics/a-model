@@ -2,9 +2,14 @@ import locale
 import sys
 import datetime
 import calendar
+import os
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 QBO_DATE_FORMAT = '%m/%d/%Y'
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DROPBOX_ROOT = os.path.join(PROJECT_ROOT, 'Dropbox')
+DATA_ROOT = os.path.join(PROJECT_ROOT, '.data')
 
 
 def currency_str(x):

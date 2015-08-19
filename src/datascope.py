@@ -5,35 +5,46 @@ import collections
 import sys
 import json
 import time
+import datetime
 
 import numpy
 import gspread
 from oauth2client.client import SignedJwtAssertionCredentials
 import arrow
+import openpyxl
 
 from person import Person
+import utils
+from profit_loss import ProfitLoss
+from unpaid_invoices import UnpaidInvoices
+from balance_sheet import BalanceSheet
+from ar_aging import ARAging
 
 
 class Datascope(object):
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    dropbox_root = os.path.join(project_root, 'Dropbox')
-    data_root = os.path.join(project_root, '.data')
-    if not os.path.exists(data_root):
-        os.mkdir(data_root)
-    config_filename = os.path.join(dropbox_root, 'config.ini')
-    gdrive_credentials_filename = os.path.join(dropbox_root, 'gdrive.json')
-    gdrive_cache_max_age = 60 * 30  # in seconds
 
     def __init__(self):
+
+        # instantiate the config object from the ini file
+        config_filename = os.path.join(utils.DROPBOX_ROOT, 'config.ini')
         self.config = ConfigParser.ConfigParser()
-        self.config.read(self.config_filename)
+        self.config.read(config_filename)
 
         # iterate over the config to instantiate each person
         self.people = []
         for name, _ in self.config.items('take home pay'):
             self.add_person(name)
 
-        self._read_googlesheet()
+        # make sure the data_root exists
+        if not os.path.exists(utils.DATA_ROOT):
+            os.mkdir(utils.DATA_ROOT)
+
+        # update financial information from quickbooks cache
+        self.profit_loss = ProfitLoss()
+        self.ar_aging = ARAging()
+        self.balance_sheet = BalanceSheet()
+        self.unpaid_invoices = UnpaidInvoices()
+        self._load_cached_quickbooks_data()
 
     def __iter__(self):
         for person in self.people:
@@ -43,9 +54,12 @@ class Datascope(object):
         """This just accesses the value from the config.ini directly"""
         return self.config.getfloat('parameters', name)
 
-    def _open_google_workbook(self):
+    def open_google_workbook(self):
+        """Convenience method for opening up the google workbook"""
+
         # read json from file
-        with open(self.gdrive_credentials_filename) as stream:
+        gdrive_credentials = os.path.join(utils.DROPBOX_ROOT, 'gdrive.json')
+        with open(gdrive_credentials) as stream:
             key = json.load(stream)
 
         # authorize with credentials
@@ -60,37 +74,10 @@ class Datascope(object):
         spreadsheet = gdrive.open_by_url(key['url'])
         return spreadsheet
 
-    def _read_googlesheet(self):
-        """Using the gdrive credentials file, access the P&L google sheet and
-        read all of the content.
-
-        """
-        cache = {}
-        cache_filename = os.path.join(self.data_root, 'google.cache')
-        if os.path.isfile(cache_filename):
-            with open(cache_filename) as stream:
-                cache = json.load(stream)
-
-        # if cached result is not too old, read result from cache
-        if cache and (time.time() - cache['time']) < self.gdrive_cache_max_age:
-            print >> sys.stderr, 'Reading P&L data from cache.'
-            result = cache['result']
-
-        # otherwise, get it from the spreadsheet
-        else:
-
-            # open spreadsheet and read all content as a list of lists
-            workbook = self._open_google_workbook()
-            worksheet = workbook.get_worksheet(0)
-            result = worksheet.get_all_values()
-
-            # write result to cache
-            with open(cache_filename, 'w') as stream:
-                json.dump({'time': time.time(), 'result': result}, stream)
-
-        # store entire google sheet as attribute and parse
-        self.googlesheet = result
-        self._parse_googlesheet()
+    def _load_cached_quickbooks_data(self):
+        self.historical_monthly_revenues = \
+            self.profit_loss.get_historical_revenues()
+        self.unpaid_invoices = self.unpaid_invoices.get_projected_payments()
 
     def _parse_googlesheet(self):
         """Parse out the relevant information from the P&L spreadsheet."""
@@ -276,3 +263,6 @@ class Datascope(object):
                     outcomes['can grow business'] += 1
 
         return outcomes, end_cash
+
+if __name__ == '__main__':
+    datascope = Datascope()

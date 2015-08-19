@@ -70,11 +70,10 @@ unpaid_invoices_url = get_report_url(unpaid_invoices_params)
 datascope = Datascope()
 
 # basic filename manipulation
-download_dir = datascope.data_root
-profit_loss_filename = os.path.join(download_dir, 'profit_loss.xlsx')
-ar_aging_filename = os.path.join(download_dir, 'ar_aging.xlsx')
-balance_sheet_filename = os.path.join(download_dir, 'balance_sheet.xlsx')
-unpaid_invoices_filename = os.path.join(download_dir, 'unpaid_invoices.xlsx')
+profit_loss_filename = datascope.profit_loss.filename
+ar_aging_filename = datascope.ar_aging.filename
+balance_sheet_filename = datascope.balance_sheet.filename
+unpaid_invoices_filename = datascope.unpaid_invoices.filename
 
 
 def open_browser():
@@ -97,7 +96,7 @@ def open_browser():
     profile = webdriver.FirefoxProfile()
     profile.set_preference("browser.download.folderList", 2)
     profile.set_preference("browser.download.manager.showWhenStarting", False)
-    profile.set_preference("browser.download.dir", download_dir)
+    profile.set_preference("browser.download.dir", utils.DATA_ROOT)
     profile.set_preference(
         "browser.helperApps.neverAsk.saveToDisk",
         ','.join(excel_mimetypes)
@@ -124,7 +123,7 @@ def login(browser):
 def download_report(browser, report_url, xlsx_filename):
     # remove all of the old report*.xlsx crappy filenames that quickbooks
     # creates by default
-    report_xlsx_regex = os.path.join(download_dir, 'report*.xlsx')
+    report_xlsx_regex = os.path.join(utils.DATA_ROOT, 'report*.xlsx')
     for filename in glob.glob(report_xlsx_regex):
         os.remove(filename)
 
@@ -154,7 +153,7 @@ def upload_report_to_google(xlsx_filename, gsheet_tab_name):
     excel_row_list = excel_worksheet.range(pl_dimension)
     excel_cell_list = itertools.chain(*excel_row_list)
 
-    google_workbook = datascope._open_google_workbook()
+    google_workbook = datascope.open_google_workbook()
     google_worksheet = google_workbook.worksheet(gsheet_tab_name)
     google_cell_list = google_worksheet.range(pl_dimension)
 
