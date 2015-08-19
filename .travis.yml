@@ -4,4 +4,4 @@ python:
 install:
   - "pip install -r requirements/python-dev"
 script:
-  - pep8 src/
+  - pep8 a_model/ bin/
