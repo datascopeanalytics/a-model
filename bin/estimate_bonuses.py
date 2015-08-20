@@ -23,11 +23,9 @@ args = parser.parse_args()
 datascope = Datascope()
 
 # simulate cashflow for the rest of the year
-current_cash_in_bank = datascope.balance_sheet.get_current_cash_in_bank()
 eoy_outcomes, eoy_cash_list = datascope.simulate_finances(
     n_months=args.n_months,
     n_universes=args.n_universes,
-    initial_cash=current_cash_in_bank,
     verbose=args.verbose,
 )
 
@@ -42,6 +40,7 @@ print -datascope.line_of_credit, 0.0, '""'
 print -datascope.line_of_credit, 1.0, '"busted"'
 print ''
 # current cash situation
+current_cash_in_bank = datascope.balance_sheet.get_current_cash_in_bank()
 print current_cash_in_bank, 0.0, '""'
 print current_cash_in_bank, 1.0, '"bank"'
 print ''

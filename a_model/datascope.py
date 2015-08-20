@@ -166,16 +166,12 @@ class Datascope(object):
 
         return revenues
 
-    def simulate_finances(self, n_months=12, n_universes=1000,
-                          initial_cash=None, verbose=False):
+    def simulate_finances(self, n_months=12, n_universes=1000, verbose=False):
         """Simulate finances for datascope to quantify a few significant
         outcomes in what could happen.
         """
-        # assume we're starting out with our full buffer if nothing is
-        # specified
         cash_buffer = self.n_months_buffer * self.costs()
-        if initial_cash is None:
-            initial_cash = cash_buffer
+        initial_cash = self.balance_sheet.get_current_cash_in_bank()
 
         # basically what we want to do is simulate starting with a
         # certain amount in the bank, and getting paid X in any given
