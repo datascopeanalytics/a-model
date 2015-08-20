@@ -185,25 +185,36 @@ class Report(object):
     def _col_cell_range(self, col, min_row, max_row):
         return '%(col)s%(min_row)d:%(col)s%(max_row)d' % locals()
 
-    def _iter_cells_in_range(self, cell_range):
+    def iter_cells_in_range(self, cell_range):
         for row in self.worksheet.iter_rows(cell_range):
             for cell in row:
                 yield cell
 
     def iter_cells_in_row(self, row, min_col, max_col):
         cell_range = self._row_cell_range(row, min_col, max_col)
-        return self._iter_cells_in_range(cell_range)
+        return self.iter_cells_in_range(cell_range)
 
     def iter_cells_in_column(self, col, min_row, max_row):
         cell_range = self._col_cell_range(col, min_row, max_row)
-        return self._iter_cells_in_range(cell_range)
+        return self.iter_cells_in_range(cell_range)
 
     def get_date_from_cell(self, date_cell):
-        try:
-            date = datetime.datetime.strptime(date_cell.value, '%b %Y')
-        except ValueError:
-            date = utils.qbo_date(date_cell.value)
+        if isinstance(date_cell.value, datetime.datetime):
+            date = date_cell.value
+        else:
+            try:
+                date = datetime.datetime.strptime(date_cell.value, '%b %Y')
+            except ValueError:
+                date = utils.qbo_date(date_cell.value)
         return utils.end_of_month(date)
+
+    def get_now(self):
+        return utils.end_of_last_month()
+
+    def get_months_from_now(self, date):
+        now = self.get_now()
+        delta = date - now
+        return int(round(delta.days / 30.))
 
     def get_float_from_cell(self, float_cell):
         if float_cell.value is None:

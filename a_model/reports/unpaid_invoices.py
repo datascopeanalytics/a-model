@@ -4,8 +4,14 @@ from .base import Report
 class UnpaidInvoices(Report):
     report_name = 'unpaid_invoices.xlsx'
 
+    def __init__(self, *args, **kwargs):
+        super(UnpaidInvoices, self).__init__()
+        self._cached_projected_payments = None
+
     def get_projected_payments(self):
-        projected_payments = []
+        if self._cached_projected_payments:
+            return self._cached_projected_payments
+        self._cached_projected_payments = projected_payments = []
         worksheet = self.open_worksheet()
 
         min_row = 6
@@ -20,7 +26,9 @@ class UnpaidInvoices(Report):
         return projected_payments
 
     def __iter__(self):
-        return iter(self.get_projected_payments())
+        projected_payments = self.get_projected_payments()
+        for date, balance in projected_payments:
+            yield self.get_months_from_now(date), balance
 
     def get_qbo_query_params(self):
         return (

@@ -37,6 +37,7 @@ class Datascope(object):
         self.ar_aging = reports.ARAging()
         self.balance_sheet = reports.BalanceSheet()
         self.unpaid_invoices = reports.UnpaidInvoices()
+        self.revenue_projections = reports.RevenueProjections()
 
     def __iter__(self):
         for person in self.people:
@@ -123,30 +124,43 @@ class Datascope(object):
         Simulate revenues from accounts receivable data.
 
         TODO:
-        * Add in projected revenue from signed projects from google spreadsheet
         * Add in revenue from the 'Finalize (SOW/Legal)' Trello list
         * add in revenue from the 'Proposal Process' Trello list
         * do some analysis to come up with a good `delta_months` parameter
         """
         revenues = [0.0] * n_months
-        now = utils.end_of_last_month()
-        delta_months = 3
-        for date, balance in self.unpaid_invoices:
+
+        def ontime_noise():
+            """Clients rarely pay early and tend to pay late"""
+            return random.randint(0, 3)
+
+        def work_completion_noise():
+            """The end of projects can sometimes drag on a bit, delaying
+            payment.
+            """
+            return random.randint(0, 2)
+
+        # revenue from accounts receiveable is, all things considered,
+        # extremely certain. The biggest question here is whether people will
+        # pay on time.
+        for months_from_now, balance in self.unpaid_invoices:
 
             # we are presumably actively bugging people about overdue invoices,
-            # so these should be paid sometime over the next three months
-            if date < now:
-                month = random.randint(0, delta_months-1)
-
-            # for invoices that are not yet overdue, they should be paid within
-            # delta_months time (if not *on time*)
-            else:
-                delta = date - now
-                months_from_now = int(round(delta.days / 30.))
-                month = months_from_now + random.randint(0, delta_months-1)
+            # so these should be paid relatively soon
+            months_from_now = max(0, months_from_now)
 
             # add this balance to the revenues if the revenue hits in the
             # simulation time window
+            month = months_from_now + ontime_noise()
+            if month < n_months:
+                revenues[month] += balance
+
+        # revenue from projects in progress is also relatively certain. There
+        # are two sources of variability: (i) whether the work is deemed done
+        # in time to receive payment by the specified date and (ii) whether our
+        # clients pay on time.
+        for months_from_now, balance in self.revenue_projections:
+            month = months_from_now + ontime_noise() + work_completion_noise()
             if month < n_months:
                 revenues[month] += balance
 
