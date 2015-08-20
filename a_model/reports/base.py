@@ -104,7 +104,7 @@ class Report(object):
         report_url = QUICKBOOKS_ROOT_URL + '/app/report'
         return report_url + '?' + utils.urlencode(self.get_qbo_query_params())
 
-    def download(self, browser):
+    def download_from_quickbooks(self, browser):
         # remove all of the old report*.xlsx crappy filenames that quickbooks
         # creates by default
         report_regex = os.path.join(utils.DATA_ROOT, 'report*.xlsx')
@@ -145,6 +145,17 @@ class Report(object):
         # open spreadsheet and read all content as a list of lists
         return gdrive.open_by_url(key['url'])
 
+    def open_google_worksheet(self):
+        google_workbook = self.open_google_workbook()
+        return google_workbook.worksheet(self.gsheet_tab_name)
+
+    def download_from_gdrive(self):
+        google_worksheet = self.open_google_worksheet()
+        response = google_worksheet.export('xlsx')
+        with open(self.filename, 'w') as output:
+            output.write(response.read())
+        print self.filename
+
     def upload_to_gdrive(self):
         # parse the resulting data from xlsx and upload it to a google
         # spreadsheet
@@ -153,10 +164,8 @@ class Report(object):
         excel_row_list = excel_worksheet.range(pl_dimension)
         excel_cell_list = itertools.chain(*excel_row_list)
 
-        google_workbook = self.open_google_workbook()
-        google_worksheet = google_workbook.worksheet(self.gsheet_tab_name)
+        google_worksheet = self.open_google_worksheet()
         google_cell_list = google_worksheet.range(pl_dimension)
-
         for google_cell, excel_cell in zip(google_cell_list, excel_cell_list):
             if excel_cell.value is None:
                 google_cell.value = ''

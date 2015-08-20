@@ -14,5 +14,5 @@ username = datascope.config.get('quickbooks', 'username')
 password = datascope.config.get('quickbooks', 'password')
 
 # download and sync the reports
-# reports.cache_quickbooks_locally(username, password)
+reports.cache_quickbooks_locally(username, password)
 reports.sync_local_cache_with_gdrive()
