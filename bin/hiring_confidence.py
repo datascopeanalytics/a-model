@@ -4,38 +4,11 @@ The goal of this script is to figure out when its appropriate to change our
 staffing so that we can be reasonably confident we're making a good decision.
 """
 
-import argparse
-
 from a_model.datascope import Datascope
+from a_model.argparsers import HiringParser
 
 # parse command line arguments
-parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument(
-    '--n-months',
-    metavar='M',
-    type=int,
-    help='the number of months to simulate',
-    default=12,
-)
-parser.add_argument(
-    '--n-universes',
-    metavar='U',
-    type=int,
-    help='the number of universes to simulate',
-    default=1000,
-)
-parser.add_argument(
-    '--n-n00bs',
-    metavar='N',
-    type=int,
-    help='the number of new people to add to Datascope',
-    default=1,
-)
-parser.add_argument(
-    '-v', '--verbose',
-    action="store_true",
-    help='print more information during the simulations',
-)
+parser = HiringParser(description=__doc__)
 args = parser.parse_args()
 
 # simulate datascope revenues before adding a person

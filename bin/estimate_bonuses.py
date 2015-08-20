@@ -11,34 +11,21 @@ import sys
 import numpy
 
 from a_model.datascope import Datascope
+from a_model.argparsers import SimulationParser
 from a_model.utils import currency_str, print_err
 
 
 # parse command line arguments
-parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument(
-    '--n-universes',
-    metavar='U',
-    type=int,
-    help='the number of universes to simulate',
-    default=1000,
-)
-parser.add_argument(
-    '-v', '--verbose',
-    action="store_true",
-    help='print more information during the simulations',
-)
+parser = SimulationParser(description=__doc__)
 args = parser.parse_args()
 
 # instantiate datascope
 datascope = Datascope()
 
 # simulate cashflow for the rest of the year
-today = datetime.date.today()
-n_months = 12 - today.month + 1
 current_cash_in_bank = datascope.balance_sheet.get_current_cash_in_bank()
 eoy_outcomes, eoy_cash_list = datascope.simulate_finances(
-    n_months=n_months,
+    n_months=args.n_months,
     n_universes=args.n_universes,
     initial_cash=current_cash_in_bank,
     verbose=args.verbose,
@@ -74,7 +61,7 @@ print eoy_cash_list[index], 1.0, '"expected"'
 print ''
 
 # given that there will be a bonus, calculate the median bonus for each person
-print_err("This script just ran simulations for %d months" % n_months)
+print_err("This script just ran simulations for %d months" % args.n_months)
 print_err("and here are the different outcomes that we can expect...")
 print_err("")
 p_no_bonus = float(eoy_outcomes['no bonus']) / args.n_universes
