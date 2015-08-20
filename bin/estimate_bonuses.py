@@ -36,10 +36,11 @@ datascope = Datascope()
 # simulate cashflow for the rest of the year
 today = datetime.date.today()
 n_months = 12 - today.month + 1
+current_cash_in_bank = datascope.balance_sheet.get_current_cash_in_bank()
 eoy_outcomes, eoy_cash_list = datascope.simulate_finances(
     n_months=n_months,
     n_universes=args.n_universes,
-    initial_cash=datascope.current_cash_in_bank,
+    initial_cash=current_cash_in_bank,
     verbose=args.verbose,
 )
 
@@ -54,8 +55,8 @@ print -datascope.line_of_credit, 0.0, '""'
 print -datascope.line_of_credit, 1.0, '"busted"'
 print ''
 # current cash situation
-print datascope.current_cash_in_bank, 0.0, '""'
-print datascope.current_cash_in_bank, 1.0, '"bank"'
+print current_cash_in_bank, 0.0, '""'
+print current_cash_in_bank, 1.0, '"bank"'
 print ''
 # six month buffer
 cash_buffer = datascope.n_months_buffer * datascope.costs()
