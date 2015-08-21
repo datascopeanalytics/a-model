@@ -10,3 +10,4 @@ oauth2client
 PyOpenSSL
 requests
 selenium
+matplotlib
