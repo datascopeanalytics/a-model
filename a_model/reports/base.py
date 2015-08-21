@@ -8,6 +8,7 @@ import glob
 import time
 import itertools
 import json
+import math
 
 import openpyxl
 from selenium import webdriver
@@ -56,7 +57,7 @@ class Browser(webdriver.Firefox):
         # methods for 10 seconds in case content does not immediately appear
         kwargs.update({'firefox_profile': profile})
         super(Browser, self).__init__(*args, **kwargs)
-        self.implicitly_wait(10)
+        self.implicitly_wait(30)
 
     # __enter__ and __exit__ make it a context manager
     # https://code.google.com/p/selenium/issues/detail?id=3228
@@ -214,7 +215,14 @@ class Report(object):
     def get_months_from_now(self, date):
         now = self.get_now()
         delta = date - now
-        return int(round(delta.days / 30.))
+        return int(math.floor(delta.days / 30.))
+
+    def get_date_in_n_months(self, n_months):
+        t = self.get_now()
+        for month in range(n_months):
+            t += datetime.timedelta(days=1)
+            t = utils.end_of_month(t)
+        return t
 
     def get_float_from_cell(self, float_cell):
         if float_cell.value is None:

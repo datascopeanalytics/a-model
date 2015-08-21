@@ -28,7 +28,7 @@ class UnpaidInvoices(Report):
     def __iter__(self):
         projected_payments = self.get_projected_payments()
         for date, balance in projected_payments:
-            yield self.get_months_from_now(date), balance
+            yield date, balance
 
     def get_qbo_query_params(self):
         return (

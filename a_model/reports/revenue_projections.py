@@ -33,11 +33,11 @@ class RevenueProjections(Report):
         return revenue_projections
 
     def __iter__(self):
+        now = self.get_now()
         for date, amount in self.get_revenue_projections():
-            months_from_now = self.get_months_from_now(date)
-            if months_from_now < 0:
+            if date < now:
                 raise ValueError((
                     "Double check Revenue Projections spreadsheet. There is a "
                     "projected revenue in the past"
                 ))
-            yield months_from_now, amount
+            yield date, amount

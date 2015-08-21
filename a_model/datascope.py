@@ -119,6 +119,15 @@ class Datascope(object):
         yearly_billable_hours = self.billable_hours_per_year * self.n_people
         return yearly_revenue / yearly_billable_hours
 
+    def iter_future_months(self, n_months):
+        # can use any report for this. happened to choose unpaid invoices
+        for month in range(1, n_months+1):
+            yield self.unpaid_invoices.get_date_in_n_months(month)
+
+    def _get_months_from_now(self, date):
+        # can use any report for this. happened to choose unpaid invoices
+        return self.unpaid_invoices.get_months_from_now(date)
+
     def simulate_revenues(self, n_months):
         """
         Simulate revenues from accounts receivable data.
@@ -132,18 +141,21 @@ class Datascope(object):
 
         def ontime_noise():
             """Clients rarely pay early and tend to pay late"""
+            # TODO: can measure this and make it a not crappy model
             return random.randint(0, 3)
 
         def work_completion_noise():
             """The end of projects can sometimes drag on a bit, delaying
             payment.
             """
+            # TODO: could probably measure this from project planning doodie
             return random.randint(0, 2)
 
         # revenue from accounts receiveable is, all things considered,
         # extremely certain. The biggest question here is whether people will
         # pay on time.
-        for months_from_now, balance in self.unpaid_invoices:
+        for date, balance in self.unpaid_invoices:
+            months_from_now = self._get_months_from_now(date)
 
             # we are presumably actively bugging people about overdue invoices,
             # so these should be paid relatively soon
@@ -159,8 +171,9 @@ class Datascope(object):
         # are two sources of variability: (i) whether the work is deemed done
         # in time to receive payment by the specified date and (ii) whether our
         # clients pay on time.
-        for months_from_now, balance in self.revenue_projections:
-            month = months_from_now + ontime_noise() + work_completion_noise()
+        for date, balance in self.revenue_projections:
+            months_from_now = self._get_months_from_now(date)
+            month = months_from_now + work_completion_noise() + ontime_noise()
             if month < n_months:
                 revenues[month] += balance
 
