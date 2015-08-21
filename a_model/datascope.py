@@ -166,44 +166,64 @@ class Datascope(object):
 
         return revenues
 
+    def _simulate_single_universe_monthly_cash(self, n_months):
+        cash = self.balance_sheet.get_current_cash_in_bank()
+        revenues = self.simulate_revenues(n_months)
+        monthly_cash = []
+        for month in range(n_months):
+            cash -= self.costs()
+            if cash < -self.line_of_credit:
+                is_bankrupt = True
+                break
+            elif cash < 0:
+                no_cash = True
+            cash += revenues[month]
+            monthly_cash.append(cash)
+        return monthly_cash
+
+    def simulate_monthly_cash(self, n_months=12, n_universes=1000,
+                              verbose=False):
+        """Simulate finances and the cash in the bank at the end of every
+        month.
+        """
+        monthly_cash_outputs = []
+        for universe in range(n_universes):
+            if verbose and universe % 100 == 0:
+                print >> sys.stderr, "simulation %d" % universe
+            monthly_cash_outputs.append(
+                self._simulate_single_universe_monthly_cash(n_months)
+            )
+        return monthly_cash_outputs
+
     def simulate_finances(self, n_months=12, n_universes=1000, verbose=False):
         """Simulate finances for datascope to quantify a few significant
         outcomes in what could happen.
         """
+
+        # run a bunch of simulations
+        monthly_cash_outputs = self.simulate_monthly_cash(
+            n_months=n_months,
+            n_universes=n_universes,
+            verbose=verbose,
+        )
+
+        # calculate a bunch of outcomes
         cash_buffer = self.n_months_buffer * self.costs()
         initial_cash = self.balance_sheet.get_current_cash_in_bank()
-
-        # basically what we want to do is simulate starting with a
-        # certain amount in the bank, and getting paid X in any given
-        # month.
         outcomes = collections.Counter()
-        end_cash = []
-        for universe in range(n_universes):
-            if verbose and universe % 100 == 0:
-                print >> sys.stderr, "simulation %d" % universe
+        end_cash = [monthly_cash[-1] for monthly_cash in monthly_cash_outputs]
+        for monthly_cash in monthly_cash_outputs:
+
+            # see if we went bankrupt at any point during this simulation. also
+            # check to see if we had to dip into line of credit
             is_bankrupt = False
             no_cash = False
-
-            # this game is a gross over simplification. each month
-            # datascope pays its expenses and gets paid at the end of
-            # the month. This is a terrifying way to run a
-            # business---we have quite a bit more information about
-            # the business health than "drawing a random number from a
-            # black box". For example, we have a sales pipeline,
-            # projects underway, and accounts receivable, all of which
-            # give us confidence about the current state of affairs
-            # beyond the cash on hand at the end of each month.
-            cash = initial_cash
-            revenues = self.simulate_revenues(n_months)
-            for month in range(n_months):
-                cash -= self.costs()
+            for cash in monthly_cash:
                 if cash < -self.line_of_credit:
                     is_bankrupt = True
                     break
                 elif cash < 0:
                     no_cash = True
-                cash += revenues[month]
-            end_cash.append(cash)
 
             # how'd we do this year? if we didn't go bankrupt, are we
             # able to give a bonus? do we have excess profit beyond
