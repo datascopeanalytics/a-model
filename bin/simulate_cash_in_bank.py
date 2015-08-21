@@ -103,16 +103,16 @@ plt.text(label_location, cash_goal[-1],
     'goal\n' + '{:.0%}'.format(0.0)
 )
 plt.text(label_location, cash_buffer,
-    'buffer\n' + '{:.0%}'.format(0.0))
+    'buffer\n' + '{:.0%}'.format(0.0)
 )
 plt.text(label_location, cash_buffer/2,
-    'no bonus\n' + '{:.0%}'.format(0.0))
+    'no bonus\n' + '{:.0%}'.format(0.0)
 )
 plt.text(label_location, -datascope.line_of_credit/2,
-    'squeak by\n' + '{:.0%}'.format(0.0))
+    'squeak by\n' + '{:.0%}'.format(0.0)
 )
 plt.text(label_location, -datascope.line_of_credit,
-    'bye bye\n' + '{:.0%}'.format(0.0))
+    'bye bye\n' + '{:.0%}'.format(0.0)
 )
 
 # get rid of the axis frame
@@ -129,4 +129,6 @@ for tic in ax.yaxis.get_major_ticks():
     tic.tick2On = False
 
 # other labels
-plt.savefig('cash_projections.png')
+filename = 'cash_projections.png'
+plt.savefig(filename)
+print "results now available in", filename
