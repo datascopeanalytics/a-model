@@ -7,6 +7,7 @@ time.
 import sys
 import datetime
 import math
+import collections
 
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -107,41 +108,61 @@ for year in years:
 # axis labels
 plt.ylabel('cash in bank')
 
+# compute the outcomes of all the simulations at the end of this year
+eoy = datetime.date(datetime.date.today().year, 12, 31)
+months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
+outcomes = collections.Counter()
+for monthly_cash in monthly_cash_outcomes:
+    eoy_cash = monthly_cash[months_until_eoy]
+    if eoy_cash > cash_goal[-1]:
+        outcomes['goal'] += 1
+    elif eoy_cash > cash_buffer:
+        outcomes['buffer'] += 1
+    elif eoy_cash > 0:
+        outcomes['no bonus'] += 1
+    elif eoy_cash > -datascope.line_of_credit:
+        outcomes['squeak by'] += 1
+    else:
+        outcomes['bye bye'] += 1
+norm = sum(outcomes.values())
+for k, v in outcomes.iteritems():
+    outcomes[k] = float(v) / norm
+
 # outcome labels
 # http://matplotlib.org/examples/pylab_examples/multiline.html
 # http://matplotlib.org/examples/pylab_examples/patheffect_demo.html
-eoy = datetime.date(datetime.date.today().year, 12, 31)
 label_style = {
     'horizontalalignment': 'right',
     'path_effects': [patheffects.withStroke(linewidth=2, foreground="w")],
 }
+outcome_format = '{:.0%}'
 plt.text(
     eoy, cash_goal[-1],
-    'goal\n' + '{:.0%}'.format(0.0),
+    'goal\n' + outcome_format.format(outcomes['goal']),
     verticalalignment='bottom',
     **label_style
 )
 plt.text(
     eoy, cash_buffer,
-    'buffer\n' + '{:.0%}'.format(0.0),
+    'buffer\n' + outcome_format.format(outcomes['buffer']),
     verticalalignment='bottom',
     **label_style
 )
 plt.text(
     eoy, cash_buffer/2,
-    'no bonus\n' + '{:.0%}'.format(0.0),
+    'no bonus\n' + outcome_format.format(outcomes['no bonus']),
     verticalalignment='center',
     **label_style
 )
 plt.text(
     eoy, -datascope.line_of_credit / 20.0,
-    'squeak by\n' + '{:.0%}'.format(0.0),
+    'squeak by\n' + outcome_format.format(outcomes['squeak by']),
     verticalalignment='top',
     **label_style
 )
 plt.text(
     eoy, -datascope.line_of_credit,
-    'bye bye\n' + '{:.0%}'.format(0.0),
+    'bye bye\n' + outcome_format.format(outcomes['bye bye']),
     **label_style
 )
 
