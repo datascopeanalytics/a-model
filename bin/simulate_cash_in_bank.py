@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy
 import matplotlib
+import matplotlib.patheffects as patheffects
 
 from a_model.datascope import Datascope
 from a_model.argparsers import SimulationParser
@@ -68,20 +69,6 @@ yticks = numpy.arange(-yunit, ymax+1, yunit)
 yticklabels = ["%dk" % (y/1000) for y in yticks]
 plt.yticks(yticks, yticklabels)
 
-# plot the target lines
-cash_buffer = datascope.n_months_buffer * datascope.costs()
-today = datetime.date.today()
-current_year = [datetime.date(today.year, 1, 1), t_domain[-1]]
-cash_goal = [cash_buffer, cash_buffer + 12 * datascope.after_tax_target_profit()]
-# profit_goal = args.n_months * self.before_tax_profit()
-goal_styles = {
-    'color': 'k',
-    'linestyle': '--',
-}
-plt.plot(t_domain, [0] * len(t_domain), color='k')
-plt.plot(t_domain, [cash_buffer] * len(t_domain), **goal_styles)
-plt.plot(current_year, cash_goal, **goal_styles)
-
 # plot the historical data
 historical_params = {
     'color': '#e41a1c',
@@ -96,23 +83,66 @@ for monthly_cash in monthly_cash_outcomes:
 # plot the median
 plt.plot(monthly_t, median_monthly_cash, linestyle='--', **historical_params)
 
+# plot the zero line where we need to dip into line of credit
+plt.plot(t_domain, [0] * len(t_domain), color='k')
+
+# cash buffer line
+goal_styles = {
+    'color': 'k',
+    'linestyle': '--',
+}
+cash_buffer = datascope.n_months_buffer * datascope.costs()
+plt.plot(t_domain, [cash_buffer] * len(t_domain), **goal_styles)
+
+# plot the goal lines
+years = range(t_domain[0].year, t_domain[1].year+1)
+cash_goal = [
+    cash_buffer,
+    cash_buffer + 12 * datascope.after_tax_target_profit(),
+]
+for year in years:
+    current_year = [datetime.date(year, 1, 1), datetime.date(year, 12, 31)]
+    plt.plot(current_year, cash_goal, **goal_styles)
+
 # axis labels
 plt.ylabel('cash in bank')
-label_location = t_domain[-1] + datetime.timedelta(days=15)
-plt.text(label_location, cash_goal[-1],
-    'goal\n' + '{:.0%}'.format(0.0)
+
+# outcome labels
+# http://matplotlib.org/examples/pylab_examples/multiline.html
+# http://matplotlib.org/examples/pylab_examples/patheffect_demo.html
+eoy = datetime.date(datetime.date.today().year, 12, 31)
+label_style = {
+    'horizontalalignment': 'right',
+    'path_effects': [patheffects.withStroke(linewidth=2, foreground="w")],
+}
+plt.text(
+    eoy, cash_goal[-1],
+    'goal\n' + '{:.0%}'.format(0.0),
+    verticalalignment='bottom',
+    **label_style
 )
-plt.text(label_location, cash_buffer,
-    'buffer\n' + '{:.0%}'.format(0.0)
+plt.text(
+    eoy, cash_buffer,
+    'buffer\n' + '{:.0%}'.format(0.0),
+    verticalalignment='bottom',
+    **label_style
 )
-plt.text(label_location, cash_buffer/2,
-    'no bonus\n' + '{:.0%}'.format(0.0)
+plt.text(
+    eoy, cash_buffer/2,
+    'no bonus\n' + '{:.0%}'.format(0.0),
+    verticalalignment='center',
+    **label_style
 )
-plt.text(label_location, -datascope.line_of_credit/2,
-    'squeak by\n' + '{:.0%}'.format(0.0)
+plt.text(
+    eoy, -datascope.line_of_credit / 20.0,
+    'squeak by\n' + '{:.0%}'.format(0.0),
+    verticalalignment='top',
+    **label_style
 )
-plt.text(label_location, -datascope.line_of_credit,
-    'bye bye\n' + '{:.0%}'.format(0.0)
+plt.text(
+    eoy, -datascope.line_of_credit,
+    'bye bye\n' + '{:.0%}'.format(0.0),
+    **label_style
 )
 
 # get rid of the axis frame

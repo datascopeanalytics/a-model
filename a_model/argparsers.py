@@ -15,7 +15,8 @@ class SimulationParser(argparse.ArgumentParser):
             metavar='M',
             type=int,
             help='the number of months to simulate (default to end of year)',
-            default=self._n_months_to_end_of_year(),
+            # default=self._n_months_to_end_of_year(),
+            default=12,
         )
         self.add_argument(
             '--n-universes',
