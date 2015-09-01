@@ -6,6 +6,7 @@ import sys
 import json
 import time
 import datetime
+import cPickle as pickle
 
 import numpy
 
@@ -208,13 +209,36 @@ class Datascope(object):
             )
         return monthly_cash_outputs
 
+    def get_or_simulate_monthly_cash(self, *args, **kwargs):
+        """either load the results from file or re-simulate if the results are
+        out of date. this makes it so all figures have consistent information.
+        """
+
+        # load the data from cache, if possible
+        monthly_cash_filename = os.path.join(
+            utils.DATA_ROOT, 'monthly_cash.pkl',
+        )
+        monthly_cash = None
+        if os.path.exists(monthly_cash_filename):
+            age = time.time() - os.path.getmtime(monthly_cash_filename)
+            if age < utils.MAX_CACHE_AGE:
+                with open(monthly_cash_filename) as stream:
+                    monthly_cash = pickle.load(stream)
+
+        # otherwise, simulate the monthly cash and cache the results to disk
+        if monthly_cash is None:
+            monthly_cash = self.simulate_monthly_cash(*args, **kwargs)
+            with open(monthly_cash_filename, 'w') as stream:
+                pickle.dump(monthly_cash, stream)
+        return monthly_cash
+
     def simulate_finances(self, n_months=12, n_universes=1000, verbose=False):
         """Simulate finances for datascope to quantify a few significant
         outcomes in what could happen.
         """
 
         # run a bunch of simulations
-        monthly_cash_outputs = self.simulate_monthly_cash(
+        monthly_cash_outputs = self.get_or_simulate_monthly_cash(
             n_months=n_months,
             n_universes=n_universes,
             verbose=verbose,

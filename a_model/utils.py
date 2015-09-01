@@ -11,6 +11,8 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DROPBOX_ROOT = os.path.join(PROJECT_ROOT, 'Dropbox')
 DATA_ROOT = os.path.join(PROJECT_ROOT, '.data')
 
+MAX_CACHE_AGE = 60 * 60 * 24 * 14
+
 
 def currency_str(x):
     """prettify a float as a currency string"""
