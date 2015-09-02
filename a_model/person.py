@@ -70,3 +70,10 @@ class Person(object):
             self.after_tax_salary_from_dividends() +
             self.datascope.after_tax_salary
         )
+
+    def before_tax_target_bonus_dividends(self):
+        # only bonuses are taxed at tax rate.
+        target_bonus = \
+            self.after_tax_salary_from_bonus() / (1 - self.datascope.tax_rate)
+        target_dividends = self.after_tax_salary_from_dividends()
+        return target_bonus + target_dividends

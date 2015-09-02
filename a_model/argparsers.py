@@ -4,10 +4,6 @@ import datetime
 
 class SimulationParser(argparse.ArgumentParser):
 
-    def _n_months_to_end_of_year(self):
-        today = datetime.date.today()
-        return 12 - today.month + 1
-
     def __init__(self, *args, **kwargs):
         super(SimulationParser, self).__init__(*args, **kwargs)
         self.add_argument(

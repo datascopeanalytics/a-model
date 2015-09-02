@@ -14,10 +14,15 @@ DATA_ROOT = os.path.join(PROJECT_ROOT, '.data')
 MAX_CACHE_AGE = 60 * 60 * 24 * 14
 
 
-def currency_str(x):
+def currency_str(x, *args, **kwargs):
     """prettify a float as a currency string"""
     # http://stackoverflow.com/a/320951/564709
     return locale.currency(x, grouping=True)
+
+
+def thousands_currency_str(x, *args, **kwargs):
+    s = currency_str(x/1000., *args, **kwargs)
+    return s.rsplit('.', 1)[0] + 'k'
 
 
 def print_err(s):

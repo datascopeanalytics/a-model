@@ -44,6 +44,9 @@ class Datascope(object):
         for person in self.people:
             yield person
 
+    def __len__(self):
+        return len(self.people)
+
     def __getattr__(self, name):
         """This just accesses the value from the config.ini directly"""
         return self.config.getfloat('parameters', name)
