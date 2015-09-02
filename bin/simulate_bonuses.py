@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Simulate cashflow and estimate how much will be available for each person's
-bonus.
+bonus at the end of the year.
 """
 import datetime
 
@@ -106,7 +106,8 @@ bb0 = figure.axes[0].get_position()
 bb1 = figure.axes[-1].get_position()
 ymid = 0.5 * (bb0.y1 + bb1.y0)
 xmid = 0.5 * (bb1.x0 + bb1.x1)
-figure.text(bb0.x0-0.08, ymid, 'cumulative distribution', va='center', rotation='vertical')
+figure.text(bb0.x0-0.08, ymid, 'cumulative distribution', va='center',
+            rotation='vertical')
 figure.text(xmid, bb1.y0-0.05, 'dividends + pre-tax bonus', ha='center')
 
 # save to disk
