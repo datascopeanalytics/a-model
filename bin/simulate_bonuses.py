@@ -39,18 +39,19 @@ for monthly_cash in monthly_cash_outcomes:
     profit = eoy_cash - cash_buffer
     for person in datascope:
         bonus = max(0, profit * person.net_fraction_of_profits())
-        person_bonuses.append((person.name, bonus))
+        person_bonuses.append((person.name.capitalize(), bonus))
 
 # cast the data as a dataframe
-df = pd.DataFrame(person_bonuses, columns=['name', 'bonus'])
+x, y = '', 'dividend + pre-tax bonus'
+df = pd.DataFrame(person_bonuses, columns=[x, y])
 
 # configure seaborn
 palette = sns.color_palette(palette='Set1')
 
 # quick with all the dots sampled over the top
 # http://stanford.io/1LLujlf
-ax = sns.boxplot(x='name', y='bonus', data=df, color=palette[0], fliersize=0)
-sns.stripplot(x='name', y='bonus', data=df,
+ax = sns.boxplot(x=x, y=y, data=df, color=palette[0], fliersize=0)
+sns.stripplot(x=x, y=y, data=df,
               jitter=True, size=3, color=".3", linewidth=0, alpha=0.1)
 
 # add the goal lines for each person
