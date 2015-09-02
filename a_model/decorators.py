@@ -7,7 +7,7 @@ import md5
 from . import utils
 
 
-def run_or_cache(method):
+def read_or_run(method):
     """This decorator is useful for caching results from random trials to keep
     results consistent from script to script. This stores the result on disk
     and keeps it in memory after it is read from disk.

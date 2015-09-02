@@ -111,22 +111,9 @@ plt.ylabel('cash in bank')
 # compute the outcomes of all the simulations at the end of this year
 eoy = datetime.date(datetime.date.today().year, 12, 31)
 months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
-outcomes = collections.Counter()
-for monthly_cash in monthly_cash_outcomes:
-    eoy_cash = monthly_cash[months_until_eoy]
-    if eoy_cash > cash_goal[-1]:
-        outcomes['goal'] += 1
-    elif eoy_cash > cash_buffer:
-        outcomes['buffer'] += 1
-    elif eoy_cash > 0:
-        outcomes['no bonus'] += 1
-    elif eoy_cash > -datascope.line_of_credit:
-        outcomes['squeak by'] += 1
-    else:
-        outcomes['bye bye'] += 1
-norm = sum(outcomes.values())
-for k, v in outcomes.iteritems():
-    outcomes[k] = float(v) / norm
+outcomes = datascope.get_outcomes_in_month(
+    months_until_eoy, cash_goal[-1], monthly_cash_outcomes
+)
 
 # outcome labels
 # http://matplotlib.org/examples/pylab_examples/multiline.html

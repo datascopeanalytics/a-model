@@ -12,7 +12,7 @@ import numpy
 from .person import Person
 from . import utils
 from . import reports
-from .decorators import run_or_cache
+from .decorators import read_or_run
 
 
 class Datascope(object):
@@ -135,7 +135,7 @@ class Datascope(object):
         # can use any report for this. happened to choose unpaid invoices
         return self.unpaid_invoices.get_months_from_now(date)
 
-    @run_or_cache
+    @read_or_run
     def simulate_revenues(self, universe, n_months):
         """
         Simulate revenues from accounts receivable data.
@@ -226,53 +226,23 @@ class Datascope(object):
             )
         return monthly_cash_outputs
 
-
-    def simulate_finances(self, n_months=12, n_universes=1000, verbose=False):
-        """Simulate finances for datascope to quantify a few significant
-        outcomes in what could happen.
-        """
-
-        # run a bunch of simulations
-        monthly_cash_outputs = self.simulate_monthly_cash(
-            n_months=n_months,
-            n_universes=n_universes,
-            verbose=verbose,
-        )
-
-        # calculate a bunch of outcomes
+    def get_outcomes_in_month(self, month, cash_goal, monthly_cash_outcomes):
+        keys = ['goal', 'buffer', 'no bonus', 'squeak by', 'bye bye']
+        outcomes = dict.fromkeys(keys, 0.0)
         cash_buffer = self.n_months_buffer * self.costs()
-        initial_cash = self.balance_sheet.get_current_cash_in_bank()
-        outcomes = collections.Counter()
-        end_cash = [monthly_cash[-1] for monthly_cash in monthly_cash_outputs]
-        for monthly_cash in monthly_cash_outputs:
-
-            # see if we went bankrupt at any point during this simulation. also
-            # check to see if we had to dip into line of credit
-            is_bankrupt = False
-            no_cash = False
-            for cash in monthly_cash:
-                if cash < -self.line_of_credit:
-                    is_bankrupt = True
-                    break
-                elif cash < 0:
-                    no_cash = True
-
-            # how'd we do this year? if we didn't go bankrupt, are we
-            # able to give a bonus? do we have excess profit beyond
-            # our target profit so we can grow the business
-            profit = cash - cash_buffer
-            if is_bankrupt:
-                outcomes['bankrupt'] += 1
+        for monthly_cash in monthly_cash_outcomes:
+            cash = monthly_cash[month]
+            if cash > cash_goal:
+                outcomes['goal'] += 1
+            elif cash > cash_buffer:
+                outcomes['buffer'] += 1
+            elif cash > 0:
                 outcomes['no bonus'] += 1
+            elif cash > -self.line_of_credit:
+                outcomes['squeak by'] += 1
             else:
-                outcomes['not bankrupt'] += 1
-                if no_cash:
-                    outcomes['survived with line of credit'] += 1
-                if profit < 0:
-                    outcomes['no bonus'] += 1
-                if profit > 0:
-                    outcomes['is bonus'] += 1
-                if profit > n_months * self.before_tax_profit():
-                    outcomes['can grow business'] += 1
-
-        return outcomes, end_cash
+                outcomes['bye bye'] += 1
+        norm = sum(outcomes.values())
+        for k, v in outcomes.iteritems():
+            outcomes[k] = float(v) / norm
+        return outcomes
