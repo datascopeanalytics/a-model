@@ -29,7 +29,7 @@ datascope = Datascope()
 historical_cash_in_bank = datascope.balance_sheet.get_historical_cash_in_bank()
 
 # simulate cashflow for the rest of the year
-monthly_cash_outcomes = datascope.get_or_simulate_monthly_cash(
+monthly_cash_outcomes = datascope.simulate_monthly_cash(
     n_months=args.n_months,
     n_universes=args.n_universes,
     verbose=args.verbose,

@@ -6,13 +6,13 @@ import sys
 import json
 import time
 import datetime
-import cPickle as pickle
 
 import numpy
 
-from person import Person
-import utils
-import reports
+from .person import Person
+from . import utils
+from . import reports
+from .decorators import run_or_cache
 
 
 class Datascope(object):
@@ -39,6 +39,9 @@ class Datascope(object):
         self.balance_sheet = reports.BalanceSheet()
         self.unpaid_invoices = reports.UnpaidInvoices()
         self.revenue_projections = reports.RevenueProjections()
+
+        # variables for caching parameters here
+        self._monthly_cash = None
 
     def __iter__(self):
         for person in self.people:
@@ -132,15 +135,15 @@ class Datascope(object):
         # can use any report for this. happened to choose unpaid invoices
         return self.unpaid_invoices.get_months_from_now(date)
 
-    def simulate_revenues(self, n_months):
+    @run_or_cache
+    def simulate_revenues(self, universe, n_months):
         """
         Simulate revenues from accounts receivable data.
-
-        TODO:
-        * Add in revenue from the 'Finalize (SOW/Legal)' Trello list
-        * add in revenue from the 'Proposal Process' Trello list
-        * do some analysis to come up with a good `delta_months` parameter
         """
+        # TODO: Add in revenue from the 'Finalize (SOW/Legal)' Trello list
+        # TODO: add in revenue from the 'Proposal Process' Trello list
+        # TODO: do some analysis to come up with a good delta_months parameter
+
         revenues = [0.0] * n_months
 
         def ontime_noise():
@@ -183,17 +186,28 @@ class Datascope(object):
 
         return revenues
 
-    def _simulate_single_universe_monthly_cash(self, n_months):
+    # @run_or_cache
+    # def simulate_costs(self, n_months):
+    #     """Simulate datascope's costs over time
+    #
+    #     NOTE: THIS DOESN'T WORK BECAUSE WE NEED TO BE ABLE TO ADD PEOPLE
+    #     DURING THE COURSE OF A SCRIPT
+    #
+    #     """
+    #     # TODO: account for variable vs fixed costs differently
+    #     # TODO: account for quarterly tax draws
+    #     # TODO: account for annual 401k contributions
+    #     # TODO: account for annual bonus
+    #     return [self.costs()] * 12
+
+    def _simulate_single_universe_monthly_cash(self, universe, n_months):
         cash = self.balance_sheet.get_current_cash_in_bank()
-        revenues = self.simulate_revenues(n_months)
+        revenues = self.simulate_revenues(universe, n_months)
         monthly_cash = []
         for month in range(n_months):
             cash -= self.costs()
             if cash < -self.line_of_credit:
-                is_bankrupt = True
                 break
-            elif cash < 0:
-                no_cash = True
             cash += revenues[month]
             monthly_cash.append(cash)
         return monthly_cash
@@ -208,32 +222,10 @@ class Datascope(object):
             if verbose and universe % 100 == 0:
                 print >> sys.stderr, "simulation %d" % universe
             monthly_cash_outputs.append(
-                self._simulate_single_universe_monthly_cash(n_months)
+                self._simulate_single_universe_monthly_cash(universe, n_months)
             )
         return monthly_cash_outputs
 
-    def get_or_simulate_monthly_cash(self, *args, **kwargs):
-        """either load the results from file or re-simulate if the results are
-        out of date. this makes it so all figures have consistent information.
-        """
-
-        # load the data from cache, if possible
-        monthly_cash_filename = os.path.join(
-            utils.DATA_ROOT, 'monthly_cash.pkl',
-        )
-        monthly_cash = None
-        if os.path.exists(monthly_cash_filename):
-            age = time.time() - os.path.getmtime(monthly_cash_filename)
-            if age < utils.MAX_CACHE_AGE:
-                with open(monthly_cash_filename) as stream:
-                    monthly_cash = pickle.load(stream)
-
-        # otherwise, simulate the monthly cash and cache the results to disk
-        if monthly_cash is None:
-            monthly_cash = self.simulate_monthly_cash(*args, **kwargs)
-            with open(monthly_cash_filename, 'w') as stream:
-                pickle.dump(monthly_cash, stream)
-        return monthly_cash
 
     def simulate_finances(self, n_months=12, n_universes=1000, verbose=False):
         """Simulate finances for datascope to quantify a few significant
@@ -241,7 +233,7 @@ class Datascope(object):
         """
 
         # run a bunch of simulations
-        monthly_cash_outputs = self.get_or_simulate_monthly_cash(
+        monthly_cash_outputs = self.simulate_monthly_cash(
             n_months=n_months,
             n_universes=n_universes,
             verbose=verbose,

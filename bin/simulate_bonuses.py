@@ -23,7 +23,7 @@ args = parser.parse_args()
 datascope = Datascope()
 
 # simulate cashflow for the rest of the year
-monthly_cash_outcomes = datascope.get_or_simulate_monthly_cash(
+monthly_cash_outcomes = datascope.simulate_monthly_cash(
     n_months=args.n_months,
     n_universes=args.n_universes,
     verbose=args.verbose,
