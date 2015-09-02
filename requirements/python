@@ -11,3 +11,4 @@ PyOpenSSL
 requests
 selenium
 matplotlib
+seaborn
