@@ -1,8 +1,10 @@
 language: python
 python:
   - "2.7"
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y libblas-dev liblapack-dev
 install:
-  - "apt-get install libblas-dev liblapack-dev"
   - "pip install -r requirements/python-dev"
 script:
   - pep8 a_model/ bin/
