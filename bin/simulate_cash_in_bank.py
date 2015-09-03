@@ -112,7 +112,7 @@ plt.ylabel('cash in bank')
 eoy = datetime.date(datetime.date.today().year, 12, 31)
 months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
 outcomes = datascope.get_outcomes_in_month(
-    months_until_eoy, cash_goal[-1], monthly_cash_outcomes
+    months_until_eoy, monthly_cash_outcomes
 )
 
 # outcome labels
@@ -167,6 +167,6 @@ for tic in ax.yaxis.get_major_ticks():
     tic.tick2On = False
 
 # other labels
-filename = 'cash_projections.png'
+filename = 'cash_in_bank.png'
 plt.savefig(filename)
 print "results now available in", filename

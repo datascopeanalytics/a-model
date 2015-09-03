@@ -20,7 +20,7 @@ def read_or_run(method):
     _cache = {}
 
     @wraps(method)
-    def wrapped_method(self, *args, **kwargs):
+    def wrapped_method(*args, **kwargs):
 
         # use the method and call signature to cache the result in memory
         m = md5.new()
@@ -48,7 +48,7 @@ def read_or_run(method):
 
         # otherwise, run the method and cache the result
         if result is None:
-            result = method(self, *args, **kwargs)
+            result = method(*args, **kwargs)
             with open(cache_filename, 'w') as stream:
                 pickle.dump(result, stream)
 

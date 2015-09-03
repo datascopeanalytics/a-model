@@ -57,6 +57,10 @@ def iter_end_of_months(start_date, end_date):
         date += datetime.timedelta(days=1)
         date = end_of_month(date)
 
+def date_in_n_months(n_months):
+    date = end_of_month(datetime.datetime.today())
+    date += datetime.timedelta(days=30*n_months)
+    return end_of_month(date)
 
 def urlencode(params):
     return '&'.join('%s=%s' % (a, b) for a, b in params)

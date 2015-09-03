@@ -226,9 +226,19 @@ class Datascope(object):
             )
         return monthly_cash_outputs
 
-    def get_outcomes_in_month(self, month, cash_goal, monthly_cash_outcomes):
+    def get_cash_goal_in_month(self, month):
+        """calculate the cash we want to have in the bank in `month` months
+        from now
+        """
+        cash_goal = self.n_months_buffer * self.costs()
+        date = utils.date_in_n_months(month)
+        cash_goal += date.month * self.after_tax_target_profit()
+        return cash_goal
+
+    def get_outcomes_in_month(self, month, monthly_cash_outcomes):
+        cash_goal = self.get_cash_goal_in_month(month)
         keys = ['goal', 'buffer', 'no bonus', 'squeak by', 'bye bye']
-        outcomes = dict.fromkeys(keys, 0.0)
+        outcomes = collections.OrderedDict.fromkeys(keys, 0.0)
         cash_buffer = self.n_months_buffer * self.costs()
         for monthly_cash in monthly_cash_outcomes:
             cash = monthly_cash[month]
@@ -243,6 +253,7 @@ class Datascope(object):
             else:
                 outcomes['bye bye'] += 1
         norm = sum(outcomes.values())
-        for k, v in outcomes.iteritems():
-            outcomes[k] = float(v) / norm
+        if norm > 0:
+            for k, v in outcomes.iteritems():
+                outcomes[k] = float(v) / norm
         return outcomes

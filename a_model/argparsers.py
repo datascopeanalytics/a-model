@@ -36,6 +36,6 @@ class HiringParser(SimulationParser):
             '--n-n00bs',
             metavar='N',
             type=int,
-            help='the number of new people to add to Datascope',
-            default=1,
+            help='the number of new people to consider adding to Datascope',
+            default=3,
         )
