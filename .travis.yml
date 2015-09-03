@@ -1,10 +1,17 @@
 language: python
 python:
   - "2.7"
+
+# hack to make sure scipy installs before travis understandably times out after
+# trying to compile it from scratch. wtf scipy...
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y libblas-dev liblapack-dev libatlas-base-dev gfortran
+  - sudo apt-get install -y python-numpy python-scipy python-matplotlib python-pandas
+
+# install other python requirements
 install:
   - "pip install -r requirements/python-dev"
+
+# tests
 script:
   - pep8 a_model/ bin/
