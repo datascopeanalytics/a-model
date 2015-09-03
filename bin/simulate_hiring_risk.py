@@ -20,6 +20,7 @@ args = parser.parse_args()
 # instantiate datascope
 datascope = Datascope()
 
+
 # simulate finances in our current situation and by adding up to n_n00bs new
 # datascopers
 @decorators.read_or_run
@@ -72,7 +73,6 @@ for n_n00bs in range(len(all_n00b_outcomes)):
     params['label'] = '%d n00bs' % n_n00bs
     if n_n00bs == 1:
         params['label'] = params['label'][:-1]
-
 
     n00b_outcomes = all_n00b_outcomes[n_n00bs]
     for outcome, ax in zip(n00b_outcomes, axes):
