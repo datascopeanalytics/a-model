@@ -6,11 +6,13 @@ python:
 # trying to compile it from scratch. wtf scipy...
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y python-numpy python-scipy python-matplotlib python-pandas
+  - sudo apt-get install -y libblas-dev liblapack-dev libatlas-base-dev gfortran
 
-# install other python requirements
+# install other python requirements. scipy takes for friggin ever to build
+# without any output to the terminal
+# http://docs.travis-ci.com/user/build-timeouts/
 install:
-  - "pip install -r requirements/python-dev"
+  - travis_wait pip install -r requirements/python-dev
 
 # tests
 script:
