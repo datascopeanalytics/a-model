@@ -112,7 +112,7 @@ plt.ylabel('cash in bank')
 eoy = datetime.date(datetime.date.today().year, 12, 31)
 months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
 outcomes = datascope.get_outcomes_in_month(
-    months_until_eoy, monthly_cash_outcomes
+    months_until_eoy-1, monthly_cash_outcomes
 )
 
 # outcome labels
