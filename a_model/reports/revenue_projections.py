@@ -20,11 +20,11 @@ class RevenueProjections(Report):
         max_row = worksheet.max_row
 
         # aggregate all of the dates
-        date_cells = self.iter_cells_in_row(1, 'B', max_col)
+        date_cells = self.iter_cells_in_row(1, 'C', max_col)
         dates = [self.get_date_from_cell(cell) for cell in date_cells]
 
         # iterate over all of the projected revenues for all clients
-        cell_range = 'B2:%(max_col)s%(max_row)d' % locals()
+        cell_range = 'C2:%(max_col)s%(max_row)d' % locals()
         for row in worksheet.iter_rows(cell_range):
             for date, revenue_cell in zip(dates, row):
                 revenue = self.get_float_from_cell(revenue_cell)
