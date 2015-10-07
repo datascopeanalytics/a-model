@@ -9,6 +9,7 @@ import time
 import itertools
 import json
 import math
+import re
 
 import openpyxl
 from selenium import webdriver
@@ -165,7 +166,15 @@ class Report(object):
         excel_row_list = excel_worksheet.range(pl_dimension)
         excel_cell_list = itertools.chain(*excel_row_list)
 
+        # clear the google doc contents
         google_worksheet = self.open_google_worksheet()
+        print google_worksheet.row_count, google_worksheet.col_count
+        not_empty_cells = google_worksheet.findall(re.compile(r'[a-zA-Z0-9]+'))
+        for cell in not_empty_cells:
+            cell.value = ''
+        google_worksheet.update_cells(not_empty_cells)
+
+        # upload the contents
         google_cell_list = google_worksheet.range(pl_dimension)
         for google_cell, excel_cell in zip(google_cell_list, excel_cell_list):
             if excel_cell.value is None:
