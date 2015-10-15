@@ -186,23 +186,44 @@ class Datascope(object):
 
         return revenues
 
-    # @run_or_cache
-    # def simulate_costs(self, n_months):
-    #     """Simulate datascope's costs over time
-    #
-    #     NOTE: THIS DOESN'T WORK BECAUSE WE NEED TO BE ABLE TO ADD PEOPLE
-    #     DURING THE COURSE OF A SCRIPT
-    #
-    #     """
-    #     # TODO: account for variable vs fixed costs differently
-    #     # TODO: account for quarterly tax draws
-    #     # TODO: account for annual 401k contributions
-    #     # TODO: account for annual bonus
-    #     return [self.costs()] * 12
+# #    @run_or_cache
+#     def simulate_costs(self, universe, n_months, n_people):
+#         """Simulate datascope's costs over time
+#         """
+#
+#         # get fixed costs from P&L
+#         costs = [self.profit_loss.get_fixed_cost()] * n_months
+#
+#         # get historical cost per person from P&L
+#         costs_per_person = self.profit_loss.get_variable_costs_per_person()
+#
+#         for month, date in enumerate(self.iter_future_months(n_months)):
+#
+#             # account for quarterly tax draws
+#             #
+#             # NOTE: this means that we have to have simulated revenues
+#             # incorporated into cash expectations
+#             if date.month in [1, 4, 6, 9]:
+#                 profit = self.calculate_ytd_profit(end_of_previous_quarter)
+#                 costs[month] += self.tax_rate * profit
+#
+#             # 401k contributions
+#             #
+#             # TODO: also need to even up partner safe harbor contributions
+#             # (shouldn't be more than a couple thousand)
+#             if date.month == 12:
+#                 costs[month] += n_people * 10000
+#
+#             # TODO: account for annual bonus
+#             if date.month == 1:
+#                 costs[month] += bonus
+#
+#         return costs
 
     def _simulate_single_universe_monthly_cash(self, universe, n_months):
         cash = self.balance_sheet.get_current_cash_in_bank()
         revenues = self.simulate_revenues(universe, n_months)
+        # costs = self.simulate_costs(universe, n_months, self.n_people())
         monthly_cash = []
         for month in range(n_months):
             cash -= self.costs()

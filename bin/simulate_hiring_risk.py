@@ -102,6 +102,8 @@ for ax in axes:
     for tic in ax.yaxis.get_major_ticks():
         tic.tick2On = False
 
+# TODO add line at end of year
+
 # add legend
 axes[0].legend(fontsize=8, frameon=False)
 
