@@ -189,6 +189,7 @@ class Report(object):
 
     def open_worksheet(self):
         # all of the quickbooks reports only have one active sheet
+        print 'reading excel file', self.filename
         workbook = openpyxl.load_workbook(self.filename)
         self.worksheet = workbook.active
         return self.worksheet
