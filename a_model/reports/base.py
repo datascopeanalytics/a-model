@@ -75,7 +75,7 @@ class Browser(webdriver.Firefox):
         self.find_element_by_name("Password").send_keys(password)
         #if you don't wait for a tiny bit before clicking the button,
         #quickbooks will not let you sign in 
-        time.sleep(2)
+        time.sleep(3)
         self.find_element_by_name("SignIn").click()
 
 
