@@ -73,8 +73,8 @@ class Browser(webdriver.Firefox):
         self.get(QUICKBOOKS_ROOT_URL)
         self.find_element_by_name("Email").send_keys(username)
         self.find_element_by_name("Password").send_keys(password)
-        #if you don't wait for a tiny bit before clicking the button,
-        #quickbooks will not let you sign in 
+        # if you don't wait for a tiny bit before clicking the button,
+        # quickbooks will not let you sign in
         time.sleep(3)
         self.find_element_by_name("SignIn").click()
 
@@ -189,6 +189,7 @@ class Report(object):
 
     def open_worksheet(self):
         # all of the quickbooks reports only have one active sheet
+        print 'reading worksheet from', self.filename
         workbook = openpyxl.load_workbook(self.filename)
         self.worksheet = workbook.active
         return self.worksheet
