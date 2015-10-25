@@ -10,6 +10,7 @@ import itertools
 import json
 import math
 import re
+import time
 
 import openpyxl
 from selenium import webdriver
@@ -70,9 +71,12 @@ class Browser(webdriver.Firefox):
 
     def login_quickbooks(self, username, password):
         self.get(QUICKBOOKS_ROOT_URL)
-        self.find_element_by_name("login").send_keys(username)
-        self.find_element_by_name("password").send_keys(password)
-        self.find_element_by_id("LoginButton").click()
+        self.find_element_by_name("Email").send_keys(username)
+        self.find_element_by_name("Password").send_keys(password)
+        #if you don't wait for a tiny bit before clicking the button,
+        #quickbooks will not let you sign in 
+        time.sleep(2)
+        self.find_element_by_name("SignIn").click()
 
 
 class Report(object):
