@@ -12,7 +12,7 @@ import math
 import re
 import time
 
-import openpyxl
+import xlrd
 from selenium import webdriver
 import gspread
 from oauth2client.client import SignedJwtAssertionCredentials
@@ -111,9 +111,9 @@ class Report(object):
         return report_url + '?' + utils.urlencode(self.get_qbo_query_params())
 
     def download_from_quickbooks(self, browser):
-        # remove all of the old report*.xlsx crappy filenames that quickbooks
+        # remove all of the old report*.xls crappy filenames that quickbooks
         # creates by default
-        report_regex = os.path.join(utils.DATA_ROOT, 'report*.xlsx')
+        report_regex = os.path.join(utils.DATA_ROOT, 'report*.xls')
         for filename in glob.glob(report_regex):
             os.remove(filename)
 
@@ -123,7 +123,7 @@ class Report(object):
         browser.switch_to_frame(iframe)
         iframe2 = browser.find_element_by_tag_name('iframe')
         browser.switch_to_frame(iframe2)
-        browser.find_element_by_css_selector('option[value=xlsx]').click()
+        browser.find_element_by_css_selector('option[value=xls]').click()
         browser.switch_to_default_content()
 
         # check to see if the file has been downloaded
@@ -157,13 +157,13 @@ class Report(object):
 
     def download_from_gdrive(self):
         google_worksheet = self.open_google_worksheet()
-        response = google_worksheet.export('xlsx')
+        response = google_worksheet.export('csv')
         with open(self.filename, 'w') as output:
             output.write(response.read())
         print self.filename
 
     def upload_to_gdrive(self):
-        # parse the resulting data from xlsx and upload it to a google
+        # parse the resulting data from xls and upload it to a google
         # spreadsheet
         excel_worksheet = self.open_worksheet()
         pl_dimension = excel_worksheet.calculate_dimension()
@@ -172,7 +172,6 @@ class Report(object):
 
         # clear the google doc contents
         google_worksheet = self.open_google_worksheet()
-        print google_worksheet.row_count, google_worksheet.col_count
         not_empty_cells = google_worksheet.findall(re.compile(r'[a-zA-Z0-9]+'))
         for cell in not_empty_cells:
             cell.value = ''
@@ -190,8 +189,8 @@ class Report(object):
     def open_worksheet(self):
         # all of the quickbooks reports only have one active sheet
         print 'reading worksheet from', self.filename
-        workbook = openpyxl.load_workbook(self.filename)
-        self.worksheet = workbook.active
+        workbook = xlrd.open_workbook(self.filename)
+        self.worksheet = workbook.sheet_by_index(0)
         return self.worksheet
 
     def _row_cell_range(self, row, min_col, max_col):

@@ -3,7 +3,7 @@ from .. import utils
 
 
 class ARAging(Report):
-    report_name = 'ar_aging.xlsx'
+    report_name = 'ar_aging.xls'
     gsheet_tab_name = 'A/R Aging'
 
     def get_qbo_query_params(self):

@@ -4,7 +4,7 @@ from .base import Report
 
 
 class BalanceSheet(Report):
-    report_name = 'balance_sheet.xlsx'
+    report_name = 'balance_sheet.xls'
     gsheet_tab_name = 'Balance Sheet'
 
     def __init__(self, *args, **kwargs):

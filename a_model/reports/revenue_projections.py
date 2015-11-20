@@ -4,7 +4,7 @@ from .base import Report
 
 
 class RevenueProjections(Report):
-    report_name = 'revenue_projections.xlsx'
+    report_name = 'revenue_projections.csv'
     gsheet_tab_name = 'Revenue Projections'
 
     def __init__(self, *args, **kwargs):
