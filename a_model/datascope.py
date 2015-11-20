@@ -106,6 +106,7 @@ class Datascope(object):
 
     def costs(self):
         """Estimate rough monthly costs for Datascope"""
+        raise Exception('costs should be read from P&L. see simulate_costs')
         return self.fixed_monthly_costs + \
             self.per_datascoper_costs * self.n_people
 
@@ -135,10 +136,9 @@ class Datascope(object):
         # can use any report for this. happened to choose unpaid invoices
         return self.unpaid_invoices.get_months_from_now(date)
 
-    @read_or_run
+    # @read_or_run
     def simulate_revenues(self, universe, n_months):
-        """
-        Simulate revenues from accounts receivable data.
+        """Simulate revenues from accounts receivable data.
         """
         # TODO: Add in revenue from the 'Finalize (SOW/Legal)' Trello list
         # TODO: add in revenue from the 'Proposal Process' Trello list
@@ -186,50 +186,90 @@ class Datascope(object):
 
         return revenues
 
-# #    @run_or_cache
-#     def simulate_costs(self, universe, n_months, n_people):
-#         """Simulate datascope's costs over time
-#         """
-#
-#         # get fixed costs from P&L
-#         costs = [self.profit_loss.get_fixed_cost()] * n_months
-#
-#         # get historical cost per person from P&L
-#         costs_per_person = self.profit_loss.get_variable_costs_per_person()
-#
-#         for month, date in enumerate(self.iter_future_months(n_months)):
-#
-#             # account for quarterly tax draws
-#             #
-#             # NOTE: this means that we have to have simulated revenues
-#             # incorporated into cash expectations
-#             if date.month in [1, 4, 6, 9]:
-#                 profit = self.calculate_ytd_profit(end_of_previous_quarter)
-#                 costs[month] += self.tax_rate * profit
-#
-#             # 401k contributions
-#             #
-#             # TODO: also need to even up partner safe harbor contributions
-#             # (shouldn't be more than a couple thousand)
-#             if date.month == 12:
-#                 costs[month] += n_people * 10000
-#
-#             # TODO: account for annual bonus
-#             if date.month == 1:
-#                 costs[month] += bonus
-#
-#         return costs
+#    @run_or_cache
+    def simulate_costs(self, universe, n_months, n_people):
+        """Simulate datascope's costs over time
+        """
+
+        # get fixed costs from P&L and treat it like a constant
+        fixed_cost = self.profit_loss.get_average_fixed_cost()
+
+        # variable costs (i) scale with the number of people and (ii) vary
+        # quite a bit more.
+        per_person_costs = self.profit_loss.get_historical_per_person_costs()
+        def variable_cost():
+            return n_people * random.choice(per_person_costs)
+
+        costs = [0.0] * n_months
+        for month, date in enumerate(self.iter_future_months(n_months)):
+            costs[month] += fixed_cost + variable_cost()
+
+            # 401k contributions
+            #
+            # TODO: also need to even up partner safe harbor contributions
+            # (shouldn't be more than a couple thousand)
+            if date.month == 12:
+                costs[month] += n_people * self.retirement_contribution
+
+        return costs
+
+    def iter_simulate_cashflow(self, universe, n_months):
+        ytd_revenue = self.profit_loss.get_ytd_revenue()
+        ytd_cost = self.profit_loss.get_ytd_cost()
+        for month, date in enumerate(self.iter_future_months(n_months)):
+            if date.month == 1:
+                ytd_revenue, ytd_cost = 0.0, 0.0
+            cost = self.simulate_monthly_cost(
+                date, universe, self.n_people(), ytd_revenue, ytd_cost
+            )
+            ytd_revenue += revenues[month]
+            ytd_cost += cost
+            yield revenues[month], cost
 
     def _simulate_single_universe_monthly_cash(self, universe, n_months):
+        tax_months = set([1, 4, 6, 9])
         cash = self.balance_sheet.get_current_cash_in_bank()
+        ytd_revenue = self.profit_loss.get_ytd_revenue()
+        ytd_cost = self.profit_loss.get_ytd_cost()
+        ytd_tax_draws = 0 # TODO not sure where to get this from
         revenues = self.simulate_revenues(universe, n_months)
-        # costs = self.simulate_costs(universe, n_months, self.n_people())
+        costs = self.simulate_costs(universe, n_months, self.n_people())
         monthly_cash = []
-        for month in range(n_months):
-            cash -= self.costs()
-            if cash < -self.line_of_credit:
-                break
+        for month, date in enumerate(self.iter_future_months(n_months)):
+
+            # quarterly tax draws only decrease the cash in the bank; they do
+            # not count as a cost for datascope. the tax draw in january is for
+            # Q4 of the previous year so we reset the ytd_* values below. we
+            # pay taxes on our ytd profit but without also paying duplicate
+            # taxes on the previous quarters
+            ytd_profit = ytd_revenues - ytd_costs
+            if date.month in tax_months and ytd_profit > 0:
+                quarterly_tax = self.tax_rate * ytd_profit - ytd_tax_draws
+                if quarterly_tax > 0:
+                    cash -= quarterly_tax
+                    ytd_tax_draws += quarterly_tax
+
+            # pay expenses and put that $$$ in the bank. bonus calculation has
+            # to happen here to have access to the amount of cash in the bank
+            # after taxes for Q4 of the previous year have been drawn. bonus
+            # counts as an expense and reduces our tax burden. taxes have
+            # already been paid on dividends and are just drawn from the bank
+            if date.month == 1:
+                buffer = self.n_months_buffer * sum(costs) / len(costs)
+                pool = cash - buffer
+                costs[month] += (1.0 - self.fraction_profit_for_dividends) * pool
+                cash -= self.fraction_profit_for_dividends * pool
+            cash -= costs[month]
             cash += revenues[month]
+
+            # reset the ytd calculations as necessary to make the tax
+            # calculations correct
+            if date.month == 1:
+                ytd_revenue, ytd_cost = 0.0, 0.0
+            ytd_cost += costs[month]
+            ytd_revenues += revenues[month]
+
+            # record and return the cash in the bank at the end of the month
             monthly_cash.append(cash)
         return monthly_cash
 
