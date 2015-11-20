@@ -241,7 +241,7 @@ class Report(object):
     def get_float_from_cell(self, float_cell):
         if float_cell.value is None:
             return 0.0
-        elif isinstance(float_cell.value, (float, int)):
+        elif isinstance(float_cell.value, (float, int, long)):
             return float(float_cell.value)
         else:
             return float(float_cell.value.strip('='))
