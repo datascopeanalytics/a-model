@@ -213,24 +213,13 @@ class Datascope(object):
 
         return costs
 
-    def iter_simulate_cashflow(self, universe, n_months):
-        ytd_revenue = self.profit_loss.get_ytd_revenue()
-        ytd_cost = self.profit_loss.get_ytd_cost()
-        for month, date in enumerate(self.iter_future_months(n_months)):
-            if date.month == 1:
-                ytd_revenue, ytd_cost = 0.0, 0.0
-            cost = self.simulate_monthly_cost(
-                date, universe, self.n_people(), ytd_revenue, ytd_cost
-            )
-            ytd_revenue += revenues[month]
-            ytd_cost += cost
-            yield revenues[month], cost
-
     def _simulate_single_universe_monthly_cash(self, universe, n_months):
         tax_months = set([1, 4, 6, 9])
         cash = self.balance_sheet.get_current_cash_in_bank()
         ytd_revenue = self.profit_loss.get_ytd_revenue()
         ytd_cost = self.profit_loss.get_ytd_cost()
+        print ytd_revenue, ytd_cost
+        fuck
         ytd_tax_draws = 0 # TODO not sure where to get this from
         revenues = self.simulate_revenues(universe, n_months)
         costs = self.simulate_costs(universe, n_months, self.n_people())
