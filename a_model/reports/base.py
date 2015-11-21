@@ -3,6 +3,7 @@
 # of some janky ass javascript and iframe bullshit that quickbooks online has.
 # Selenium was the best choice.
 import os
+import sys
 import datetime
 import glob
 import time
@@ -257,23 +258,26 @@ class Report(object):
     #         for cell in row:
     #             yield cell
     #
-    # def iter_cells_in_row(self, row, min_col, max_col):
-    #     cell_range = self._row_cell_range(row, min_col, max_col)
-    #     return self.iter_cells_in_range(cell_range)
-    #
+
+    def iter_cells_in_row(self, row, min_col, max_col=None):
+        max_col = max_col or sys.maxint
+        for cell in self.cells:
+            if cell.row == row and (min_col <= cell.col <= max_col):
+                yield cell
+
     # def iter_cells_in_column(self, col, min_row, max_row):
     #     cell_range = self._col_cell_range(col, min_row, max_row)
     #     return self.iter_cells_in_range(cell_range)
     #
-    # def get_date_from_cell(self, date_cell):
-    #     if isinstance(date_cell.value, datetime.datetime):
-    #         date = date_cell.value
-    #     else:
-    #         try:
-    #             date = datetime.datetime.strptime(date_cell.value, '%b %Y')
-    #         except ValueError:
-    #             date = utils.qbo_date(date_cell.value)
-    #     return utils.end_of_month(date)
+    def get_date_from_cell(self, date_cell):
+        if isinstance(date_cell.value, datetime.datetime):
+            date = date_cell.value
+        else:
+            try:
+                date = datetime.datetime.strptime(date_cell.value, '%b %Y')
+            except ValueError:
+                date = utils.qbo_date(date_cell.value)
+        return utils.end_of_month(date)
 
     def get_now(self):
         return utils.end_of_last_month()

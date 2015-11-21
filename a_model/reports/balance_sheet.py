@@ -1,5 +1,3 @@
-import openpyxl
-
 from .base import Report
 
 
@@ -27,40 +25,17 @@ class BalanceSheet(Report):
         if self._historical_cash_in_bank is not None:
             return self._historical_cash_in_bank
         self._historical_cash_in_bank = []
-        worksheet = self.open_worksheet()
+        self.load_table()
 
         # get the dates
         dates = []
-        max_col = openpyxl.cell.get_column_letter(
-            worksheet.get_highest_column()
-        )
-        for cell in self.iter_cells_in_row(5, 'B', max_col):
+        for cell in self.iter_cells_in_row(1, 1):
             dates.append(self.get_date_from_cell(cell))
 
         # get the values
-        for row in worksheet.iter_rows():
-            account = row[0].value
-            if account and account.strip() == 'Total Bank Accounts':
+        for row in self.iter_rows():
+            account = row[0].value.strip().replace(' ', '')
+            if account == 'TotalBankAccounts':
                 for date, cell in zip(dates, row[1:]):
-                    self._historical_cash_in_bank.append((
-                        date,
-                        self._get_cash_in_bank(cell)
-                    ))
+                    self._historical_cash_in_bank.append((date, cell.value))
         return self._historical_cash_in_bank
-
-    def _get_cash_in_bank(self, cell):
-        """
-        `Total Bank Accounts` cell is actually a sum of all individual bank
-        account amounts. Need to do sum by hand.
-        """
-
-        formula = cell.value
-        formula = formula.replace('(', '').replace(')', '')
-        cash_in_bank = 0.0
-        for cell in formula.strip('=').split('+'):
-            try:
-                amount = float(self.worksheet[cell].value.strip('='))
-            except:
-                amount = 0.0
-            cash_in_bank += amount
-        return cash_in_bank
