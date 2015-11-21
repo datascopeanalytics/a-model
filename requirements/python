@@ -4,7 +4,6 @@
 arrow
 beautifulsoup4
 gspread
-xlrd
 numpy
 oauth2client
 PyOpenSSL
