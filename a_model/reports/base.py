@@ -229,38 +229,14 @@ class Report(object):
         """load the thing into memory in our own format to avoid b.s. with xls
         vs xlsx vs csv formatting
         """
-
-        # save I/O time by exiting if this has already been called
+        # save I/O time by exiting if this has already been called. otherwise
+        # load in the table
         if self.cells:
             return
-
-        # all of the quickbooks reports only have one active sheet
-        _, ext = os.path.splitext(self.filename)
-        if ext == '.xls':
-            self._load_xls_table()
-        elif ext == '.csv':
-            self._load_csv_table()
-        else:
-            raise NotImplementedError(
-                'need to implement "_load_%s_table"' % ext
-            )
-
-    def _load_xls_table(self):
-        workbook = xlrd.open_workbook(self.filename)
-        worksheet = workbook.sheet_by_index(0)
-        for row in range(worksheet.nrows):
-            for col, xl_cell in enumerate(worksheet.row(row)):
-                self.add_cell(row, col, xl_cell.value)
-
-    def _load_csv_table(self):
         with open(self.filename) as stream:
             reader = csv.reader(stream)
             for row, values in enumerate(reader):
                 for col, value in enumerate(values):
-                    try:
-                        value = float(value)
-                    except ValueError:
-                        pass
                     self.add_cell(row, col, value)
 
     def get_excel_dimensions(self):
