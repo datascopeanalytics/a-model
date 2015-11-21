@@ -87,7 +87,7 @@ class Cell(object):
         self.row = row
         self.col = col
         try:
-            self.value = float(value)
+            self.value = float(value.replace('$', '').replace(',', ''))
         except:
             self.value = value
 
@@ -220,12 +220,6 @@ class Report(object):
     def add_cell(self, *args):
         self.cells.append(Cell(*args))
 
-    def iter_rows(self):
-        self.cells.sort(key=operator.attrgetter('row', 'col'))
-        rowgetter = operator.attrgetter('row')
-        for row, cells in itertools.groupby(self.cells, rowgetter):
-            yield list(cells)
-
     def load_table(self):
         """load the thing into memory in our own format to avoid b.s. with xls
         vs xlsx vs csv formatting
@@ -266,16 +260,25 @@ class Report(object):
     #             yield cell
     #
 
+    def _resolve_min_max(self, min_coord, max_coord):
+        return min_coord or 0, max_coord or sys.maxint
+
+    def iter_rows(self, min_row=None, max_row=None):
+        min_row, max_row = self._resolve_min_max(min_row, max_row)
+        self.cells.sort(key=operator.attrgetter('row', 'col'))
+        rowgetter = operator.attrgetter('row')
+        for row, cells in itertools.groupby(self.cells, rowgetter):
+            if min_row <= row <= max_row:
+                yield list(cells)
+
     def iter_cells_in_row(self, row, min_col=None, max_col=None):
-        min_col = min_col or 0
-        max_col = max_col or sys.maxint
+        min_col, max_col = self._resolve_min_max(min_col, max_col)
         for cell in self.cells:
             if cell.row == row and (min_col <= cell.col <= max_col):
                 yield cell
 
     def iter_cells_in_col(self, col, min_row=None, max_row=None):
-        min_row = min_row or 0
-        max_row = max_row or sys.maxint
+        min_row, max_row = self._resolve_min_max(min_row, max_row)
         for cell in self.cells:
             if cell.col == col and (min_row <= cell.row <= max_row):
                 yield cell

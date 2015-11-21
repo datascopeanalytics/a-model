@@ -1,5 +1,3 @@
-import openpyxl
-
 from .base import Report
 
 
@@ -15,21 +13,19 @@ class RevenueProjections(Report):
         if self._cached_revenue_projections:
             return self._cached_revenue_projections
         self._cached_revenue_projections = revenue_projections = []
-        worksheet = self.open_worksheet()
-        max_col = openpyxl.cell.get_column_letter(worksheet.max_column)
-        max_row = worksheet.max_row
+        self.load_table()
 
         # aggregate all of the dates
-        date_cells = self.iter_cells_in_row(1, 'C', max_col)
-        dates = [self.get_date_from_cell(cell) for cell in date_cells]
+        dates = []
+        first_col = 2
+        for cell in self.iter_cells_in_row(0, first_col):
+            dates.append(self.get_date_from_cell(cell))
 
         # iterate over all of the projected revenues for all clients
-        cell_range = 'C2:%(max_col)s%(max_row)d' % locals()
-        for row in worksheet.iter_rows(cell_range):
-            for date, revenue_cell in zip(dates, row):
-                revenue = self.get_float_from_cell(revenue_cell)
-                if revenue > 0:
-                    revenue_projections.append((date, revenue))
+        for row in self.iter_rows(min_row=1):
+            for date, cell in zip(dates, row[first_col:]):
+                if cell.value:
+                    revenue_projections.append((date, cell.value))
         return revenue_projections
 
     def __iter__(self):
