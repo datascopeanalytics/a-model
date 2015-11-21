@@ -24,5 +24,5 @@ def cache_quickbooks_locally(username, password):
 def sync_local_cache_with_gdrive():
     """We only need to upload these reports to Google Drive"""
     ARAging().upload_to_gdrive()
-    BalanceSheet().upload_to_gdrive()
-    ProfitLoss().upload_to_gdrive()
+    # BalanceSheet().upload_to_gdrive()
+    # ProfitLoss().upload_to_gdrive()

@@ -11,6 +11,7 @@ import json
 import math
 import re
 import time
+import csv
 
 import xlrd
 from selenium import webdriver
@@ -79,6 +80,31 @@ class Browser(webdriver.Firefox):
         self.find_element_by_name("SignIn").click()
 
 
+class Cell(object):
+    def __init__(self, row, col, value):
+        self.row = row
+        self.col = col
+        self.value = value
+
+    @property
+    def colchr(self):
+        # TODO: if we ever get past 26*26 columsn, this won't work
+        c = ''
+        tens = self.col / 26
+        zero = ord('A')
+        if tens > 0:
+            c += chr(tens + zero)
+        c += chr(self.col - tens * 26 + zero)
+        return c
+
+    @property
+    def excel_coords(self):
+        return "%s%s" % (self.colchr, self.row + 1)
+
+    def __repr__(self):
+        return '<Cell %s: %s>' % (self.excel_coords, self.value)
+
+
 class Report(object):
     report_name = None
     gsheet_tab_name = None
@@ -92,6 +118,7 @@ class Report(object):
         self.filename = os.path.join(
             utils.DATA_ROOT, self.report_name
         )
+        self.cells = []
 
     def get_date_customized_params(self):
         return (
@@ -165,10 +192,8 @@ class Report(object):
     def upload_to_gdrive(self):
         # parse the resulting data from xls and upload it to a google
         # spreadsheet
-        excel_worksheet = self.open_worksheet()
-        pl_dimension = excel_worksheet.calculate_dimension()
-        excel_row_list = excel_worksheet.range(pl_dimension)
-        excel_cell_list = itertools.chain(*excel_row_list)
+        self.load_table()
+        excel_dimensions = self.get_excel_dimensions()
 
         # clear the google doc contents
         google_worksheet = self.open_google_worksheet()
@@ -178,49 +203,90 @@ class Report(object):
         google_worksheet.update_cells(not_empty_cells)
 
         # upload the contents
-        google_cell_list = google_worksheet.range(pl_dimension)
-        for google_cell, excel_cell in zip(google_cell_list, excel_cell_list):
-            if excel_cell.value is None:
-                google_cell.value = ''
-            else:
-                google_cell.value = excel_cell.value
+        google_cell_list = google_worksheet.range(excel_dimensions)
+        for google_cell, cell in zip(google_cell_list, self.cells):
+            google_cell.value = cell.value
         google_worksheet.update_cells(google_cell_list)
 
-    def open_worksheet(self):
+    def add_cell(self, *args):
+        self.cells.append(Cell(*args))
+
+    def iter_row(self, row):
+        raise NotImplementedError('well shit')
+
+    def load_table(self):
+        """load the thing into memory in our own format to avoid b.s. with xls
+        vs xlsx vs csv formatting
+        """
+
+        # save I/O time by exiting if this has already been called
+        if self.cells:
+            return
+
         # all of the quickbooks reports only have one active sheet
-        print 'reading worksheet from', self.filename
-        workbook = xlrd.open_workbook(self.filename)
-        self.worksheet = workbook.sheet_by_index(0)
-        return self.worksheet
-
-    def _row_cell_range(self, row, min_col, max_col):
-        return '%(min_col)s%(row)d:%(max_col)s%(row)d' % locals()
-
-    def _col_cell_range(self, col, min_row, max_row):
-        return '%(col)s%(min_row)d:%(col)s%(max_row)d' % locals()
-
-    def iter_cells_in_range(self, cell_range):
-        for row in self.worksheet.iter_rows(cell_range):
-            for cell in row:
-                yield cell
-
-    def iter_cells_in_row(self, row, min_col, max_col):
-        cell_range = self._row_cell_range(row, min_col, max_col)
-        return self.iter_cells_in_range(cell_range)
-
-    def iter_cells_in_column(self, col, min_row, max_row):
-        cell_range = self._col_cell_range(col, min_row, max_row)
-        return self.iter_cells_in_range(cell_range)
-
-    def get_date_from_cell(self, date_cell):
-        if isinstance(date_cell.value, datetime.datetime):
-            date = date_cell.value
+        _, ext = os.path.splitext(self.filename)
+        if ext == '.xls':
+            self._load_xls_table()
+        elif ext == '.csv':
+            self._load_csv_table()
         else:
-            try:
-                date = datetime.datetime.strptime(date_cell.value, '%b %Y')
-            except ValueError:
-                date = utils.qbo_date(date_cell.value)
-        return utils.end_of_month(date)
+            raise NotImplementedError(
+                'need to implement "_load_%s_table"' % ext
+            )
+
+    def _load_xls_table(self):
+        workbook = xlrd.open_workbook(self.filename)
+        worksheet = workbook.sheet_by_index(0)
+        for row in range(worksheet.nrows):
+            for col, xl_cell in enumerate(worksheet.row(row)):
+                self.add_cell(row, col, xl_cell.value)
+
+    def _load_csv_table(self):
+        with open(self.filename) as stream:
+            reader = csv.reader(stream)
+            for row, values in enumerate(reader):
+                for col, value in enumerate(values):
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        pass
+                    self.add_cell(row, col, value)
+
+    def get_excel_dimensions(self):
+        max_cell = Cell(0, 0, None)
+        for cell in self.cells:
+            if cell.row >= max_cell.row and cell.col >= max_cell.col:
+                max_cell = cell
+        return 'A1:%s' % max_cell.excel_coords
+
+    # def _row_cell_range(self, row, min_col, max_col):
+    #     return '%(min_col)s%(row)d:%(max_col)s%(row)d' % locals()
+    #
+    # def _col_cell_range(self, col, min_row, max_row):
+    #     return '%(col)s%(min_row)d:%(col)s%(max_row)d' % locals()
+    #
+    # def iter_cells_in_range(self, cell_range):
+    #     for row in self.worksheet.iter_rows(cell_range):
+    #         for cell in row:
+    #             yield cell
+    #
+    # def iter_cells_in_row(self, row, min_col, max_col):
+    #     cell_range = self._row_cell_range(row, min_col, max_col)
+    #     return self.iter_cells_in_range(cell_range)
+    #
+    # def iter_cells_in_column(self, col, min_row, max_row):
+    #     cell_range = self._col_cell_range(col, min_row, max_row)
+    #     return self.iter_cells_in_range(cell_range)
+    #
+    # def get_date_from_cell(self, date_cell):
+    #     if isinstance(date_cell.value, datetime.datetime):
+    #         date = date_cell.value
+    #     else:
+    #         try:
+    #             date = datetime.datetime.strptime(date_cell.value, '%b %Y')
+    #         except ValueError:
+    #             date = utils.qbo_date(date_cell.value)
+    #     return utils.end_of_month(date)
 
     def get_now(self):
         return utils.end_of_last_month()
@@ -237,13 +303,10 @@ class Report(object):
             t = utils.end_of_month(t)
         return t
 
-    def get_float_from_cell(self, float_cell):
-        if float_cell.value is None:
-            return 0.0
-        elif isinstance(float_cell.value, (float, int, long)):
-            return float(float_cell.value)
-        else:
-            return float(float_cell.value.strip('='))
-
-    def cache_report_locally(self):
-        raise NotImplementedError
+    # def get_float_from_cell(self, float_cell):
+    #     if float_cell.value is None:
+    #         return 0.0
+    #     elif isinstance(float_cell.value, (float, int, long)):
+    #         return float(float_cell.value)
+    #     else:
+    #         return float(float_cell.value.strip('='))
