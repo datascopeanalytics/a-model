@@ -241,11 +241,15 @@ class Report(object):
                     self.add_cell(row, col, value)
 
     def get_excel_dimensions(self):
+        max_cell = self.get_max_cell()
+        return 'A1:%s' % max_cell.excel_coords
+
+    def get_max_cell(self):
         max_cell = Cell(0, 0, None)
         for cell in self.cells:
             if cell.row >= max_cell.row and cell.col >= max_cell.col:
                 max_cell = cell
-        return 'A1:%s' % max_cell.excel_coords
+        return max_cell
 
     # def _row_cell_range(self, row, min_col, max_col):
     #     return '%(min_col)s%(row)d:%(max_col)s%(row)d' % locals()
