@@ -221,8 +221,10 @@ class Datascope(object):
         cash = self.balance_sheet.get_current_cash_in_bank()
         ytd_revenue = self.profit_loss.get_ytd_revenue()
         ytd_cost = self.profit_loss.get_ytd_cost()
-        # TODO not sure where to get this from
-        ytd_tax_draws = 0
+        # TODO get Lyuda / Matt to help us have a quickbooks report that makes
+        # it easy to get this information directly from quickbooks instead of
+        # having to enter it by hand in the config.ini
+        ytd_tax_draws = self.ytd_tax_draws
         revenues = self.simulate_revenues(universe, n_months)
         costs = self.simulate_costs(universe, n_months, self.n_people)
         monthly_cash = []
