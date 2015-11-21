@@ -106,9 +106,8 @@ class Datascope(object):
 
     def costs(self):
         """Estimate rough monthly costs for Datascope"""
-        raise Exception('costs should be read from P&L. see simulate_costs')
-        return self.fixed_monthly_costs + \
-            self.per_datascoper_costs * self.n_people
+        _, costs = zip(*self.profit_loss.get_historical_costs())
+        return self.n_months_buffer * sum(costs) / len(costs)
 
     def ebit(self):
         """earnings before interest and taxes (a.k.a. before tax profit
@@ -126,6 +125,10 @@ class Datascope(object):
         yearly_revenue = self.revenue() * 12
         yearly_billable_hours = self.billable_hours_per_year * self.n_people
         return yearly_revenue / yearly_billable_hours
+
+    def get_cash_buffer(self):
+        _, costs = zip(*self.profit_loss.get_historical_costs())
+        return self.n_months_buffer * sum(costs) / len(costs)
 
     def iter_future_months(self, n_months):
         # can use any report for this. happened to choose unpaid invoices
@@ -230,7 +233,7 @@ class Datascope(object):
             # Q4 of the previous year so we reset the ytd_* values below. we
             # pay taxes on our ytd profit but without also paying duplicate
             # taxes on the previous quarters
-            ytd_profit = ytd_revenues - ytd_costs
+            ytd_profit = ytd_revenue - ytd_cost
             if date.month in tax_months and ytd_profit > 0:
                 quarterly_tax = self.tax_rate * ytd_profit - ytd_tax_draws
                 if quarterly_tax > 0:
@@ -243,7 +246,7 @@ class Datascope(object):
             # counts as an expense and reduces our tax burden. taxes have
             # already been paid on dividends and are just drawn from the bank
             if date.month == 1:
-                buffer = self.n_months_buffer * sum(costs) / len(costs)
+                buffer = self.get_cash_buffer()
                 pool = cash - buffer
                 f = self.fraction_profit_for_dividends
                 costs[month] += (1.0 - f) * pool
@@ -256,7 +259,7 @@ class Datascope(object):
             if date.month == 1:
                 ytd_revenue, ytd_cost = 0.0, 0.0
             ytd_cost += costs[month]
-            ytd_revenues += revenues[month]
+            ytd_revenue += revenues[month]
 
             # record and return the cash in the bank at the end of the month
             monthly_cash.append(cash)
@@ -289,7 +292,7 @@ class Datascope(object):
         cash_goal = self.get_cash_goal_in_month(month)
         keys = ['goal', 'buffer', 'no bonus', 'squeak by', 'bye bye']
         outcomes = collections.OrderedDict.fromkeys(keys, 0.0)
-        cash_buffer = self.n_months_buffer * self.costs()
+        cash_buffer = self.get_cash_buffer()
         for monthly_cash in monthly_cash_outcomes:
             cash = monthly_cash[month]
             if cash > cash_goal:

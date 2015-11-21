@@ -17,7 +17,7 @@ class ProfitLoss(Report):
         for date_cell, value_cell in zip(date_cells, value_cells):
             historical_values.append((
                 self.get_date_from_cell(date_cell),
-                value_cell.value,
+                value_cell.value or 0.0,
             ))
         return historical_values
 
@@ -49,3 +49,34 @@ class ProfitLoss(Report):
     def get_ytd_cost(self):
         historical_costs = self.get_historical_costs()
         return self._get_ytd_value(historical_costs)
+
+    def get_average_fixed_cost(self):
+        fixed_cost_accounts = set([
+            'Marketing',
+            'PublicRelations',
+            'Bookkeeping',
+            'Accounting',
+            'RegisteredAgent',
+            'RentExpense',
+            'TotalUtilities',
+        ])
+        historical_fixed_costs = []
+        for cell in self.iter_cells_in_col(0):
+            if cell.value in fixed_cost_accounts:
+                historical_account = self._get_historical_values(cell.row)
+                if not historical_fixed_costs:
+                    historical_fixed_costs = [0.0] * len(historical_account)
+                for i in range(len(historical_account)):
+                    historical_fixed_costs[i] += historical_account[i][1]
+        return sum(historical_fixed_costs) / len(historical_fixed_costs)
+
+    def get_historical_per_person_costs(self):
+        fixed_cost = self.get_average_fixed_cost()
+        historical_per_person_costs = []
+        for _, cost in self.get_historical_costs():
+            # TODO: improve this when we correctly account for start and end
+            # dates for people. this is tentatively a really bad way to address
+            # this.
+            per_person_cost = (cost - fixed_cost) / 9.0
+            historical_per_person_costs.append(per_person_cost)
+        return historical_per_person_costs

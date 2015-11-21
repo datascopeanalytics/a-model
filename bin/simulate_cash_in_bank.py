@@ -92,7 +92,7 @@ goal_styles = {
     'color': 'k',
     'linestyle': '--',
 }
-cash_buffer = datascope.n_months_buffer * datascope.costs()
+cash_buffer = datascope.get_cash_buffer()
 plt.plot(t_domain, [cash_buffer] * len(t_domain), **goal_styles)
 
 # plot the goal lines
