@@ -193,10 +193,10 @@ class Datascope(object):
 
         # get fixed costs from P&L and treat it like a constant
         fixed_cost = self.profit_loss.get_average_fixed_cost()
+        per_person_costs = self.profit_loss.get_historical_per_person_costs()
 
         # variable costs (i) scale with the number of people and (ii) vary
         # quite a bit more.
-        per_person_costs = self.profit_loss.get_historical_per_person_costs()
         def variable_cost():
             return n_people * random.choice(per_person_costs)
 
@@ -218,9 +218,10 @@ class Datascope(object):
         cash = self.balance_sheet.get_current_cash_in_bank()
         ytd_revenue = self.profit_loss.get_ytd_revenue()
         ytd_cost = self.profit_loss.get_ytd_cost()
-        ytd_tax_draws = 0 # TODO not sure where to get this from
+        # TODO not sure where to get this from
+        ytd_tax_draws = 0
         revenues = self.simulate_revenues(universe, n_months)
-        costs = self.simulate_costs(universe, n_months, self.n_people())
+        costs = self.simulate_costs(universe, n_months, self.n_people)
         monthly_cash = []
         for month, date in enumerate(self.iter_future_months(n_months)):
 
@@ -244,8 +245,9 @@ class Datascope(object):
             if date.month == 1:
                 buffer = self.n_months_buffer * sum(costs) / len(costs)
                 pool = cash - buffer
-                costs[month] += (1.0 - self.fraction_profit_for_dividends) * pool
-                cash -= self.fraction_profit_for_dividends * pool
+                f = self.fraction_profit_for_dividends
+                costs[month] += (1.0 - f) * pool
+                cash -= f * pool
             cash -= costs[month]
             cash += revenues[month]
 
