@@ -239,6 +239,7 @@ class Report(object):
             for row, values in enumerate(reader):
                 for col, value in enumerate(values):
                     self.add_cell(row, col, value)
+        self.cells.sort(key=operator.attrgetter('row', 'col'))
 
     def get_excel_dimensions(self):
         max_cell = self.get_max_cell()
@@ -247,8 +248,10 @@ class Report(object):
     def get_max_cell(self):
         max_cell = Cell(0, 0, None)
         for cell in self.cells:
-            if cell.row >= max_cell.row and cell.col >= max_cell.col:
-                max_cell = cell
+            if cell.row >= max_cell.row:
+                max_cell.row = cell.row
+            if cell.col >= max_cell.col:
+                max_cell.col = cell.col
         return max_cell
 
     # def _row_cell_range(self, row, min_col, max_col):
@@ -263,16 +266,20 @@ class Report(object):
     #             yield cell
     #
 
-    def iter_cells_in_row(self, row, min_col, max_col=None):
+    def iter_cells_in_row(self, row, min_col=None, max_col=None):
+        min_col = min_col or 0
         max_col = max_col or sys.maxint
         for cell in self.cells:
             if cell.row == row and (min_col <= cell.col <= max_col):
                 yield cell
 
-    # def iter_cells_in_column(self, col, min_row, max_row):
-    #     cell_range = self._col_cell_range(col, min_row, max_row)
-    #     return self.iter_cells_in_range(cell_range)
-    #
+    def iter_cells_in_col(self, col, min_row=None, max_row=None):
+        min_row = min_row or 0
+        max_row = max_row or sys.maxint
+        for cell in self.cells:
+            if cell.col == col and (min_row <= cell.row <= max_row):
+                yield cell
+
     def get_date_from_cell(self, date_cell):
         if isinstance(date_cell.value, datetime.datetime):
             date = date_cell.value

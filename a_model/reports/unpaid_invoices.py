@@ -12,16 +12,16 @@ class UnpaidInvoices(Report):
         if self._cached_projected_payments:
             return self._cached_projected_payments
         self._cached_projected_payments = projected_payments = []
-        worksheet = self.open_worksheet()
+        self.load_table()
 
-        min_row = 6
-        max_row = worksheet.max_row - 4
-        date_cells = self.iter_cells_in_column('G', min_row, max_row)
-        balance_cells = self.iter_cells_in_column('I', min_row, max_row)
+        min_row = 1
+        max_row = self.get_max_cell().row - 1
+        date_cells = self.iter_cells_in_col(6, min_row, max_row)
+        balance_cells = self.iter_cells_in_col(8, min_row, max_row)
         for date_cell, balance_cell in zip(date_cells, balance_cells):
             projected_payments.append((
                 self.get_date_from_cell(date_cell),
-                self.get_float_from_cell(balance_cell),
+                balance_cell.value,
             ))
         return projected_payments
 

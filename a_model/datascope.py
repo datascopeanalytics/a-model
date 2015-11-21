@@ -218,8 +218,6 @@ class Datascope(object):
         cash = self.balance_sheet.get_current_cash_in_bank()
         ytd_revenue = self.profit_loss.get_ytd_revenue()
         ytd_cost = self.profit_loss.get_ytd_cost()
-        print ytd_revenue, ytd_cost
-        fuck
         ytd_tax_draws = 0 # TODO not sure where to get this from
         revenues = self.simulate_revenues(universe, n_months)
         costs = self.simulate_costs(universe, n_months, self.n_people())
