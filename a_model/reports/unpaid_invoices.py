@@ -2,7 +2,7 @@ from .base import Report
 
 
 class UnpaidInvoices(Report):
-    report_name = 'unpaid_invoices.xls'
+    report_name = 'unpaid_invoices.csv'
 
     def __init__(self, *args, **kwargs):
         super(UnpaidInvoices, self).__init__()

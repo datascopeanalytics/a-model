@@ -7,13 +7,14 @@ import datetime
 import glob
 import time
 import itertools
+import operator
 import json
 import math
 import re
 import time
 import csv
 
-import xlrd
+from bs4 import BeautifulSoup
 from selenium import webdriver
 import gspread
 from oauth2client.client import SignedJwtAssertionCredentials
@@ -84,7 +85,10 @@ class Cell(object):
     def __init__(self, row, col, value):
         self.row = row
         self.col = col
-        self.value = value
+        try:
+            self.value = float(value)
+        except:
+            self.value = value
 
     @property
     def colchr(self):
@@ -138,26 +142,30 @@ class Report(object):
         return report_url + '?' + utils.urlencode(self.get_qbo_query_params())
 
     def download_from_quickbooks(self, browser):
-        # remove all of the old report*.xls crappy filenames that quickbooks
-        # creates by default
-        report_regex = os.path.join(utils.DATA_ROOT, 'report*.xls')
-        for filename in glob.glob(report_regex):
-            os.remove(filename)
-
-        # go to the P&L page and download the report locally
         browser.get(self.url)
         iframe = browser.find_element_by_tag_name('iframe')
         browser.switch_to_frame(iframe)
         iframe2 = browser.find_element_by_tag_name('iframe')
         browser.switch_to_frame(iframe2)
-        browser.find_element_by_css_selector('option[value=xls]').click()
+        table = browser.find_element_by_id('rptBodyTable')
+        table_html = table.get_attribute('innerHTML')
+        self.extract_table_from_html(table_html)
+        self.save_csv()
         browser.switch_to_default_content()
 
-        # check to see if the file has been downloaded
-        while not glob.glob(report_regex):
-            time.sleep(1)
-        qbo_filename = glob.glob(report_regex)[0]
-        os.rename(qbo_filename, self.filename)
+    def extract_table_from_html(self, table_html):
+        soup = BeautifulSoup(table_html, 'html.parser')
+        for row, tr in enumerate(soup.find_all('tr')):
+            for col, cell in enumerate(tr.find_all(re.compile('td|th'))):
+                value = cell.get_text().encode('ascii', 'ignore')
+                value = value.replace('$', '').replace(',', '')
+                self.add_cell(row, col, value)
+
+    def save_csv(self):
+        with open(self.filename, 'w') as stream:
+            writer = csv.writer(stream)
+            for row in self.iter_rows():
+                writer.writerow([cell.value for cell in row])
 
     def open_google_workbook(self):
         """Convenience method for opening up the google workbook"""
@@ -211,8 +219,11 @@ class Report(object):
     def add_cell(self, *args):
         self.cells.append(Cell(*args))
 
-    def iter_row(self, row):
-        raise NotImplementedError('well shit')
+    def iter_rows(self):
+        self.cells.sort(key=operator.attrgetter('row', 'col'))
+        rowgetter = operator.attrgetter('row')
+        for row, cells in itertools.groupby(self.cells, rowgetter):
+            yield list(cells)
 
     def load_table(self):
         """load the thing into memory in our own format to avoid b.s. with xls
