@@ -12,7 +12,8 @@ before_install:
 # without any output to the terminal
 # http://docs.travis-ci.com/user/build-timeouts/
 install:
-  - travis_wait pip install -r requirements/python-dev
+  - pip install --upgrade pip
+  - pip install -r requirements/python-dev
 
 # tests
 script:
