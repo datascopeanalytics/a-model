@@ -2,27 +2,34 @@ import ConfigParser
 
 
 class Person(object):
-    def __init__(self, datascope, name):
+    def __init__(self, datascope, name, start_date,
+                 end_date=None, partner_date=None, ownership=0.0):
         self.datascope = datascope
         self.name = name
+        self.start_date = start_date
+        self.end_date = end_date
+        self.partner_date = partner_date
+        self.ownership = ownership
 
     def __repr__(self):
         return '<Person: %s>' % self.name.title()
 
-    @property
-    def is_active(self):
-        return self.after_tax_target_salary > 0
+    def is_active(self, date):
+        if self.date < self.start_date:
+            return False
+        elif self.end_date and date > self.end_date:
+            return False
+        return True
 
-    @property
-    def is_partner(self):
-        return self.ownership > 0
+    def is_partner(self, date):
+        return self.partner_date and date >= self.partner_date
 
-    @property
-    def ownership(self):
-        try:
-            return self.datascope.config.getfloat('ownership', self.name)
-        except ConfigParser.NoOptionError:
-            return 0.0
+    # @property
+    # def ownership(self):
+    #     try:
+    #         return self.datascope.config.getfloat('ownership', self.name)
+    #     except ConfigParser.NoOptionError:
+    #         return 0.0
 
     @property
     def after_tax_target_salary(self):
@@ -32,6 +39,9 @@ class Person(object):
         after tax pay and the number of months of after tax bonus expected at
         the end of the year.
         """
+        raise NotImplementedError("""
+            TODO: Need to rethink this functionality without config.ini
+        """)
         default_pay = self.datascope.after_tax_salary
         default_pay *= (1 + self.datascope.n_months_after_tax_bonus/12)
         try:

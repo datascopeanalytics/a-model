@@ -24,11 +24,6 @@ class Datascope(object):
         self.config = ConfigParser.ConfigParser()
         self.config.read(config_filename)
 
-        # iterate over the config to instantiate each person
-        self.people = []
-        for name, _ in self.config.items('take home pay'):
-            self.add_person(name)
-
         # make sure the data_root exists
         if not os.path.exists(utils.DATA_ROOT):
             os.mkdir(utils.DATA_ROOT)
@@ -39,6 +34,12 @@ class Datascope(object):
         self.balance_sheet = reports.BalanceSheet()
         self.unpaid_invoices = reports.UnpaidInvoices()
         self.revenue_projections = reports.RevenueProjections()
+        self.roster = reports.Roster()
+
+        # iterate over the config to instantiate each person
+        self.people = []
+        for person in self.roster.iter_people():
+            self.add_person(person)
 
         # variables for caching parameters here
         self._monthly_cash = None
@@ -54,18 +55,20 @@ class Datascope(object):
         """This just accesses the value from the config.ini directly"""
         return self.config.getfloat('parameters', name)
 
-    def add_person(self, name):
-        person = Person(self, name)
+    def add_person(self, person_or_name):
+        if isinstance(person_or_name, Person):
+            person = person_or_name
+            person.datascope = self
+        else:
+            person = Person(self, name)
         self.people.append(person)
         return person
 
-    @property
-    def n_people(self):
-        return len([person for person in self if person.is_active])
+    def n_people(self, date):
+        return len([person for person in self if person.is_active(date)])
 
-    @property
-    def n_partners(self):
-        return len([person for person in self if person.is_partner])
+    def n_partners(self, date):
+        return len([person for person in self if person.is_partner(date)])
 
     def after_tax_target_profit(self):
         """Based on everyone's personal take-home pay goals in config.ini,
