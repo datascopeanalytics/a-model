@@ -193,7 +193,7 @@ class Datascope(object):
         return revenues
 
 #    @run_or_cache
-    def simulate_costs(self, universe, n_months, n_people):
+    def simulate_costs(self, universe, n_months):
         """Simulate datascope's costs over time
         """
 
@@ -203,12 +203,13 @@ class Datascope(object):
 
         # variable costs (i) scale with the number of people and (ii) vary
         # quite a bit more.
-        def variable_cost():
+        def variable_cost(n_people):
             return n_people * random.choice(per_person_costs)
 
         costs = [0.0] * n_months
         for month, date in enumerate(self.iter_future_months(n_months)):
-            costs[month] += fixed_cost + variable_cost()
+            n_people = self.n_people(date)
+            costs[month] += fixed_cost + variable_cost(n_people)
 
             # 401k contributions
             #
@@ -229,7 +230,7 @@ class Datascope(object):
         # having to enter it by hand in the config.ini
         ytd_tax_draws = self.ytd_tax_draws
         revenues = self.simulate_revenues(universe, n_months)
-        costs = self.simulate_costs(universe, n_months, self.n_people)
+        costs = self.simulate_costs(universe, n_months)
         monthly_cash = []
         for month, date in enumerate(self.iter_future_months(n_months)):
 

@@ -15,7 +15,7 @@ class Person(object):
         return '<Person: %s>' % self.name.title()
 
     def is_active(self, date):
-        if self.date < self.start_date:
+        if date < self.start_date:
             return False
         elif self.end_date and date > self.end_date:
             return False
