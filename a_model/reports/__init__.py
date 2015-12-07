@@ -4,6 +4,7 @@ from balance_sheet import BalanceSheet
 from profit_loss import ProfitLoss
 from unpaid_invoices import UnpaidInvoices
 from revenue_projections import RevenueProjections
+from roster import Roster
 
 
 def cache_quickbooks_locally(username, password):
@@ -19,6 +20,7 @@ def cache_quickbooks_locally(username, password):
 
     # this is manually entered in a google spreadsheet
     RevenueProjections().download_from_gdrive()
+    Roster().download_from_gdrive()
 
 
 def sync_local_cache_with_gdrive():

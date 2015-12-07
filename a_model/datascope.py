@@ -24,11 +24,6 @@ class Datascope(object):
         self.config = ConfigParser.ConfigParser()
         self.config.read(config_filename)
 
-        # iterate over the config to instantiate each person
-        self.people = []
-        for name, _ in self.config.items('take home pay'):
-            self.add_person(name)
-
         # make sure the data_root exists
         if not os.path.exists(utils.DATA_ROOT):
             os.mkdir(utils.DATA_ROOT)
@@ -39,6 +34,12 @@ class Datascope(object):
         self.balance_sheet = reports.BalanceSheet()
         self.unpaid_invoices = reports.UnpaidInvoices()
         self.revenue_projections = reports.RevenueProjections()
+        self.roster = reports.Roster()
+
+        # iterate over the config to instantiate each person
+        self.people = []
+        for person in self.roster.iter_people():
+            self.add_person(person)
 
         # variables for caching parameters here
         self._monthly_cash = None
@@ -54,20 +55,22 @@ class Datascope(object):
         """This just accesses the value from the config.ini directly"""
         return self.config.getfloat('parameters', name)
 
-    def add_person(self, name):
-        person = Person(self, name)
+    def add_person(self, person_or_name, *args, **kwargs):
+        if isinstance(person_or_name, Person):
+            person = person_or_name
+            person.datascope = self
+        else:
+            person = Person(self, person_or_name, *args, **kwargs)
         self.people.append(person)
         return person
 
-    @property
-    def n_people(self):
-        return len([person for person in self if person.is_active])
+    def n_people(self, date):
+        return len([person for person in self if person.is_active(date)])
 
-    @property
-    def n_partners(self):
-        return len([person for person in self if person.is_partner])
+    def n_partners(self, date):
+        return len([person for person in self if person.is_partner(date)])
 
-    def after_tax_target_profit(self):
+    def after_tax_target_profit(self, date):
         """Based on everyone's personal take-home pay goals in config.ini,
         determine the target profit for datascope after taxes
         """
@@ -76,10 +79,11 @@ class Datascope(object):
         # person's personal goals are satisfied
         personal_after_tax_target_profits = []
         for person in self:
-            personal_after_tax_target_profits.append(
-                person.after_tax_target_salary_from_bonus_dividends() /
-                person.net_fraction_of_profits()
-            )
+            if person.is_active(date):
+                personal_after_tax_target_profits.append(
+                    person.after_tax_target_salary_from_bonus_dividends() /
+                    person.net_fraction_of_profits(date)
+                )
 
         # if we take the maximum here, then everyone is guaranteed to make *at
         # least* their target take home pay. The median approach makes sure at
@@ -88,42 +92,45 @@ class Datascope(object):
         return numpy.median(personal_after_tax_target_profits)
         # return max(personal_after_tax_target_profits)
 
-    def before_tax_profit(self):
+    def before_tax_profit(self, date):
         # partners must pay taxes at tax_rate, so we need to make
         # 1/(1-tax_rate) more money to account for this
-        profit = self.after_tax_target_profit() / (1 - self.tax_rate)
+        profit = self.after_tax_target_profit(date) / (1 - self.tax_rate)
 
         # partners also pay taxes on their guaranteed payments
         guaranteed_payment = self.after_tax_salary / (1 - self.tax_rate)
         guaranteed_payment_tax = guaranteed_payment * self.tax_rate
-        profit += self.n_partners * guaranteed_payment_tax
+        profit += self.n_partners(date) * guaranteed_payment_tax
         return profit
 
-    def revenue(self):
+    def revenue(self, date):
         """Monthly revenue target to accomplish target after-tax take-home pay
         """
-        return self.costs() + self.before_tax_profit()
+        return self.average_historical_costs() + self.before_tax_profit(date)
 
-    def costs(self):
+    def average_historical_costs(self):
         """Estimate rough monthly costs for Datascope"""
         _, costs = zip(*self.profit_loss.get_historical_costs())
         return self.n_months_buffer * sum(costs) / len(costs)
 
-    def ebit(self):
+    def ebit(self, date):
         """earnings before interest and taxes (a.k.a. before tax profit
         rate)"""
-        return (self.revenue() - self.costs()) / self.revenue()
+        revenue = self.revenue(date)
+        cost = self.average_historical_costs()
+        return (revenue - cost) / revenue
 
-    def revenue_per_person(self):
+    def revenue_per_person(self, date):
         """Annual revenue per person to meet revenue targets"""
-        return self.revenue() * 12 / self.n_people
+        return self.revenue(date) * 12 / self.n_people(date)
 
-    def minimum_hourly_rate(self):
+    def minimum_hourly_rate(self, date):
         """This is the minimum hourly rate necessary to meet our revenue
         targets for the year, without growing.
         """
-        yearly_revenue = self.revenue() * 12
-        yearly_billable_hours = self.billable_hours_per_year * self.n_people
+        yearly_revenue = self.revenue(date) * 12
+        yearly_billable_hours = self.billable_hours_per_year * \
+            self.n_people(date)
         return yearly_revenue / yearly_billable_hours
 
     def get_cash_buffer(self):
@@ -190,7 +197,7 @@ class Datascope(object):
         return revenues
 
 #    @run_or_cache
-    def simulate_costs(self, universe, n_months, n_people):
+    def simulate_costs(self, universe, n_months):
         """Simulate datascope's costs over time
         """
 
@@ -200,12 +207,13 @@ class Datascope(object):
 
         # variable costs (i) scale with the number of people and (ii) vary
         # quite a bit more.
-        def variable_cost():
+        def variable_cost(n_people):
             return n_people * random.choice(per_person_costs)
 
         costs = [0.0] * n_months
         for month, date in enumerate(self.iter_future_months(n_months)):
-            costs[month] += fixed_cost + variable_cost()
+            n_people = self.n_people(date)
+            costs[month] += fixed_cost + variable_cost(n_people)
 
             # 401k contributions
             #
@@ -226,7 +234,7 @@ class Datascope(object):
         # having to enter it by hand in the config.ini
         ytd_tax_draws = self.ytd_tax_draws
         revenues = self.simulate_revenues(universe, n_months)
-        costs = self.simulate_costs(universe, n_months, self.n_people)
+        costs = self.simulate_costs(universe, n_months)
         monthly_cash = []
         for month, date in enumerate(self.iter_future_months(n_months)):
 
@@ -252,7 +260,8 @@ class Datascope(object):
                 pool = cash - buffer
                 f = self.fraction_profit_for_dividends
                 costs[month] += (1.0 - f) * pool
-                cash -= f * pool
+                if pool > 0:
+                    cash -= f * pool
             cash -= costs[month]
             cash += revenues[month]
 
@@ -287,7 +296,7 @@ class Datascope(object):
         """
         cash_goal = self.n_months_buffer * self.costs()
         date = utils.date_in_n_months(month)
-        cash_goal += date.month * self.after_tax_target_profit()
+        cash_goal += date.month * self.after_tax_target_profit(date)
         return cash_goal
 
     def get_outcomes_in_month(self, month, monthly_cash_outcomes):

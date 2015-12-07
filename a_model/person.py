@@ -1,28 +1,29 @@
 import ConfigParser
+import datetime
 
 
 class Person(object):
-    def __init__(self, datascope, name):
+    def __init__(self, datascope, name, start_date=None,
+                 end_date=None, partner_date=None, ownership=0.0):
         self.datascope = datascope
         self.name = name
+        self.start_date = start_date or datetime.date.today()
+        self.end_date = end_date
+        self.partner_date = partner_date
+        self.ownership = ownership
 
     def __repr__(self):
         return '<Person: %s>' % self.name.title()
 
-    @property
-    def is_active(self):
-        return self.after_tax_target_salary > 0
+    def is_active(self, date):
+        if date < self.start_date:
+            return False
+        elif self.end_date and date > self.end_date:
+            return False
+        return True
 
-    @property
-    def is_partner(self):
-        return self.ownership > 0
-
-    @property
-    def ownership(self):
-        try:
-            return self.datascope.config.getfloat('ownership', self.name)
-        except ConfigParser.NoOptionError:
-            return 0.0
+    def is_partner(self, date):
+        return self.partner_date and date >= self.partner_date
 
     @property
     def after_tax_target_salary(self):
@@ -40,40 +41,61 @@ class Person(object):
             pay = default_pay
         return pay
 
+    def fraction_of_year(self, date):
+        """returns the fraction of the year (up to `date`) that this person
+        worked
+        """
+        beg_of_year = datetime.date(date.year, 1, 1)
+        end_of_year = date
+        if self.end_date and self.end_date < end_of_year:
+            date = max([self.end_date or date, beg_of_year])
+        numerator = (date - beg_of_year).days
+        denominator = (end_of_year - beg_of_year).days
+        return float(numerator) / denominator
+
+    def fraction_datascope_year(self, date):
+        """returns the fraction of all datascopers' year that this person has
+        worked
+        """
+        total = 0.0
+        for person in self.datascope:
+            total += person.fraction_of_year(date)
+        return self.fraction_of_year(date) / total
+
     def fraction_dividends(self):
         """Fraction of profits that come in the form of a dividend"""
         return self.datascope.fraction_profit_for_dividends * self.ownership
 
-    def fraction_bonus(self):
+    def fraction_bonus(self, date):
         """Fraction of profits that come in the form of a bonus"""
-        return (1.0-self.datascope.fraction_profit_for_dividends) /\
-            self.datascope.n_people
+        return (1.0-self.datascope.fraction_profit_for_dividends) * \
+            self.fraction_datascope_year(date)
 
-    def net_fraction_of_profits(self):
+    def net_fraction_of_profits(self, date):
         """Net fraction of all profits"""
-        return self.fraction_dividends() + self.fraction_bonus()
+        return self.fraction_dividends() + self.fraction_bonus(date)
 
     def after_tax_target_salary_from_bonus_dividends(self):
         return self.after_tax_target_salary - self.datascope.after_tax_salary
 
-    def after_tax_salary_from_bonus(self):
-        return self.fraction_bonus() *\
-            self.datascope.after_tax_target_profit()
+    def after_tax_salary_from_bonus(self, date):
+        return self.fraction_bonus(date) *\
+            self.datascope.after_tax_target_profit(date)
 
-    def after_tax_salary_from_dividends(self):
+    def after_tax_salary_from_dividends(self, date):
         return self.fraction_dividends() *\
-            self.datascope.after_tax_target_profit()
+            self.datascope.after_tax_target_profit(date)
 
-    def after_tax_salary(self):
+    def after_tax_salary(self, date):
         return (
-            self.after_tax_salary_from_bonus() +
-            self.after_tax_salary_from_dividends() +
+            self.after_tax_salary_from_bonus(date) +
+            self.after_tax_salary_from_dividends(date) +
             self.datascope.after_tax_salary
         )
 
-    def before_tax_target_bonus_dividends(self):
+    def before_tax_target_bonus_dividends(self, date):
         # only bonuses are taxed at tax rate.
-        target_bonus = \
-            self.after_tax_salary_from_bonus() / (1 - self.datascope.tax_rate)
-        target_dividends = self.after_tax_salary_from_dividends()
+        target_bonus = self.after_tax_salary_from_bonus(date) / \
+            (1 - self.datascope.tax_rate)
+        target_dividends = self.after_tax_salary_from_dividends(date)
         return target_bonus + target_dividends
