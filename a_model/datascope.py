@@ -257,8 +257,8 @@ class Datascope(object):
                 pool = cash - buffer
                 f = self.fraction_profit_for_dividends
                 costs[month] += (1.0 - f) * pool
-                print pool
-                cash -= f * pool
+                if pool > 0:
+                    cash -= f * pool
             cash -= costs[month]
             cash += revenues[month]
 
