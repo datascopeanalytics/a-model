@@ -38,7 +38,7 @@ for monthly_cash in monthly_cash_outcomes:
     eoy_cash = monthly_cash[months_until_eoy]
     profit = eoy_cash - cash_buffer
     for person in datascope:
-        bonus = max(0, profit * person.net_fraction_of_profits())
+        bonus = max(0, profit * person.net_fraction_of_profits(eoy))
         person_bonuses.append((person.name.capitalize(), bonus))
 
 # cast the data as a dataframe
@@ -56,7 +56,7 @@ sns.stripplot(x=x, y=y, data=df,
 
 # add the goal lines for each person
 for i, person in enumerate(datascope):
-    goal = 12 * person.before_tax_target_bonus_dividends()
+    goal = 12 * person.before_tax_target_bonus_dividends(eoy)
     ax.plot([i-0.5, i+0.5], [goal, goal], color='k', linestyle='--')
 
 # set the y-axis domain

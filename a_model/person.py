@@ -3,11 +3,11 @@ import datetime
 
 
 class Person(object):
-    def __init__(self, datascope, name, start_date,
+    def __init__(self, datascope, name, start_date=None,
                  end_date=None, partner_date=None, ownership=0.0):
         self.datascope = datascope
         self.name = name
-        self.start_date = start_date
+        self.start_date = start_date or datetime.date.today()
         self.end_date = end_date
         self.partner_date = partner_date
         self.ownership = ownership
@@ -78,24 +78,24 @@ class Person(object):
     def after_tax_target_salary_from_bonus_dividends(self):
         return self.after_tax_target_salary - self.datascope.after_tax_salary
 
-    def after_tax_salary_from_bonus(self):
-        return self.fraction_bonus() *\
-            self.datascope.after_tax_target_profit()
+    def after_tax_salary_from_bonus(self, date):
+        return self.fraction_bonus(date) *\
+            self.datascope.after_tax_target_profit(date)
 
-    def after_tax_salary_from_dividends(self):
+    def after_tax_salary_from_dividends(self, date):
         return self.fraction_dividends() *\
-            self.datascope.after_tax_target_profit()
+            self.datascope.after_tax_target_profit(date)
 
-    def after_tax_salary(self):
+    def after_tax_salary(self, date):
         return (
-            self.after_tax_salary_from_bonus() +
-            self.after_tax_salary_from_dividends() +
+            self.after_tax_salary_from_bonus(date) +
+            self.after_tax_salary_from_dividends(date) +
             self.datascope.after_tax_salary
         )
 
-    def before_tax_target_bonus_dividends(self):
+    def before_tax_target_bonus_dividends(self, date):
         # only bonuses are taxed at tax rate.
-        target_bonus = \
-            self.after_tax_salary_from_bonus() / (1 - self.datascope.tax_rate)
-        target_dividends = self.after_tax_salary_from_dividends()
+        target_bonus = self.after_tax_salary_from_bonus(date) / \
+            (1 - self.datascope.tax_rate)
+        target_dividends = self.after_tax_salary_from_dividends(date)
         return target_bonus + target_dividends

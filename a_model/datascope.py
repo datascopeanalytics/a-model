@@ -55,12 +55,12 @@ class Datascope(object):
         """This just accesses the value from the config.ini directly"""
         return self.config.getfloat('parameters', name)
 
-    def add_person(self, person_or_name):
+    def add_person(self, person_or_name, *args, **kwargs):
         if isinstance(person_or_name, Person):
             person = person_or_name
             person.datascope = self
         else:
-            person = Person(self, name)
+            person = Person(self, person_or_name, *args, **kwargs)
         self.people.append(person)
         return person
 
@@ -92,42 +92,45 @@ class Datascope(object):
         return numpy.median(personal_after_tax_target_profits)
         # return max(personal_after_tax_target_profits)
 
-    def before_tax_profit(self):
+    def before_tax_profit(self, date):
         # partners must pay taxes at tax_rate, so we need to make
         # 1/(1-tax_rate) more money to account for this
-        profit = self.after_tax_target_profit() / (1 - self.tax_rate)
+        profit = self.after_tax_target_profit(date) / (1 - self.tax_rate)
 
         # partners also pay taxes on their guaranteed payments
         guaranteed_payment = self.after_tax_salary / (1 - self.tax_rate)
         guaranteed_payment_tax = guaranteed_payment * self.tax_rate
-        profit += self.n_partners * guaranteed_payment_tax
+        profit += self.n_partners(date) * guaranteed_payment_tax
         return profit
 
-    def revenue(self):
+    def revenue(self, date):
         """Monthly revenue target to accomplish target after-tax take-home pay
         """
-        return self.costs() + self.before_tax_profit()
+        return self.average_historical_costs() + self.before_tax_profit(date)
 
-    def costs(self):
+    def average_historical_costs(self):
         """Estimate rough monthly costs for Datascope"""
         _, costs = zip(*self.profit_loss.get_historical_costs())
         return self.n_months_buffer * sum(costs) / len(costs)
 
-    def ebit(self):
+    def ebit(self, date):
         """earnings before interest and taxes (a.k.a. before tax profit
         rate)"""
-        return (self.revenue() - self.costs()) / self.revenue()
+        revenue = self.revenue(date)
+        cost = self.average_historical_costs()
+        return (revenue - cost) / revenue
 
-    def revenue_per_person(self):
+    def revenue_per_person(self, date):
         """Annual revenue per person to meet revenue targets"""
-        return self.revenue() * 12 / self.n_people
+        return self.revenue(date) * 12 / self.n_people(date)
 
-    def minimum_hourly_rate(self):
+    def minimum_hourly_rate(self, date):
         """This is the minimum hourly rate necessary to meet our revenue
         targets for the year, without growing.
         """
-        yearly_revenue = self.revenue() * 12
-        yearly_billable_hours = self.billable_hours_per_year * self.n_people
+        yearly_revenue = self.revenue(date) * 12
+        yearly_billable_hours = self.billable_hours_per_year * \
+            self.n_people(date)
         return yearly_revenue / yearly_billable_hours
 
     def get_cash_buffer(self):
