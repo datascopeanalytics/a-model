@@ -1,4 +1,5 @@
 import ConfigParser
+import datetime
 
 
 class Person(object):
@@ -24,13 +25,6 @@ class Person(object):
     def is_partner(self, date):
         return self.partner_date and date >= self.partner_date
 
-    # @property
-    # def ownership(self):
-    #     try:
-    #         return self.datascope.config.getfloat('ownership', self.name)
-    #     except ConfigParser.NoOptionError:
-    #         return 0.0
-
     @property
     def after_tax_target_salary(self):
         """This is on a per month basis, but includes biweekly salary as well
@@ -39,9 +33,6 @@ class Person(object):
         after tax pay and the number of months of after tax bonus expected at
         the end of the year.
         """
-        raise NotImplementedError("""
-            TODO: Need to rethink this functionality without config.ini
-        """)
         default_pay = self.datascope.after_tax_salary
         default_pay *= (1 + self.datascope.n_months_after_tax_bonus/12)
         try:
@@ -50,18 +41,39 @@ class Person(object):
             pay = default_pay
         return pay
 
+    def fraction_of_year(self, date):
+        """returns the fraction of the year (up to `date`) that this person
+        worked
+        """
+        beg_of_year = datetime.date(date.year, 1, 1)
+        end_of_year = date
+        if self.end_date and self.end_date < end_of_year:
+            date = max([self.end_date or date, beg_of_year])
+        numerator = (date - beg_of_year).days
+        denominator = (end_of_year - beg_of_year).days
+        return float(numerator) / denominator
+
+    def fraction_datascope_year(self, date):
+        """returns the fraction of all datascopers' year that this person has
+        worked
+        """
+        total = 0.0
+        for person in self.datascope:
+            total += person.fraction_of_year(date)
+        return self.fraction_of_year(date) / total
+
     def fraction_dividends(self):
         """Fraction of profits that come in the form of a dividend"""
         return self.datascope.fraction_profit_for_dividends * self.ownership
 
-    def fraction_bonus(self):
+    def fraction_bonus(self, date):
         """Fraction of profits that come in the form of a bonus"""
-        return (1.0-self.datascope.fraction_profit_for_dividends) /\
-            self.datascope.n_people
+        return (1.0-self.datascope.fraction_profit_for_dividends) * \
+            self.fraction_datascope_year(date)
 
-    def net_fraction_of_profits(self):
+    def net_fraction_of_profits(self, date):
         """Net fraction of all profits"""
-        return self.fraction_dividends() + self.fraction_bonus()
+        return self.fraction_dividends() + self.fraction_bonus(date)
 
     def after_tax_target_salary_from_bonus_dividends(self):
         return self.after_tax_target_salary - self.datascope.after_tax_salary

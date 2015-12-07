@@ -70,7 +70,7 @@ class Datascope(object):
     def n_partners(self, date):
         return len([person for person in self if person.is_partner(date)])
 
-    def after_tax_target_profit(self):
+    def after_tax_target_profit(self, date):
         """Based on everyone's personal take-home pay goals in config.ini,
         determine the target profit for datascope after taxes
         """
@@ -79,10 +79,11 @@ class Datascope(object):
         # person's personal goals are satisfied
         personal_after_tax_target_profits = []
         for person in self:
-            personal_after_tax_target_profits.append(
-                person.after_tax_target_salary_from_bonus_dividends() /
-                person.net_fraction_of_profits()
-            )
+            if person.is_active(date):
+                personal_after_tax_target_profits.append(
+                    person.after_tax_target_salary_from_bonus_dividends() /
+                    person.net_fraction_of_profits(date)
+                )
 
         # if we take the maximum here, then everyone is guaranteed to make *at
         # least* their target take home pay. The median approach makes sure at
@@ -256,6 +257,7 @@ class Datascope(object):
                 pool = cash - buffer
                 f = self.fraction_profit_for_dividends
                 costs[month] += (1.0 - f) * pool
+                print pool
                 cash -= f * pool
             cash -= costs[month]
             cash += revenues[month]
@@ -291,7 +293,7 @@ class Datascope(object):
         """
         cash_goal = self.n_months_buffer * self.costs()
         date = utils.date_in_n_months(month)
-        cash_goal += date.month * self.after_tax_target_profit()
+        cash_goal += date.month * self.after_tax_target_profit(date)
         return cash_goal
 
     def get_outcomes_in_month(self, month, monthly_cash_outcomes):

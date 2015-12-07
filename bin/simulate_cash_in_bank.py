@@ -97,12 +97,12 @@ plt.plot(t_domain, [cash_buffer] * len(t_domain), **goal_styles)
 
 # plot the goal lines
 years = range(t_domain[0].year, t_domain[1].year+1)
-cash_goal = [
-    cash_buffer,
-    cash_buffer + 12 * datascope.after_tax_target_profit(),
-]
 for year in years:
     current_year = [datetime.date(year, 1, 1), datetime.date(year, 12, 31)]
+    cash_goal = [
+        cash_buffer,
+        cash_buffer + 12 * datascope.after_tax_target_profit(current_year[-1]),
+    ]
     plt.plot(current_year, cash_goal, **goal_styles)
 
 # axis labels
