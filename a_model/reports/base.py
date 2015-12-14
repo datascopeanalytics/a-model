@@ -41,6 +41,9 @@ class Browser(webdriver.Firefox):
     This class is a context manager to be sure to close the browser when we're
     all done.
     """
+
+    SLEEPING_TIME = 3  # seconds
+
     def __init__(self, *args, **kwargs):
 
         # create a firefox profile to automatically download files (like excel
@@ -77,9 +80,19 @@ class Browser(webdriver.Firefox):
         self.find_element_by_name("Email").send_keys(username)
         self.find_element_by_name("Password").send_keys(password)
         # if you don't wait for a tiny bit before clicking the button,
-        # quickbooks will not let you sign in
-        time.sleep(3)
+        # quickbooks will not let you sign in. sleeping after clicking also
+        # helps let quickbooks log you into the system before making the next
+        # request.
+        time.sleep(self.SLEEPING_TIME)
         self.find_element_by_name("SignIn").click()
+        time.sleep(self.SLEEPING_TIME)
+
+    def get(self, *args, **kwargs):
+        # wrap these GET requests in SLEEPING_TIME to give poor qwuickbwooks
+        # some time to rest before asking it for more information.
+        time.sleep(self.SLEEPING_TIME)
+        result = super(Browser, self).get(*args, **kwargs)
+        time.sleep(self.SLEEPING_TIME)
 
 
 class Cell(object):
