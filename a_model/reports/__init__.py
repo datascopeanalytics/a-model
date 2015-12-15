@@ -50,9 +50,10 @@ for module_name in _iter_module_names():
         elif report_cls.download_method == 'gdrive':
             DOWNLOAD_GDRIVE_REPORTS.add(report_cls)
         elif report_cls.download_method is not None:
-            raise ValueError(
-                'download_method must be either "quickbooks", "gdrive", or None'
-            )
+            raise ValueError((
+                'download_method must be either "quickbooks", "gdrive", '
+                'or None'
+            ))
         if report_cls.upload_method == 'gdrive':
             UPLOAD_GDRIVE_REPORTS.add(report_cls)
         elif report_cls.upload_method is not None:
