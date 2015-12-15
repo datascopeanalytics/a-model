@@ -7,6 +7,11 @@ spreadsheet.
 
 from a_model import reports
 from a_model.datascope import Datascope
+from a_model.argparsers import SyncParser
+
+# parse command line arguments
+parser = SyncParser(description=__doc__)
+args = parser.parse_args()
 
 # get some credentials from the datascope object
 datascope = Datascope()
@@ -14,5 +19,5 @@ username = datascope.config.get('quickbooks', 'username')
 password = datascope.config.get('quickbooks', 'password')
 
 # download and sync the reports
-reports.cache_quickbooks_locally(username, password)
-reports.sync_local_cache_with_gdrive()
+reports.cache_quickbooks_locally(username, password, reports=args.reports)
+reports.sync_local_cache_with_gdrive(reports=args.reports)

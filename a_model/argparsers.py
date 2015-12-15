@@ -1,6 +1,23 @@
 import argparse
 import datetime
 
+from . import reports
+
+
+class SyncParser(argparse.ArgumentParser):
+
+    def __init__(self, *args, **kwargs):
+        super(SyncParser, self).__init__(*args, **kwargs)
+        self.add_argument(
+            'reports',
+            metavar='REPORT_NAME',
+            nargs='*',
+            type=str,
+            help='specific reports you would like to sync',
+            choices=reports.AVAILABLE_REPORTS,
+            default=[],
+        )
+
 
 class SimulationParser(argparse.ArgumentParser):
 
