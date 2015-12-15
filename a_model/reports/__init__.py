@@ -46,15 +46,15 @@ for module_name in _iter_module_names():
     if report_cls and report_cls.report_name:
         AVAILABLE_REPORTS.add(report_cls.report_name)
         if report_cls.download_method == 'quickbooks':
-            DOWNLOAD_QUICKBOOKS_REPORTS.add(report_cls.report_name)
+            DOWNLOAD_QUICKBOOKS_REPORTS.add(report_cls)
         elif report_cls.download_method == 'gdrive':
-            DOWNLOAD_GDRIVE_REPORTS.add(report_cls.report_name)
+            DOWNLOAD_GDRIVE_REPORTS.add(report_cls)
         elif report_cls.download_method is not None:
             raise ValueError(
                 'download_method must be either "quickbooks", "gdrive", or None'
             )
         if report_cls.upload_method == 'gdrive':
-            UPLOAD_GDRIVE_REPORTS.add(report_cls.report_name)
+            UPLOAD_GDRIVE_REPORTS.add(report_cls)
         elif report_cls.upload_method is not None:
             raise ValueError(
                 'upload_method must be either "gdrive" or None'
@@ -65,17 +65,24 @@ def cache_quickbooks_locally(username, password, reports=None):
     """Download data from various locations"""
     reports = reports or AVAILABLE_REPORTS
 
+    # determine which quickbooks reports need to be downloaded before
+    # instantiating a browser instance
+    download_quickbooks_reports = []
+    for report_cls in DOWNLOAD_QUICKBOOKS_REPORTS:
+        if report_cls.report_name in reports:
+            download_quickbooks_reports.append(report_cls)
+
     # these things all come from quickbooks and require selenium
-    with base.Browser() as browser:
-        browser.login_quickbooks(username, password)
-        for report_cls in DOWNLOAD_QUICKBOOKS_REPORTS:
-            if report_cls.report_name in reports:
+    if download_quickbooks_reports:
+        with base.Browser() as browser:
+            browser.login_quickbooks(username, password)
+            for report_cls in download_quickbooks_reports:
                 report_cls().download_from_quickbooks(browser)
 
     # this is manually entered in a google spreadsheet
     for report_cls in DOWNLOAD_GDRIVE_REPORTS:
         if report_cls.report_name in reports:
-            report_cls().download_from_quickbooks(browser)
+            report_cls().download_from_gdrive()
 
 
 def sync_local_cache_with_gdrive(reports=None):
