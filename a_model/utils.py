@@ -4,6 +4,8 @@ import datetime
 import calendar
 import os
 
+from dateutil import relativedelta
+
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 QBO_DATE_FORMAT = '%m/%d/%Y'
 
@@ -60,7 +62,7 @@ def iter_end_of_months(start_date, end_date):
 
 def date_in_n_months(n_months):
     date = end_of_month(datetime.datetime.today())
-    date += datetime.timedelta(days=30*n_months)
+    date += relativedelta.relativedelta(months=n_months)
     return end_of_month(date)
 
 
