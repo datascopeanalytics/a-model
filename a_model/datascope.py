@@ -239,6 +239,8 @@ class Datascope(object):
         revenues = self.simulate_revenues(universe, n_months)
         costs = self.simulate_costs(universe, n_months)
         monthly_cash = []
+        bonus_pool = None
+        quarterly_taxes = dict((month, None) for month in tax_months)
         for month, date in enumerate(self.iter_future_months(n_months)):
 
             # quarterly tax draws only decrease the cash in the bank; they do
@@ -249,37 +251,40 @@ class Datascope(object):
             ytd_profit = ytd_revenue - ytd_cost
             if date.month in tax_months and ytd_profit > 0:
                 quarterly_tax = self.tax_rate * ytd_profit - ytd_tax_draws
-                if quarterly_tax > 0:
-                    cash -= quarterly_tax
-                    ytd_tax_draws += quarterly_tax
-                if date.month == 1:
-                    ytd_tax_draws = 0.0
+                quarterly_tax = max([0.0, quarterly_tax])
+                quarterly_taxes[date.month] = quarterly_tax
+                cash -= quarterly_tax
+                ytd_tax_draws += quarterly_tax
 
-            # pay expenses and put that $$$ in the bank. bonus calculation has
-            # to happen here to have access to the amount of cash in the bank
-            # after taxes for Q4 of the previous year have been drawn. bonus
-            # counts as an expense and reduces our tax burden. taxes have
-            # already been paid on dividends and are just drawn from the bank
-            if date.month == 1:
-                buffer = self.get_cash_buffer()
-                pool = cash - buffer
-                f = self.fraction_profit_for_dividends
-                costs[month] += (1.0 - f) * pool
-                if pool > 0:
-                    cash -= f * pool
+            # pay all normal expenses and add revenues for the month
             cash -= costs[month]
             cash += revenues[month]
+
+            # pay bonuses at the end of December. can instead count this in
+            # January if it looks like Datascope's profits will grow in the
+            # next year, but this gives us the flexibility to pay bonuses early
+            # if appropriate. bonus calculation has to happen here to have
+            # access to the net cash in the bank at the end of the month. bonus
+            # counts as an expense and reduces our tax burden. taxes have
+            # already been paid on dividends and are just drawn from the bank.
+            if date.month == 12:
+                buffer = self.get_cash_buffer()
+                bonus_pool = max([0.0, cash - buffer])
+                f = self.fraction_profit_for_dividends
+                costs[month] += (1.0 - f) * bonus_pool
+                cash -= f * bonus_pool
 
             # reset the ytd calculations as necessary to make the tax
             # calculations correct
             if date.month == 1:
                 ytd_revenue, ytd_cost = 0.0, 0.0
+                ytd_tax_draws = 0.0
             ytd_cost += costs[month]
             ytd_revenue += revenues[month]
 
             # record and return the cash in the bank at the end of the month
             monthly_cash.append(cash)
-        return monthly_cash
+        return monthly_cash, bonus_pool, quarterly_taxes
 
     def simulate_monthly_cash(self, n_months=12, n_universes=1000,
                               verbose=False):
@@ -287,12 +292,17 @@ class Datascope(object):
         month.
         """
         monthly_cash_outputs = []
+        bonus_pool_outputs = []
+        quarterly_taxes_outputs = collections.defaultdict(list)
         for universe in range(n_universes):
             if verbose and universe % 100 == 0:
                 print >> sys.stderr, "simulation %d" % universe
-            monthly_cash_outputs.append(
+            monthly_cash, bonus_pool, quarterly_taxes = \
                 self._simulate_single_universe_monthly_cash(universe, n_months)
-            )
+            monthly_cash_outputs.append(monthly_cash)
+            bonus_pool_outputs.append(bonus_pool)
+            for month in quarterly_taxes:
+                quarterly_taxes_outputs[month].append(quarterly_taxes[month])
         return monthly_cash_outputs
 
     def get_cash_goal_in_month(self, month):
