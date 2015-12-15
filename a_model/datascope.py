@@ -294,7 +294,7 @@ class Datascope(object):
         """calculate the cash we want to have in the bank in `month` months
         from now
         """
-        cash_goal = self.n_months_buffer * self.costs()
+        cash_goal = self.n_months_buffer * self.average_historical_costs()
         date = utils.date_in_n_months(month)
         cash_goal += date.month * self.after_tax_target_profit(date)
         return cash_goal
