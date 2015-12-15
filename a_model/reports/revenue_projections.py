@@ -31,7 +31,7 @@ class RevenueProjections(Report):
     def __iter__(self):
         now = self.get_now()
         for date, amount in self.get_revenue_projections():
-            if date < now:
+            if date <= now:
                 raise ValueError((
                     "Double check Revenue Projections spreadsheet. There is a "
                     "projected revenue in the past"
