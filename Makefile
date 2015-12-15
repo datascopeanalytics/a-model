@@ -13,7 +13,12 @@ CSV_OUTPUT = \
 
 all: csvs pngs
 
-clean:
+clean: clean_csvs clean_pngs
+
+clean_csvs:
+	rm -f $(CSV_OUTPUT)
+
+clean_pngs:
 	rm -f $(PNG_OUTPUT)
 
 csvs: $(CSV_OUTPUT)
