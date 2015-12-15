@@ -261,18 +261,6 @@ class Report(object):
                 max_cell.col = cell.col
         return max_cell
 
-    # def _row_cell_range(self, row, min_col, max_col):
-    #     return '%(min_col)s%(row)d:%(max_col)s%(row)d' % locals()
-    #
-    # def _col_cell_range(self, col, min_row, max_row):
-    #     return '%(col)s%(min_row)d:%(col)s%(max_row)d' % locals()
-    #
-    # def iter_cells_in_range(self, cell_range):
-    #     for row in self.worksheet.iter_rows(cell_range):
-    #         for cell in row:
-    #             yield cell
-    #
-
     def _resolve_min_max(self, min_coord, max_coord):
         return min_coord or 0, max_coord or sys.maxint
 
@@ -320,11 +308,3 @@ class Report(object):
             t += datetime.timedelta(days=1)
             t = utils.end_of_month(t)
         return t
-
-    # def get_float_from_cell(self, float_cell):
-    #     if float_cell.value is None:
-    #         return 0.0
-    #     elif isinstance(float_cell.value, (float, int, long)):
-    #         return float(float_cell.value)
-    #     else:
-    #         return float(float_cell.value.strip('='))
