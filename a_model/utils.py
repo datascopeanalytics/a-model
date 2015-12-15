@@ -61,7 +61,7 @@ def iter_end_of_months(start_date, end_date):
 
 
 def date_in_n_months(n_months):
-    date = end_of_month(datetime.datetime.today())
+    date = end_of_last_month()
     date += relativedelta.relativedelta(months=n_months)
     return end_of_month(date)
 
