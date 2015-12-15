@@ -45,8 +45,10 @@ class Person(object):
         """returns the fraction of the year (up to `date`) that this person
         worked
         """
-        beg_of_year = datetime.date(date.year, 1, 1)
+        beg_of_year = max([self.start_date, datetime.date(date.year, 1, 1)])
         end_of_year = date
+        if beg_of_year > end_of_year:
+            return 0.0
         if self.end_date and self.end_date < end_of_year:
             date = max([self.end_date or date, beg_of_year])
         numerator = (date - beg_of_year).days
