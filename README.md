@@ -40,9 +40,11 @@ tied to Datascope's.
    ```
 
 5. Run the [`sync_quickbooks_gdrive.py`](bin/sync_quickbooks_gdrive.py)
-   to download the most up-to-date information from quickbooks.
+   to download the most up-to-date information from quickbooks. You can also
+   sync the data by running `make csvs`
 
-6. Play with the models.
+6. Play with the models on an individual basis (see below) or by running
+   `make` to generate a bunch of figures at once.
 
     * [`bin/profitability_and_salary.py`](bin/profitability_and_salary.py)
       is useful for understanding the relationship between your desired salary
