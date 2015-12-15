@@ -33,7 +33,6 @@ def _get_report_cls(module_name):
             return obj
     return None
 
-
 # automatically detect which reports need to be downloaded form quickbooks,
 # gdrive, and uploaded back to gdrive depending on class attributes on the
 # report objects

@@ -7,6 +7,7 @@ from . import reports
 # cherry picked from http://stackoverflow.com/a/8527629/564709
 class DefaultListAction(argparse.Action):
     CHOICES = list(reports.AVAILABLE_REPORTS)
+
     def __call__(self, parser, namespace, values, option_string=None):
         if values:
             for value in values:
