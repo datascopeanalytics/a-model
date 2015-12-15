@@ -3,6 +3,7 @@ from .base import Report
 
 class UnpaidInvoices(Report):
     report_name = 'unpaid_invoices'
+    download_method = 'quickbooks'
 
     def __init__(self, *args, **kwargs):
         super(UnpaidInvoices, self).__init__()

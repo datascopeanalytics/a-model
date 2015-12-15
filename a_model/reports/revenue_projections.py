@@ -4,6 +4,7 @@ from .base import Report
 class RevenueProjections(Report):
     report_name = 'revenue_projections'
     gsheet_tab_name = 'Revenue Projections'
+    download_method = 'gdrive'
 
     def __init__(self, *args, **kwargs):
         super(RevenueProjections, self).__init__()

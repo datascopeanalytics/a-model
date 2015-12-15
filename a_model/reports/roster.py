@@ -8,6 +8,7 @@ from ..person import Person
 class Roster(Report):
     report_name = 'roster'
     gsheet_tab_name = 'Roster'
+    download_method = 'gdrive'
 
     def iter_people(self):
         self.load_table()

@@ -4,6 +4,8 @@ from .base import Report
 class ProfitLoss(Report):
     report_name = 'profit_loss'
     gsheet_tab_name = 'P&L'
+    download_method = 'quickbooks'
+    upload_method = 'gdrive'
 
     def _get_historical_values(self, row):
         historical_values = []

@@ -4,6 +4,8 @@ from .base import Report
 class BalanceSheet(Report):
     report_name = 'balance_sheet'
     gsheet_tab_name = 'Balance Sheet'
+    download_method = 'quickbooks'
+    upload_method = 'gdrive'
 
     def __init__(self, *args, **kwargs):
         super(BalanceSheet, self).__init__(*args, **kwargs)
