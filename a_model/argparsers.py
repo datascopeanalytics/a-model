@@ -4,6 +4,21 @@ import datetime
 from . import reports
 
 
+# cherry picked from http://stackoverflow.com/a/8527629/564709
+class DefaultListAction(argparse.Action):
+    CHOICES = list(reports.AVAILABLE_REPORTS)
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values:
+            for value in values:
+                if value not in self.CHOICES:
+                    actions = ', '.join([repr(action)
+                                         for action in self.CHOICES])
+                    message = ("invalid choice: {0!r} (choose from {1})"
+                               .format(value, actions))
+                    raise argparse.ArgumentError(self, message)
+            setattr(namespace, self.dest, values)
+
+
 class SyncParser(argparse.ArgumentParser):
 
     def __init__(self, *args, **kwargs):
@@ -14,8 +29,8 @@ class SyncParser(argparse.ArgumentParser):
             nargs='*',
             type=str,
             help='specific reports you would like to sync',
-            choices=list(reports.AVAILABLE_REPORTS),
-            default=[],
+            action=DefaultListAction,
+            default=DefaultListAction.CHOICES,
         )
 
 
