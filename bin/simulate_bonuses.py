@@ -32,7 +32,7 @@ monthly_cash_outcomes = datascope.simulate_monthly_cash(
 # slice the data to get the eoy cash
 eoy = datetime.date(datetime.date.today().year, 12, 31)
 months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
-cash_buffer = datascope.n_months_buffer * datascope.costs()
+cash_buffer = datascope.n_months_buffer * datascope.average_historical_costs()
 person_bonuses = []
 for monthly_cash in monthly_cash_outcomes:
     eoy_cash = monthly_cash[months_until_eoy]
