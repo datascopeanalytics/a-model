@@ -2,7 +2,7 @@ from .base import Report
 
 
 class ProfitLoss(Report):
-    report_name = 'profit_loss.csv'
+    report_name = 'profit_loss'
     gsheet_tab_name = 'P&L'
 
     def _get_historical_values(self, row):

@@ -2,7 +2,7 @@ from .base import Report
 
 
 class BalanceSheet(Report):
-    report_name = 'balance_sheet.csv'
+    report_name = 'balance_sheet'
     gsheet_tab_name = 'Balance Sheet'
 
     def __init__(self, *args, **kwargs):

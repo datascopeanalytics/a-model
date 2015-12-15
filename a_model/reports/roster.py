@@ -6,7 +6,7 @@ from ..person import Person
 
 
 class Roster(Report):
-    report_name = 'roster.csv'
+    report_name = 'roster'
     gsheet_tab_name = 'Roster'
 
     def iter_people(self):

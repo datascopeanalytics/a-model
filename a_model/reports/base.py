@@ -124,8 +124,16 @@ class Cell(object):
 
 
 class Report(object):
+    # TODO: could detect the report and gsheet tab name automatically from the
+    # class name for nearly all reports (except ARAging)
     report_name = None
+    report_ext = '.csv'
     gsheet_tab_name = None
+
+    # specify whether this is downloaded from 'quickbooks' or 'gdrive' and
+    # whether it needs to be uploaded to 'gdrive'
+    download_method = None
+    upload_method = None
 
     # parameters for quickbooks url
     # url for quickbooks QUICKBOOKS_ROOT_URL
@@ -134,7 +142,7 @@ class Report(object):
 
     def __init__(self):
         self.filename = os.path.join(
-            utils.DATA_ROOT, self.report_name
+            utils.DATA_ROOT, self.report_name + self.report_ext
         )
         self.cells = []
 
