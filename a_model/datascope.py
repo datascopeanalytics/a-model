@@ -137,8 +137,7 @@ class Datascope(object):
         return yearly_revenue / yearly_billable_hours
 
     def get_cash_buffer(self):
-        _, costs = zip(*self.profit_loss.get_historical_costs())
-        return self.n_months_buffer * sum(costs) / len(costs)
+        return self.n_months_buffer * self.average_historical_costs()
 
     def iter_future_months(self, n_months):
         # can use any report for this. happened to choose unpaid invoices

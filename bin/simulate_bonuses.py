@@ -23,7 +23,7 @@ args = parser.parse_args()
 datascope = Datascope()
 
 # simulate cashflow for the rest of the year
-monthly_cash_outcomes = datascope.simulate_monthly_cash(
+_, bonus_pool_outcomes, _ = datascope.simulate_monthly_cash(
     n_months=args.n_months,
     n_universes=args.n_universes,
     verbose=args.verbose,
@@ -31,14 +31,10 @@ monthly_cash_outcomes = datascope.simulate_monthly_cash(
 
 # slice the data to get the eoy cash
 eoy = datetime.date(datetime.date.today().year, 12, 31)
-months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
-cash_buffer = datascope.n_months_buffer * datascope.average_historical_costs()
 person_bonuses = []
-for monthly_cash in monthly_cash_outcomes:
-    eoy_cash = monthly_cash[months_until_eoy]
-    profit = eoy_cash - cash_buffer
+for bonus_pool in bonus_pool_outcomes:
     for person in datascope.iter_people():
-        bonus = max(0, profit * person.net_fraction_of_profits(eoy))
+        bonus = bonus_pool * person.net_fraction_of_profits(eoy)
         person_bonuses.append((person.name.capitalize(), bonus))
 
 # cast the data as a dataframe
