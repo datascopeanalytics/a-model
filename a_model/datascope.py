@@ -249,6 +249,8 @@ class Datascope(object):
                 if quarterly_tax > 0:
                     cash -= quarterly_tax
                     ytd_tax_draws += quarterly_tax
+                if date.month == 1:
+                    ytd_tax_draws = 0.0
 
             # pay expenses and put that $$$ in the bank. bonus calculation has
             # to happen here to have access to the amount of cash in the bank
