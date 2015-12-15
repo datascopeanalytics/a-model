@@ -29,7 +29,7 @@ def get_all_n00b_outcomes():
     for n00b in range(0, args.n_n00bs+1):
         if n00b > 0:
             datascope.add_person("n00b_%d" % n00b)
-        monthly_cash_outputs = datascope.simulate_monthly_cash(
+        monthly_cash_outputs, _, _ = datascope.simulate_monthly_cash(
             n_months=args.n_months,
             n_universes=args.n_universes,
             verbose=args.verbose,
