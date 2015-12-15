@@ -29,11 +29,14 @@ datascope = Datascope()
 historical_cash_in_bank = datascope.balance_sheet.get_historical_cash_in_bank()
 
 # simulate cashflow for the rest of the year
-monthly_cash_outcomes = datascope.simulate_monthly_cash(
+outcomes = datascope.simulate_monthly_cash(
     n_months=args.n_months,
     n_universes=args.n_universes,
     verbose=args.verbose,
 )
+monthly_cash_outcomes = outcomes[0]
+bonus_pool_outcomes = outcomes[1]
+quarterly_tax_outcomes = outcomes[2]
 
 # transform the data in a convenient way for plotting
 historical_t, historical_cash = zip(*historical_cash_in_bank)
@@ -112,7 +115,7 @@ plt.ylabel('cash in bank')
 eoy = datetime.date(datetime.date.today().year, 12, 31)
 months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
 outcomes = datascope.get_outcomes_in_month(
-    months_until_eoy, monthly_cash_outcomes
+    months_until_eoy, monthly_cash_outcomes,
 )
 
 # outcome labels
@@ -166,7 +169,16 @@ for tic in ax.xaxis.get_major_ticks():
 for tic in ax.yaxis.get_major_ticks():
     tic.tick2On = False
 
-# other labels
+# save results to file and print a few other useful summary statistics
 filename = 'cash_in_bank.png'
 plt.savefig(filename)
 print "results now available in", filename
+print "2.5/50/97.5 percentile bonus pool size:", \
+    numpy.percentile(bonus_pool_outcomes, 2.5), \
+    numpy.percentile(bonus_pool_outcomes, 50), \
+    numpy.percentile(bonus_pool_outcomes, 97.5)
+for month, values in sorted(quarterly_tax_outcomes.iteritems()):
+    print "2.5/50/97.5 percentile tax draw in month %d:" % month, \
+        numpy.percentile(values, 2.5), \
+        numpy.percentile(values, 50), \
+        numpy.percentile(values, 97.5)

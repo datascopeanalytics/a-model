@@ -248,8 +248,8 @@ class Datascope(object):
             # Q4 of the previous year so we reset the ytd_* values below. we
             # pay taxes on our ytd profit but without also paying duplicate
             # taxes on the previous quarters
-            ytd_profit = ytd_revenue - ytd_cost
-            if date.month in tax_months and ytd_profit > 0:
+            if date.month in tax_months:
+                ytd_profit = max([0.0, ytd_revenue - ytd_cost])
                 quarterly_tax = self.tax_rate * ytd_profit - ytd_tax_draws
                 quarterly_tax = max([0.0, quarterly_tax])
                 quarterly_taxes[date.month] = quarterly_tax
@@ -293,7 +293,7 @@ class Datascope(object):
         """
         monthly_cash_outputs = []
         bonus_pool_outputs = []
-        quarterly_taxes_outputs = collections.defaultdict(list)
+        quarterly_tax_outputs = collections.defaultdict(list)
         for universe in range(n_universes):
             if verbose and universe % 100 == 0:
                 print >> sys.stderr, "simulation %d" % universe
@@ -302,8 +302,8 @@ class Datascope(object):
             monthly_cash_outputs.append(monthly_cash)
             bonus_pool_outputs.append(bonus_pool)
             for month in quarterly_taxes:
-                quarterly_taxes_outputs[month].append(quarterly_taxes[month])
-        return monthly_cash_outputs
+                quarterly_tax_outputs[month].append(quarterly_taxes[month])
+        return monthly_cash_outputs, bonus_pool_outputs, quarterly_tax_outputs
 
     def get_cash_goal_in_month(self, month):
         """calculate the cash we want to have in the bank in `month` months
@@ -319,7 +319,8 @@ class Datascope(object):
         keys = ['goal', 'buffer', 'no bonus', 'squeak by', 'bye bye']
         outcomes = collections.OrderedDict.fromkeys(keys, 0.0)
         cash_buffer = self.get_cash_buffer()
-        for monthly_cash in monthly_cash_outcomes:
+        for i in range(len(monthly_cash_outcomes)):
+            monthly_cash = monthly_cash_outcomes[i]
             cash = monthly_cash[month]
             if cash > cash_goal:
                 outcomes['goal'] += 1
