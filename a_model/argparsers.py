@@ -14,7 +14,7 @@ class SyncParser(argparse.ArgumentParser):
             nargs='*',
             type=str,
             help='specific reports you would like to sync',
-            choices=reports.AVAILABLE_REPORTS,
+            choices=list(reports.AVAILABLE_REPORTS),
             default=[],
         )
 
