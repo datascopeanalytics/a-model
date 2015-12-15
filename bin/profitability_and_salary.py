@@ -39,7 +39,7 @@ print "%40s%15s" % (
 )
 print ""
 print "PERSONAL MONTHLY TAKE HOME PAY:"
-for person in datascope:
+for person in datascope.iter_people():
     print "%10s%15s%15s" % (
         person.name,
         currency_str(person.after_tax_target_salary),

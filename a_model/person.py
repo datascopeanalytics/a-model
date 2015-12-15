@@ -60,7 +60,7 @@ class Person(object):
         worked
         """
         total = 0.0
-        for person in self.datascope:
+        for person in self.datascope.iter_people(date):
             total += person.fraction_of_year(date)
         return self.fraction_of_year(date) / total
 

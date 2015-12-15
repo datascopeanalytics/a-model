@@ -44,9 +44,11 @@ class Datascope(object):
         # variables for caching parameters here
         self._monthly_cash = None
 
-    def __iter__(self):
+    def iter_people(self, date=None):
+        """iterate over all people present at Datascope on `date`."""
         for person in self.people:
-            yield person
+            if date is None or person.is_active(date):
+                yield person
 
     def __len__(self):
         return len(self.people)
@@ -65,10 +67,12 @@ class Datascope(object):
         return person
 
     def n_people(self, date):
-        return len([person for person in self if person.is_active(date)])
+        """number of people that are active datascopers"""
+        return len([person for person in self.iter_people(date)])
 
     def n_partners(self, date):
-        return len([person for person in self if person.is_partner(date)])
+        return len([person for person in self.iter_people()
+                    if person.is_partner(date)])
 
     def after_tax_target_profit(self, date):
         """Based on everyone's personal take-home pay goals in config.ini,
@@ -78,12 +82,11 @@ class Datascope(object):
         # estimate how much profit datascope would have to make so that each
         # person's personal goals are satisfied
         personal_after_tax_target_profits = []
-        for person in self:
-            if person.is_active(date):
-                personal_after_tax_target_profits.append(
-                    person.after_tax_target_salary_from_bonus_dividends() /
-                    person.net_fraction_of_profits(date)
-                )
+        for person in self.iter_people(date):
+            personal_after_tax_target_profits.append(
+                person.after_tax_target_salary_from_bonus_dividends() /
+                person.net_fraction_of_profits(date)
+            )
 
         # if we take the maximum here, then everyone is guaranteed to make *at
         # least* their target take home pay. The median approach makes sure at
@@ -111,7 +114,7 @@ class Datascope(object):
     def average_historical_costs(self):
         """Estimate rough monthly costs for Datascope"""
         _, costs = zip(*self.profit_loss.get_historical_costs())
-        return self.n_months_buffer * sum(costs) / len(costs)
+        return sum(costs) / len(costs)
 
     def ebit(self, date):
         """earnings before interest and taxes (a.k.a. before tax profit
