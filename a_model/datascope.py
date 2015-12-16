@@ -136,8 +136,20 @@ class Datascope(object):
             self.n_people(date)
         return yearly_revenue / yearly_billable_hours
 
-    def get_cash_buffer(self):
-        return self.n_months_buffer * self.average_historical_costs()
+    def get_cash_buffer(self, date=None):
+        """get the cash buffer. without a specific `date` to calculate the
+        number of people, just assume the overall average historical cost
+        """
+        if date is None:
+            cost = self.average_historical_costs()
+        else:
+            n_people = self.n_people(date)
+            fixed_cost = self.profit_loss.get_average_fixed_cost()
+            per_person_costs = \
+                self.profit_loss.get_historical_per_person_costs()
+            per_person_cost = sum(per_person_costs) / len(per_person_costs)
+            cost = fixed_cost + n_people * per_person_cost
+        return self.n_months_buffer * cost
 
     def iter_future_months(self, n_months):
         # can use any report for this. happened to choose unpaid invoices
@@ -314,23 +326,32 @@ class Datascope(object):
         return cash_goal
 
     def get_outcomes_in_month(self, month, monthly_cash_outcomes):
+        date = utils.date_in_n_months(month)
         cash_goal = self.get_cash_goal_in_month(month)
-        keys = ['goal', 'buffer', 'no bonus', 'squeak by', 'bye bye']
+        keys = [
+            '>goal bonus',
+            'buffer+bonus',
+            'buffer low,\n no bonus',
+            'dip into credit',
+            'bye bye',
+        ]
         outcomes = collections.OrderedDict.fromkeys(keys, 0.0)
-        cash_buffer = self.get_cash_buffer()
+        cash_buffer = self.get_cash_buffer(date)
         for i in range(len(monthly_cash_outcomes)):
             monthly_cash = monthly_cash_outcomes[i]
             cash = monthly_cash[month]
+            # TODO: do we need to use the bonus_pool_outcomes to properly
+            # estimate things?
             if cash > cash_goal:
-                outcomes['goal'] += 1
+                outcomes[keys[0]] += 1
             elif cash > cash_buffer:
-                outcomes['buffer'] += 1
+                outcomes[keys[1]] += 1
             elif cash > 0:
-                outcomes['no bonus'] += 1
+                outcomes[keys[2]] += 1
             elif cash > -self.line_of_credit:
-                outcomes['squeak by'] += 1
+                outcomes[keys[3]] += 1
             else:
-                outcomes['bye bye'] += 1
+                outcomes[keys[4]] += 1
         norm = sum(outcomes.values())
         if norm > 0:
             for k, v in outcomes.iteritems():

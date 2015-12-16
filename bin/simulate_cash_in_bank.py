@@ -17,6 +17,7 @@ import matplotlib.patheffects as patheffects
 
 from a_model.datascope import Datascope
 from a_model.argparsers import SimulationParser
+from a_model.utils import iter_end_of_months
 
 # parse command line arguments
 parser = SimulationParser(description=__doc__)
@@ -37,6 +38,16 @@ outcomes = datascope.simulate_monthly_cash(
 monthly_cash_outcomes = outcomes[0]
 bonus_pool_outcomes = outcomes[1]
 quarterly_tax_outcomes = outcomes[2]
+
+# compute the outcomes of all the simulations at the end of this year. don't
+# plot the 'bye bye' one because it never happens and, even if it did, its
+# likelihood can always be inferred by adding the rest of them
+eoy = datetime.date(datetime.date.today().year, 12, 31)
+months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
+outcomes = datascope.get_outcomes_in_month(
+    months_until_eoy, monthly_cash_outcomes,
+)
+outcomes.popitem()
 
 # transform the data in a convenient way for plotting
 historical_t, historical_cash = zip(*historical_cash_in_bank)
@@ -63,6 +74,18 @@ ax.set_autoscale_on(False)
 
 matplotlib.rc('font', size=10)
 
+outcome_scheme = plt.cm.RdGy
+outcome_colors = [
+    outcome_scheme(0.9),
+    outcome_scheme(0.8),
+    outcome_scheme(0.2),
+    outcome_scheme(0.1),
+    # (83/255., 42/255., 206/255.),
+    # (53/255., 101/255., 205/255.),
+    # (89/255., 78/255., 75/255.),
+    # (195/255., 23/255., 32/255.),
+]
+
 # format the xaxis
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
 ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
@@ -75,86 +98,83 @@ plt.yticks(yticks, yticklabels)
 
 # plot the historical data
 historical_params = {
-    'color': '#e41a1c',
+    'color': outcome_scheme(1.0),
     'linewidth': 2,
 }
 plt.plot(historical_t, historical_cash, **historical_params)
 
 # plot the simulations
 for monthly_cash in monthly_cash_outcomes:
-    plt.plot(monthly_t, monthly_cash, color='#999999', alpha=0.04)
+    plt.plot(monthly_t, monthly_cash, color='w', alpha=0.04)
 
 # plot the median
 plt.plot(monthly_t, median_monthly_cash, linestyle='--', **historical_params)
 
 # plot the zero line where we need to dip into line of credit
-plt.plot(t_domain, [0] * len(t_domain), color='k')
-
-# cash buffer line
-goal_styles = {
-    'color': 'k',
-    'linestyle': '--',
+outcome_region_params = {
+    'alpha': 0.8,
+    'edgecolor': 'w',
+    'linewidths': 0,
 }
-cash_buffer = datascope.get_cash_buffer()
-plt.plot(t_domain, [cash_buffer] * len(t_domain), **goal_styles)
+plt.fill_between(
+    t_domain, 0, -datascope.line_of_credit,
+    facecolor=outcome_colors[3],
+    **outcome_region_params
+)
 
-# plot the goal lines
-years = range(t_domain[0].year, t_domain[1].year+1)
-for year in years:
-    current_year = [datetime.date(year, 1, 1), datetime.date(year, 12, 31)]
-    cash_goal = [
-        cash_buffer,
-        cash_buffer + 12 * datascope.after_tax_target_profit(current_year[-1]),
-    ]
-    plt.plot(current_year, cash_goal, **goal_styles)
+# plot the buffer, buffer+bonus and goal bonus zones
+goal_dates, cash_buffers, cash_goals = [], [], []
+eoy_cash_buffer, eoy_cash_goal = None, None
+for date in iter_end_of_months(t_domain[0], t_domain[1]):
+    cash_buffer = datascope.get_cash_buffer(date)
+    if date.month == 1:
+        goal_dates.append(datetime.date(date.year, date.month, 1))
+        cash_buffers.append(cash_buffer)
+        cash_goals.append(cash_buffer)
+    goal_dates.append(date)
+    cash_buffers.append(cash_buffer)
+    target_monthly_profit = datascope.after_tax_target_profit(date)
+    cash_goals.append(cash_buffer + date.month * target_monthly_profit)
+    if date == eoy:
+        eoy_cash_buffer = cash_buffers[-1]
+        eoy_cash_goal = cash_goals[-1]
+plt.fill_between(
+    goal_dates, 0, cash_buffers,
+    facecolor=outcome_colors[2],
+    **outcome_region_params
+)
+plt.fill_between(
+    goal_dates, cash_goals, cash_buffers,
+    facecolor=outcome_colors[1],
+    **outcome_region_params
+)
+plt.fill_between(
+    goal_dates, cash_goals, ymax,
+    facecolor=outcome_colors[0],
+    **outcome_region_params
+)
 
 # axis labels
 plt.ylabel('cash in bank')
 
-# compute the outcomes of all the simulations at the end of this year
-eoy = datetime.date(datetime.date.today().year, 12, 31)
-months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
-outcomes = datascope.get_outcomes_in_month(
-    months_until_eoy, monthly_cash_outcomes,
-)
-
 # outcome labels
 # http://matplotlib.org/examples/pylab_examples/multiline.html
 # http://matplotlib.org/examples/pylab_examples/patheffect_demo.html
-label_style = {
-    'horizontalalignment': 'right',
-    'path_effects': [patheffects.withStroke(linewidth=2, foreground="w")],
-}
-outcome_format = '{:.0%}'
-plt.text(
-    eoy, cash_goal[-1],
-    'goal\n' + outcome_format.format(outcomes['goal']),
-    verticalalignment='bottom',
-    **label_style
-)
-plt.text(
-    eoy, cash_buffer,
-    'buffer\n' + outcome_format.format(outcomes['buffer']),
-    verticalalignment='bottom',
-    **label_style
-)
-plt.text(
-    eoy, cash_buffer/2,
-    'no bonus\n' + outcome_format.format(outcomes['no bonus']),
-    verticalalignment='center',
-    **label_style
-)
-plt.text(
-    eoy, -datascope.line_of_credit / 20.0,
-    'squeak by\n' + outcome_format.format(outcomes['squeak by']),
-    verticalalignment='top',
-    **label_style
-)
-plt.text(
-    eoy, -datascope.line_of_credit,
-    'bye bye\n' + outcome_format.format(outcomes['bye bye']),
-    **label_style
-)
+ys = [
+    (ymax + eoy_cash_goal) / 2,
+    (eoy_cash_goal + cash_buffer) / 2,
+    cash_buffer/2,
+    -datascope.line_of_credit / 2,
+]
+for key, y, color in zip(outcomes, ys, outcome_colors):
+    plt.text(
+        eoy, y,
+        key + '\n' + '{:.0%}'.format(outcomes[key]),
+        horizontalalignment='right',
+        color=color,
+        path_effects=[patheffects.withStroke(linewidth=2, foreground="w")],
+        verticalalignment='center',
+    )
 
 # get rid of the axis frame
 # http://stackoverflow.com/a/28720127/564709
