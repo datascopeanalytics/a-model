@@ -69,12 +69,14 @@ ax = plt.gca()
 ax.set_autoscale_on(False)
 
 matplotlib.rc('font', size=10)
-outcome_colors = []
-n_shaded_outcomes = len(outcomes) - 1
-for i in range(n_shaded_outcomes):
-    outcome_colors.append(plt.cm.GnBu(0.5*(1 + float(i) / (n_shaded_outcomes - 1))))
-outcome_colors.append('k')
 
+outcome_colors = [
+    plt.cm.RdGy(0.9),
+    plt.cm.RdGy(0.7),
+    plt.cm.RdGy(0.3),
+    plt.cm.RdGy(0.1),
+    'k'
+]
 
 # format the xaxis
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
@@ -88,7 +90,8 @@ plt.yticks(yticks, yticklabels)
 
 # plot the historical data
 historical_params = {
-    'color': '#e41a1c',
+    # 'color': '#e41a1c',
+    'color': '#2166ac',
     'linewidth': 2,
 }
 plt.plot(historical_t, historical_cash, **historical_params)
@@ -102,14 +105,15 @@ plt.plot(monthly_t, median_monthly_cash, linestyle='--', **historical_params)
 
 # plot the zero line where we need to dip into line of credit
 plt.plot(t_domain, [0] * len(t_domain), color='k')
-fill_between_params = {
-    'alpha': 0.4,
+outcome_region_params = {
+    'alpha': 0.7,
     'edgecolor': 'w',
+    'linewidths': 0,
 }
 plt.fill_between(
     t_domain, 0, -datascope.line_of_credit,
     facecolor=outcome_colors[3],
-    **fill_between_params
+    **outcome_region_params
 )
 
 # cash buffer line
@@ -122,7 +126,7 @@ plt.plot(t_domain, [cash_buffer] * len(t_domain), **goal_styles)
 plt.fill_between(
     t_domain, 0, cash_buffer,
     facecolor=outcome_colors[2],
-    **fill_between_params
+    **outcome_region_params
 )
 
 # plot the goal lines
@@ -134,6 +138,16 @@ for year in years:
         cash_buffer + 12 * datascope.after_tax_target_profit(current_year[-1]),
     ]
     plt.plot(current_year, cash_goal, **goal_styles)
+    plt.fill_between(
+        current_year, cash_goal, ymax,
+        facecolor=outcome_colors[0],
+        **outcome_region_params
+    )
+    plt.fill_between(
+        current_year, cash_goal, cash_buffer,
+        facecolor=outcome_colors[1],
+        **outcome_region_params
+    )
 
 # axis labels
 plt.ylabel('cash in bank')
