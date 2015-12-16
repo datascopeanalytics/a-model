@@ -73,7 +73,7 @@ ax.set_autoscale_on(False)
 
 matplotlib.rc('font', size=10)
 
-outcome_scheme = plt.cm.BrBG
+outcome_scheme = plt.cm.RdGy
 outcome_colors = [
     outcome_scheme(0.9),
     outcome_scheme(0.8),
