@@ -38,12 +38,15 @@ monthly_cash_outcomes = outcomes[0]
 bonus_pool_outcomes = outcomes[1]
 quarterly_tax_outcomes = outcomes[2]
 
-# compute the outcomes of all the simulations at the end of this year
+# compute the outcomes of all the simulations at the end of this year. don't
+# plot the 'bye bye' one because it never happens and, even if it did, its
+# likelihood can always be inferred by adding the rest of them
 eoy = datetime.date(datetime.date.today().year, 12, 31)
 months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
 outcomes = datascope.get_outcomes_in_month(
     months_until_eoy, monthly_cash_outcomes,
 )
+outcomes.popitem()
 
 # transform the data in a convenient way for plotting
 historical_t, historical_cash = zip(*historical_cash_in_bank)
@@ -70,12 +73,12 @@ ax.set_autoscale_on(False)
 
 matplotlib.rc('font', size=10)
 
+outcome_scheme = plt.cm.BrBG
 outcome_colors = [
-    plt.cm.RdGy(0.9),
-    plt.cm.RdGy(0.7),
-    plt.cm.RdGy(0.3),
-    plt.cm.RdGy(0.1),
-    'k'
+    outcome_scheme(0.9),
+    outcome_scheme(0.8),
+    outcome_scheme(0.2),
+    outcome_scheme(0.1),
 ]
 
 # format the xaxis
@@ -90,23 +93,21 @@ plt.yticks(yticks, yticklabels)
 
 # plot the historical data
 historical_params = {
-    # 'color': '#e41a1c',
-    'color': '#2166ac',
+    'color': outcome_scheme(1.0),
     'linewidth': 2,
 }
 plt.plot(historical_t, historical_cash, **historical_params)
 
 # plot the simulations
 for monthly_cash in monthly_cash_outcomes:
-    plt.plot(monthly_t, monthly_cash, color='#999999', alpha=0.04)
+    plt.plot(monthly_t, monthly_cash, color='w', alpha=0.04)
 
 # plot the median
 plt.plot(monthly_t, median_monthly_cash, linestyle='--', **historical_params)
 
 # plot the zero line where we need to dip into line of credit
-plt.plot(t_domain, [0] * len(t_domain), color='k')
 outcome_region_params = {
-    'alpha': 0.7,
+    'alpha': 0.8,
     'edgecolor': 'w',
     'linewidths': 0,
 }
@@ -122,7 +123,6 @@ goal_styles = {
     'linestyle': '--',
 }
 cash_buffer = datascope.get_cash_buffer()
-plt.plot(t_domain, [cash_buffer] * len(t_domain), **goal_styles)
 plt.fill_between(
     t_domain, 0, cash_buffer,
     facecolor=outcome_colors[2],
@@ -137,7 +137,6 @@ for year in years:
         cash_buffer,
         cash_buffer + 12 * datascope.after_tax_target_profit(current_year[-1]),
     ]
-    plt.plot(current_year, cash_goal, **goal_styles)
     plt.fill_between(
         current_year, cash_goal, ymax,
         facecolor=outcome_colors[0],
@@ -160,7 +159,6 @@ ys = [
     (cash_goal[-1] + cash_buffer) / 2,
     cash_buffer/2,
     -datascope.line_of_credit / 2,
-    -datascope.line_of_credit,
 ]
 for key, y, color in zip(outcomes, ys, outcome_colors):
     plt.text(
