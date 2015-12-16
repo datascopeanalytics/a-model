@@ -214,9 +214,9 @@ class Report(object):
 
     def download_from_gdrive(self):
         google_worksheet = self.open_google_worksheet()
-        response = google_worksheet.export('csv')
+        csv_str = google_worksheet.export('csv')
         with open(self.filename, 'w') as output:
-            output.write(response.read())
+            output.write(csv_str)
         print self.filename
 
     def upload_to_gdrive(self):
