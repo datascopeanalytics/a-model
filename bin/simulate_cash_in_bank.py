@@ -105,7 +105,7 @@ plt.plot(historical_t, historical_cash, **historical_params)
 
 # plot the simulations
 for monthly_cash in monthly_cash_outcomes:
-    plt.plot(monthly_t, monthly_cash, color='w', alpha=0.04)
+    plt.plot(monthly_t, monthly_cash, color='w', alpha=4.0 / args.n_universes)
 
 # plot the median
 plt.plot(monthly_t, median_monthly_cash, linestyle='--', **historical_params)
