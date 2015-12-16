@@ -168,13 +168,17 @@ ys = [
 ]
 for key, y, color in zip(outcomes, ys, outcome_colors):
     plt.text(
-        eoy, y,
+        eoy - datetime.timedelta(days=30),
+        y,
         key + '\n' + '{:.0%}'.format(outcomes[key]),
         horizontalalignment='right',
         color=color,
         path_effects=[patheffects.withStroke(linewidth=2, foreground="w")],
         verticalalignment='center',
     )
+
+# add a vertical goal line to make it easier to see the results
+plt.plot([eoy, eoy], [-yunit, ymax], linestyle='--', color='w', linewidth=2)
 
 # get rid of the axis frame
 # http://stackoverflow.com/a/28720127/564709
