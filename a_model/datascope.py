@@ -326,6 +326,7 @@ class Datascope(object):
         return cash_goal
 
     def get_outcomes_in_month(self, month, monthly_cash_outcomes):
+        date = utils.date_in_n_months(month)
         cash_goal = self.get_cash_goal_in_month(month)
         keys = [
             '>goal bonus',
@@ -335,7 +336,7 @@ class Datascope(object):
             'bye bye',
         ]
         outcomes = collections.OrderedDict.fromkeys(keys, 0.0)
-        cash_buffer = self.get_cash_buffer()
+        cash_buffer = self.get_cash_buffer(date)
         for i in range(len(monthly_cash_outcomes)):
             monthly_cash = monthly_cash_outcomes[i]
             cash = monthly_cash[month]
