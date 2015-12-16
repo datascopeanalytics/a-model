@@ -136,8 +136,20 @@ class Datascope(object):
             self.n_people(date)
         return yearly_revenue / yearly_billable_hours
 
-    def get_cash_buffer(self):
-        return self.n_months_buffer * self.average_historical_costs()
+    def get_cash_buffer(self, date=None):
+        """get the cash buffer. without a specific `date` to calculate the
+        number of people, just assume the overall average historical cost
+        """
+        if date is None:
+            cost = self.average_historical_costs()
+        else:
+            n_people = self.n_people(date)
+            fixed_cost = self.profit_loss.get_average_fixed_cost()
+            per_person_costs = \
+                self.profit_loss.get_historical_per_person_costs()
+            per_person_cost = sum(per_person_costs) / len(per_person_costs)
+            cost = fixed_cost + n_people * per_person_cost
+        return self.n_months_buffer * cost
 
     def iter_future_months(self, n_months):
         # can use any report for this. happened to choose unpaid invoices

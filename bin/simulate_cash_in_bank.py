@@ -118,35 +118,34 @@ plt.fill_between(
     **outcome_region_params
 )
 
-# cash buffer line
-goal_styles = {
-    'color': 'k',
-    'linestyle': '--',
-}
-cash_buffer = datascope.get_cash_buffer()
+# plot the buffer, buffer+bonus and goal bonus zones
+goal_dates, cash_buffers, cash_goals = [], [], []
+eoy_cash_buffer, eoy_cash_goal = None, None
+for date in iter_end_of_months(t_domain[0], t_domain[1]):
+    cash_buffer = datascope.get_cash_buffer(date)
+    if date.month == 1:
+        goal_dates.append(datetime.date(date.year, date.month, 1))
+        cash_buffers.append(cash_buffer)
+        cash_goals.append(cash_buffer)
+    goal_dates.append(date)
+    cash_buffers.append(cash_buffer)
+    cash_goals.append(cash_buffer + date.month * datascope.after_tax_target_profit(date))
+    if date == eoy:
+        eoy_cash_buffer = cash_buffers[-1]
+        eoy_cash_goal = cash_goals[-1]
 plt.fill_between(
-    t_domain, 0, cash_buffer,
+    goal_dates, 0, cash_buffers,
     facecolor=outcome_colors[2],
     **outcome_region_params
 )
-
-# plot the goal bonus zone and the buffer+bonus zone
-goal_dates = []
-cash_goal = []
-for date in iter_end_of_months(t_domain[0], t_domain[1]):
-    if date.month == 1:
-        goal_dates.append(datetime.date(date.year, date.month, 1))
-        cash_goal.append(cash_buffer)
-    goal_dates.append(date)
-    cash_goal.append(cash_buffer + date.month * datascope.after_tax_target_profit(date))
 plt.fill_between(
-    goal_dates, cash_goal, ymax,
-    facecolor=outcome_colors[0],
+    goal_dates, cash_goals, cash_buffers,
+    facecolor=outcome_colors[1],
     **outcome_region_params
 )
 plt.fill_between(
-    goal_dates, cash_goal, cash_buffer,
-    facecolor=outcome_colors[1],
+    goal_dates, cash_goals, ymax,
+    facecolor=outcome_colors[0],
     **outcome_region_params
 )
 
@@ -157,8 +156,8 @@ plt.ylabel('cash in bank')
 # http://matplotlib.org/examples/pylab_examples/multiline.html
 # http://matplotlib.org/examples/pylab_examples/patheffect_demo.html
 ys = [
-    (ymax + cash_goal[-1]) / 2,
-    (cash_goal[-1] + cash_buffer) / 2,
+    (ymax + eoy_cash_goal) / 2,
+    (eoy_cash_goal + cash_buffer) / 2,
     cash_buffer/2,
     -datascope.line_of_credit / 2,
 ]
