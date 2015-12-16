@@ -121,40 +121,21 @@ outcomes = datascope.get_outcomes_in_month(
 # outcome labels
 # http://matplotlib.org/examples/pylab_examples/multiline.html
 # http://matplotlib.org/examples/pylab_examples/patheffect_demo.html
-label_style = {
-    'horizontalalignment': 'right',
-    'path_effects': [patheffects.withStroke(linewidth=2, foreground="w")],
-}
-outcome_format = '{:.0%}'
-plt.text(
-    eoy, cash_goal[-1],
-    'goal\n' + outcome_format.format(outcomes['goal']),
-    verticalalignment='bottom',
-    **label_style
-)
-plt.text(
-    eoy, cash_buffer,
-    'buffer\n' + outcome_format.format(outcomes['buffer']),
-    verticalalignment='bottom',
-    **label_style
-)
-plt.text(
-    eoy, cash_buffer/2,
-    'no bonus\n' + outcome_format.format(outcomes['no bonus']),
-    verticalalignment='center',
-    **label_style
-)
-plt.text(
-    eoy, -datascope.line_of_credit / 20.0,
-    'squeak by\n' + outcome_format.format(outcomes['squeak by']),
-    verticalalignment='top',
-    **label_style
-)
-plt.text(
-    eoy, -datascope.line_of_credit,
-    'bye bye\n' + outcome_format.format(outcomes['bye bye']),
-    **label_style
-)
+ys = [
+    (ymax + cash_goal[-1]) / 2,
+    (cash_goal[-1] + cash_buffer) / 2,
+    cash_buffer/2,
+    -datascope.line_of_credit / 20.0,
+    -datascope.line_of_credit,
+]
+for key, y in zip(outcomes, ys):
+    plt.text(
+        eoy, y,
+        key + '\n' + '{:.0%}'.format(outcomes[key]),
+        horizontalalignment='right',
+        path_effects=[patheffects.withStroke(linewidth=2, foreground="w")],
+        verticalalignment='center',
+    )
 
 # get rid of the axis frame
 # http://stackoverflow.com/a/28720127/564709
