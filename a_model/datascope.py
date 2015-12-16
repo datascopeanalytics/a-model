@@ -95,7 +95,7 @@ class Datascope(object):
         return numpy.median(personal_after_tax_target_profits)
         # return max(personal_after_tax_target_profits)
 
-    def before_tax_profit(self, date):
+    def before_tax_target_profit(self, date):
         # partners must pay taxes at tax_rate, so we need to make
         # 1/(1-tax_rate) more money to account for this
         profit = self.after_tax_target_profit(date) / (1 - self.tax_rate)
@@ -109,7 +109,8 @@ class Datascope(object):
     def revenue(self, date):
         """Monthly revenue target to accomplish target after-tax take-home pay
         """
-        return self.average_historical_costs() + self.before_tax_profit(date)
+        return self.average_historical_costs() + \
+            self.before_tax_target_profit(date)
 
     def average_historical_costs(self):
         """Estimate rough monthly costs for Datascope"""
