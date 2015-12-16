@@ -38,6 +38,13 @@ monthly_cash_outcomes = outcomes[0]
 bonus_pool_outcomes = outcomes[1]
 quarterly_tax_outcomes = outcomes[2]
 
+# compute the outcomes of all the simulations at the end of this year
+eoy = datetime.date(datetime.date.today().year, 12, 31)
+months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
+outcomes = datascope.get_outcomes_in_month(
+    months_until_eoy, monthly_cash_outcomes,
+)
+
 # transform the data in a convenient way for plotting
 historical_t, historical_cash = zip(*historical_cash_in_bank)
 max_cash = max(historical_cash)
@@ -62,6 +69,12 @@ ax = plt.gca()
 ax.set_autoscale_on(False)
 
 matplotlib.rc('font', size=10)
+outcome_colors = []
+n_shaded_outcomes = len(outcomes) - 1
+for i in range(n_shaded_outcomes):
+    outcome_colors.append(plt.cm.GnBu(0.5*(1 + float(i) / (n_shaded_outcomes - 1))))
+outcome_colors.append('k')
+
 
 # format the xaxis
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
@@ -89,6 +102,15 @@ plt.plot(monthly_t, median_monthly_cash, linestyle='--', **historical_params)
 
 # plot the zero line where we need to dip into line of credit
 plt.plot(t_domain, [0] * len(t_domain), color='k')
+fill_between_params = {
+    'alpha': 0.4,
+    'edgecolor': 'w',
+}
+plt.fill_between(
+    t_domain, 0, -datascope.line_of_credit,
+    facecolor=outcome_colors[3],
+    **fill_between_params
+)
 
 # cash buffer line
 goal_styles = {
@@ -97,6 +119,11 @@ goal_styles = {
 }
 cash_buffer = datascope.get_cash_buffer()
 plt.plot(t_domain, [cash_buffer] * len(t_domain), **goal_styles)
+plt.fill_between(
+    t_domain, 0, cash_buffer,
+    facecolor=outcome_colors[2],
+    **fill_between_params
+)
 
 # plot the goal lines
 years = range(t_domain[0].year, t_domain[1].year+1)
@@ -111,13 +138,6 @@ for year in years:
 # axis labels
 plt.ylabel('cash in bank')
 
-# compute the outcomes of all the simulations at the end of this year
-eoy = datetime.date(datetime.date.today().year, 12, 31)
-months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
-outcomes = datascope.get_outcomes_in_month(
-    months_until_eoy, monthly_cash_outcomes,
-)
-
 # outcome labels
 # http://matplotlib.org/examples/pylab_examples/multiline.html
 # http://matplotlib.org/examples/pylab_examples/patheffect_demo.html
@@ -125,14 +145,15 @@ ys = [
     (ymax + cash_goal[-1]) / 2,
     (cash_goal[-1] + cash_buffer) / 2,
     cash_buffer/2,
-    -datascope.line_of_credit / 20.0,
+    -datascope.line_of_credit / 2,
     -datascope.line_of_credit,
 ]
-for key, y in zip(outcomes, ys):
+for key, y, color in zip(outcomes, ys, outcome_colors):
     plt.text(
         eoy, y,
         key + '\n' + '{:.0%}'.format(outcomes[key]),
         horizontalalignment='right',
+        color=color,
         path_effects=[patheffects.withStroke(linewidth=2, foreground="w")],
         verticalalignment='center',
     )
