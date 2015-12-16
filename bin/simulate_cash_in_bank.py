@@ -17,6 +17,7 @@ import matplotlib.patheffects as patheffects
 
 from a_model.datascope import Datascope
 from a_model.argparsers import SimulationParser
+from a_model.utils import iter_end_of_months
 
 # parse command line arguments
 parser = SimulationParser(description=__doc__)
@@ -129,24 +130,25 @@ plt.fill_between(
     **outcome_region_params
 )
 
-# plot the goal lines
-years = range(t_domain[0].year, t_domain[1].year+1)
-for year in years:
-    current_year = [datetime.date(year, 1, 1), datetime.date(year, 12, 31)]
-    cash_goal = [
-        cash_buffer,
-        cash_buffer + 12 * datascope.after_tax_target_profit(current_year[-1]),
-    ]
-    plt.fill_between(
-        current_year, cash_goal, ymax,
-        facecolor=outcome_colors[0],
-        **outcome_region_params
-    )
-    plt.fill_between(
-        current_year, cash_goal, cash_buffer,
-        facecolor=outcome_colors[1],
-        **outcome_region_params
-    )
+# plot the goal bonus zone and the buffer+bonus zone
+goal_dates = []
+cash_goal = []
+for date in iter_end_of_months(t_domain[0], t_domain[1]):
+    if date.month == 1:
+        goal_dates.append(datetime.date(date.year, date.month, 1))
+        cash_goal.append(cash_buffer)
+    goal_dates.append(date)
+    cash_goal.append(cash_buffer + date.month * datascope.after_tax_target_profit(date))
+plt.fill_between(
+    goal_dates, cash_goal, ymax,
+    facecolor=outcome_colors[0],
+    **outcome_region_params
+)
+plt.fill_between(
+    goal_dates, cash_goal, cash_buffer,
+    facecolor=outcome_colors[1],
+    **outcome_region_params
+)
 
 # axis labels
 plt.ylabel('cash in bank')
