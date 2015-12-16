@@ -133,7 +133,8 @@ for date in iter_end_of_months(t_domain[0], t_domain[1]):
         cash_goals.append(cash_buffer)
     goal_dates.append(date)
     cash_buffers.append(cash_buffer)
-    cash_goals.append(cash_buffer + date.month * datascope.after_tax_target_profit(date))
+    target_monthly_profit = datascope.after_tax_target_profit(date)
+    cash_goals.append(cash_buffer + date.month * target_monthly_profit)
     if date == eoy:
         eoy_cash_buffer = cash_buffers[-1]
         eoy_cash_goal = cash_goals[-1]
