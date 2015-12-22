@@ -60,7 +60,9 @@ class Person(object):
         worked
         """
         total = 0.0
-        for person in self.datascope.iter_people(date):
+        # iterate over all people here to be sure to capture people leaving
+        # mid-year
+        for person in self.datascope.iter_people():
             total += person.fraction_of_year(date)
         return self.fraction_of_year(date) / total
 
