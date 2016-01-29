@@ -24,12 +24,13 @@ class SyncParser(argparse.ArgumentParser):
 
     def __init__(self, *args, **kwargs):
         super(SyncParser, self).__init__(*args, **kwargs)
+        choices_str = ', '.join(DefaultListAction.CHOICES)
         self.add_argument(
             'reports',
             metavar='REPORT_NAME',
             nargs='*',
             type=str,
-            help='specific reports you would like to sync',
+            help='specific reports you would like to sync (%s)' % choices_str,
             action=DefaultListAction,
             default=DefaultListAction.CHOICES,
         )
