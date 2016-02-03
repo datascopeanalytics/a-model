@@ -343,7 +343,7 @@ class Datascope(object):
         cash_buffer = self.get_cash_buffer(date)
         for i in range(len(monthly_cash_outcomes)):
             monthly_cash = monthly_cash_outcomes[i]
-            cash = monthly_cash[month]
+            cash = monthly_cash[month-1]
             # TODO: do we need to use the bonus_pool_outcomes to properly
             # estimate things?
             if cash > cash_goal:
