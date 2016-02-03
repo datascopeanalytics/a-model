@@ -36,7 +36,6 @@ class BaseParser(argparse.ArgumentParser):
         return datetime.datetime.strptime(s, '%Y-%m-%d').date()
 
 
-
 class SyncParser(BaseParser):
 
     def __init__(self, *args, **kwargs):
