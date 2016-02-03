@@ -17,7 +17,7 @@ from .decorators import read_or_run
 
 class Datascope(object):
 
-    def __init__(self):
+    def __init__(self, today=None):
 
         # instantiate the config object from the ini file
         config_filename = os.path.join(utils.DROPBOX_ROOT, 'config.ini')
@@ -27,6 +27,9 @@ class Datascope(object):
         # make sure the data_root exists
         if not os.path.exists(utils.DATA_ROOT):
             os.mkdir(utils.DATA_ROOT)
+
+        # create datascope as if it were created today
+        self.today = today or datetime.date.today()
 
         # update financial information from quickbooks cache
         self.profit_loss = reports.ProfitLoss()

@@ -24,7 +24,7 @@ parser = SimulationParser(description=__doc__)
 args = parser.parse_args()
 
 # instantiate datascope
-datascope = Datascope()
+datascope = Datascope(today=args.today)
 
 # get past year's worth of cash in bank
 historical_cash_in_bank = datascope.balance_sheet.get_historical_cash_in_bank()
