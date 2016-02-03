@@ -111,8 +111,9 @@ class Cell(object):
         c = ''
         tens = self.col / 26
         zero = ord('A')
+        # it goes A AA AB, AC, ... BA BB BC ... 
         if tens > 0:
-            c += chr(tens + zero)
+            c += chr(tens + zero - 1)
         c += chr(self.col - tens * 26 + zero)
         return c
 
@@ -224,7 +225,8 @@ class Report(object):
         # parse the resulting data from xls and upload it to a google
         # spreadsheet
         self.load_table()
-        excel_dimensions = self.get_excel_dimensions()
+        max_cell = self.get_max_cell()
+        excel_dimensions = 'A1:%s' % max_cell.excel_coords
 
         # clear the google doc contents
         google_worksheet = self.open_google_worksheet()
@@ -232,6 +234,14 @@ class Report(object):
         for cell in not_empty_cells:
             cell.value = ''
         google_worksheet.update_cells(not_empty_cells)
+
+        # add columns and rows as necessary
+        if google_worksheet.col_count <= max_cell.col + 1:
+            n_cols = max_cell.col + 1 - google_worksheet.col_count
+            google_worksheet.add_cols(n_cols)
+        if google_worksheet.row_count <= max_cell.row + 1:
+            n_rows = max_cell.row + 1 - google_worksheet.row_count
+            google_worksheet.add_rows(n_rows)
 
         # upload the contents
         google_cell_list = google_worksheet.range(excel_dimensions)
@@ -256,10 +266,6 @@ class Report(object):
                 for col, value in enumerate(values):
                     self.add_cell(row, col, value)
         self.cells.sort(key=operator.attrgetter('row', 'col'))
-
-    def get_excel_dimensions(self):
-        max_cell = self.get_max_cell()
-        return 'A1:%s' % max_cell.excel_coords
 
     def get_max_cell(self):
         max_cell = Cell(0, 0, None)
