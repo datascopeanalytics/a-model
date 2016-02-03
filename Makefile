@@ -21,10 +21,10 @@ clean_csvs:
 clean_pngs:
 	rm -f $(PNG_OUTPUT)
 
-csvs: $(CSV_OUTPUT)
+csvs:
 	sync_quickbooks_gdrive.py
 
-pngs: $(PNG_OUTPUT)
+pngs: $(PNG_OUTPUT) csvs
 
 cash_in_bank.png:
 	simulate_cash_in_bank.py
