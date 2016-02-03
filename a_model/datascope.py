@@ -17,7 +17,7 @@ from .decorators import read_or_run
 
 class Datascope(object):
 
-    def __init__(self, today=None):
+    def __init__(self, today=None, add_people=True):
 
         # instantiate the config object from the ini file
         config_filename = os.path.join(utils.DROPBOX_ROOT, 'config.ini')
@@ -41,8 +41,9 @@ class Datascope(object):
 
         # iterate over the config to instantiate each person
         self.people = []
-        for person in self.roster.iter_people():
-            self.add_person(person)
+        if add_people:
+            for person in self.roster.iter_people():
+                self.add_person(person)
 
         # variables for caching parameters here
         self._monthly_cash = None

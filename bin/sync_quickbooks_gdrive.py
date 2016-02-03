@@ -14,7 +14,7 @@ parser = SyncParser(description=__doc__)
 args = parser.parse_args()
 
 # get some credentials from the datascope object
-datascope = Datascope(today=args.today)
+datascope = Datascope(today=args.today, add_people=False)
 username = datascope.config.get('quickbooks', 'username')
 password = datascope.config.get('quickbooks', 'password')
 
