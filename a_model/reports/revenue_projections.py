@@ -35,6 +35,6 @@ class RevenueProjections(Report):
             if date <= now:
                 raise ValueError((
                     "Double check Revenue Projections spreadsheet. There is a "
-                    "projected revenue in the past"
+                    "projected revenue in the past. Try specifying --today"
                 ))
             yield date, amount
