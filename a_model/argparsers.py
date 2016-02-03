@@ -20,7 +20,24 @@ class DefaultListAction(argparse.Action):
             setattr(namespace, self.dest, values)
 
 
-class SyncParser(argparse.ArgumentParser):
+class BaseParser(argparse.ArgumentParser):
+
+    def __init__(self, *args, **kwargs):
+        super(BaseParser, self).__init__(*args, **kwargs)
+        self.add_argument(
+            '--today',
+            metavar='YYYY-MM-DD',
+            type=self.date_type,
+            help='run simulations as if today were YYYY-MM-DD',
+            default=datetime.date.today()
+        )
+
+    def date_type(self, s):
+        return datetime.datetime.strptime(s, '%Y-%m-%d').date()
+
+
+
+class SyncParser(BaseParser):
 
     def __init__(self, *args, **kwargs):
         super(SyncParser, self).__init__(*args, **kwargs)
@@ -36,7 +53,7 @@ class SyncParser(argparse.ArgumentParser):
         )
 
 
-class SimulationParser(argparse.ArgumentParser):
+class SimulationParser(BaseParser):
 
     def __init__(self, *args, **kwargs):
         super(SimulationParser, self).__init__(*args, **kwargs)

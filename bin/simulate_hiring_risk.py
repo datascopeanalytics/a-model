@@ -18,7 +18,7 @@ parser = HiringParser(description=__doc__)
 args = parser.parse_args()
 
 # instantiate datascope
-datascope = Datascope()
+datascope = Datascope(today=args.today)
 
 
 # simulate finances in our current situation and by adding up to n_n00bs new

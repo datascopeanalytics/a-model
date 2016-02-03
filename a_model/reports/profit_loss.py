@@ -27,7 +27,7 @@ class ProfitLoss(Report):
         return self._get_historical_values(6)
 
     def get_historical_costs(self):
-        return self._get_historical_values(73)
+        return self._get_historical_values(72)
 
     def get_qbo_query_params(self):
         return (

@@ -20,7 +20,7 @@ parser = SimulationParser(description=__doc__)
 args = parser.parse_args()
 
 # instantiate datascope
-datascope = Datascope()
+datascope = Datascope(today=args.today)
 
 # simulate cashflow for the rest of the year
 _, bonus_pool_outcomes, _ = datascope.simulate_monthly_cash(

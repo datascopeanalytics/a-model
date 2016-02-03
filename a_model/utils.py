@@ -27,11 +27,11 @@ def thousands_currency_str(x, *args, **kwargs):
     return s.rsplit('.', 1)[0] + 'k'
 
 
-def print_err(s):
-    """print a string to stderr"""
-    print >> sys.stderr, s
+def urlencode(params):
+    return '&'.join('%s=%s' % (a, b) for a, b in params)
 
 
+# methods for parsing the date
 def qbo_date_str(d):
     """return the date in quickbooks online compatible format"""
     return d.strftime(QBO_DATE_FORMAT)
@@ -41,8 +41,8 @@ def qbo_date(s):
     return datetime.datetime.strptime(s, QBO_DATE_FORMAT).date()
 
 
-def end_of_last_month():
-    today = datetime.date.today()
+def end_of_last_month(today=None):
+    today = today or datetime.date.today()
     first_of_month = datetime.date(today.year, today.month, 1)
     return first_of_month - datetime.timedelta(days=1)
 
@@ -64,7 +64,3 @@ def date_in_n_months(n_months):
     date = end_of_last_month()
     date += relativedelta.relativedelta(months=n_months)
     return end_of_month(date)
-
-
-def urlencode(params):
-    return '&'.join('%s=%s' % (a, b) for a, b in params)

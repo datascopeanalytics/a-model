@@ -6,7 +6,7 @@ class UnpaidInvoices(Report):
     download_method = 'quickbooks'
 
     def __init__(self, *args, **kwargs):
-        super(UnpaidInvoices, self).__init__()
+        super(UnpaidInvoices, self).__init__(*args, **kwargs)
         self._cached_projected_payments = None
 
     def get_projected_payments(self):

@@ -24,7 +24,7 @@ parser = SimulationParser(description=__doc__)
 args = parser.parse_args()
 
 # instantiate datascope
-datascope = Datascope()
+datascope = Datascope(today=args.today)
 
 # get past year's worth of cash in bank
 historical_cash_in_bank = datascope.balance_sheet.get_historical_cash_in_bank()
@@ -42,7 +42,7 @@ quarterly_tax_outcomes = outcomes[2]
 # compute the outcomes of all the simulations at the end of this year. don't
 # plot the 'bye bye' one because it never happens and, even if it did, its
 # likelihood can always be inferred by adding the rest of them
-eoy = datetime.date(datetime.date.today().year, 12, 31)
+eoy = datetime.date(args.today.year, 12, 31)
 months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
 outcomes = datascope.get_outcomes_in_month(
     months_until_eoy, monthly_cash_outcomes,
@@ -104,8 +104,9 @@ historical_params = {
 plt.plot(historical_t, historical_cash, **historical_params)
 
 # plot the simulations
+alpha = 0.3 / math.log(args.n_universes)
 for monthly_cash in monthly_cash_outcomes:
-    plt.plot(monthly_t, monthly_cash, color='w', alpha=4.0 / args.n_universes)
+    plt.plot(monthly_t, monthly_cash, color='w', alpha=alpha)
 
 # plot the median
 plt.plot(monthly_t, median_monthly_cash, linestyle='--', **historical_params)

@@ -17,7 +17,7 @@ from .decorators import read_or_run
 
 class Datascope(object):
 
-    def __init__(self):
+    def __init__(self, today=None):
 
         # instantiate the config object from the ini file
         config_filename = os.path.join(utils.DROPBOX_ROOT, 'config.ini')
@@ -28,13 +28,16 @@ class Datascope(object):
         if not os.path.exists(utils.DATA_ROOT):
             os.mkdir(utils.DATA_ROOT)
 
+        # create datascope as if it were created today
+        self.today = today or datetime.date.today()
+
         # update financial information from quickbooks cache
-        self.profit_loss = reports.ProfitLoss()
-        self.ar_aging = reports.ARAging()
-        self.balance_sheet = reports.BalanceSheet()
-        self.unpaid_invoices = reports.UnpaidInvoices()
-        self.revenue_projections = reports.RevenueProjections()
-        self.roster = reports.Roster()
+        self.profit_loss = reports.ProfitLoss(self.today)
+        self.ar_aging = reports.ARAging(self.today)
+        self.balance_sheet = reports.BalanceSheet(self.today)
+        self.unpaid_invoices = reports.UnpaidInvoices(self.today)
+        self.revenue_projections = reports.RevenueProjections(self.today)
+        self.roster = reports.Roster(self.today)
 
         # iterate over the config to instantiate each person
         self.people = []
@@ -340,7 +343,7 @@ class Datascope(object):
         cash_buffer = self.get_cash_buffer(date)
         for i in range(len(monthly_cash_outcomes)):
             monthly_cash = monthly_cash_outcomes[i]
-            cash = monthly_cash[month]
+            cash = monthly_cash[month-1]
             # TODO: do we need to use the bonus_pool_outcomes to properly
             # estimate things?
             if cash > cash_goal:
