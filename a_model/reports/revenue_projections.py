@@ -7,7 +7,7 @@ class RevenueProjections(Report):
     download_method = 'gdrive'
 
     def __init__(self, *args, **kwargs):
-        super(RevenueProjections, self).__init__()
+        super(RevenueProjections, self).__init__(*args, **kwargs)
         self._cached_revenue_projections = None
 
     def get_revenue_projections(self):

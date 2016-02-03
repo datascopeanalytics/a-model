@@ -32,12 +32,12 @@ class Datascope(object):
         self.today = today or datetime.date.today()
 
         # update financial information from quickbooks cache
-        self.profit_loss = reports.ProfitLoss()
-        self.ar_aging = reports.ARAging()
-        self.balance_sheet = reports.BalanceSheet()
-        self.unpaid_invoices = reports.UnpaidInvoices()
-        self.revenue_projections = reports.RevenueProjections()
-        self.roster = reports.Roster()
+        self.profit_loss = reports.ProfitLoss(self.today)
+        self.ar_aging = reports.ARAging(self.today)
+        self.balance_sheet = reports.BalanceSheet(self.today)
+        self.unpaid_invoices = reports.UnpaidInvoices(self.today)
+        self.revenue_projections = reports.RevenueProjections(self.today)
+        self.roster = reports.Roster(self.today)
 
         # iterate over the config to instantiate each person
         self.people = []

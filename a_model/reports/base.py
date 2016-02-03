@@ -19,6 +19,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 import gspread
 from oauth2client.client import SignedJwtAssertionCredentials
+from dateutil.relativedelta import relativedelta
 
 from .. import utils
 
@@ -138,9 +139,9 @@ class Report(object):
     # parameters for quickbooks url
     # url for quickbooks QUICKBOOKS_ROOT_URL
     start_date = datetime.date(2014, 1, 1)
-    end_date = utils.end_of_last_month()
 
-    def __init__(self):
+    def __init__(self, today=None):
+        self.end_date = utils.end_of_last_month(today)
         self.filename = os.path.join(
             utils.DATA_ROOT, self.report_name + self.report_ext
         )
@@ -303,12 +304,12 @@ class Report(object):
         return utils.end_of_month(date)
 
     def get_now(self):
-        return utils.end_of_last_month()
+        return self.end_date
 
     def get_months_from_now(self, date):
         now = self.get_now()
-        delta = date - now
-        return int(math.floor(delta.days / 30.))
+        dt = relativedelta(date, now)
+        return 12 * dt.years + dt.months
 
     def get_date_in_n_months(self, n_months):
         t = self.get_now()
