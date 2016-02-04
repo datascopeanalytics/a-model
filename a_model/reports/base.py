@@ -111,7 +111,7 @@ class Cell(object):
         c = ''
         tens = self.col / 26
         zero = ord('A')
-        # it goes A AA AB, AC, ... BA BB BC ... 
+        # it goes A AA AB, AC, ... BA BB BC ...
         if tens > 0:
             c += chr(tens + zero - 1)
         c += chr(self.col - tens * 26 + zero)
