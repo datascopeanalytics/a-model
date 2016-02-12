@@ -8,10 +8,10 @@ class ProfitLoss(Report):
     upload_method = 'gdrive'
 
     def get_historical_revenues(self):
-        return self.get_historical_values('GrossProfit')
+        return self.get_historical_values('Gross Profit')
 
     def get_historical_costs(self):
-        return self.get_historical_values('TotalExpenses')
+        return self.get_historical_values('Total Expenses')
 
     def get_qbo_query_params(self):
         return (
@@ -39,12 +39,12 @@ class ProfitLoss(Report):
     def get_average_fixed_cost(self):
         fixed_cost_accounts = [
             'Marketing',
-            'PublicRelations',
+            'Public Relations',
             'Bookkeeping',
             'Accounting',
-            'RegisteredAgent',
-            'RentExpense',
-            'TotalUtilities',
+            'Registered Agent',
+            'Rent Expense',
+            'Total Utilities',
         ]
         historical_fixed_costs = []
         for fixed_cost_account in fixed_cost_accounts:

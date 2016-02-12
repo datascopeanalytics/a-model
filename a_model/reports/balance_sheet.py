@@ -28,5 +28,5 @@ class BalanceSheet(Report):
             return self._historical_cash_in_bank
         self.load_table()
         self._historical_cash_in_bank = \
-            self.get_historical_values('TotalBankAccounts')
+            self.get_historical_values('Total Bank Accounts')
         return self._historical_cash_in_bank
