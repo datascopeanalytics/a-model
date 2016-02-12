@@ -183,7 +183,8 @@ class Report(object):
         soup = BeautifulSoup(table_html, 'html.parser')
         for row, tr in enumerate(soup.find_all('tr')):
             for col, cell in enumerate(tr.find_all(re.compile('td|th'))):
-                value = cell.get_text().encode('ascii', 'ignore')
+                value = cell.format_string(cell.get_text(), formatter='html')
+                value = value.replace('&nbsp;', ' ').strip()
                 value = value.replace('$', '').replace(',', '')
                 self.add_cell(row, col, value)
 
@@ -324,7 +325,9 @@ class Report(object):
                 yield cell
 
     def get_historical_values(self, row_name):
-        """get all of the historical values from row that starts with `row_name`"""
+        """get all of the historical values from row that starts with
+        `row_name`
+        """
         historical_values = []
         self.load_table()
 
