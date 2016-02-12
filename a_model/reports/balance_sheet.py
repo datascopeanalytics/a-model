@@ -26,18 +26,7 @@ class BalanceSheet(Report):
     def get_historical_cash_in_bank(self):
         if self._historical_cash_in_bank is not None:
             return self._historical_cash_in_bank
-        self._historical_cash_in_bank = []
         self.load_table()
-
-        # get the dates
-        dates = []
-        for cell in self.iter_cells_in_row(1, 1):
-            dates.append(self.get_date_from_cell(cell))
-
-        # get the values
-        for row in self.iter_rows():
-            account = row[0].value.strip().replace(' ', '')
-            if account == 'TotalBankAccounts':
-                for date, cell in zip(dates, row[1:]):
-                    self._historical_cash_in_bank.append((date, cell.value))
+        self._historical_cash_in_bank = \
+            self.get_historical_values('TotalBankAccounts')
         return self._historical_cash_in_bank

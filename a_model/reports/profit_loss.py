@@ -7,27 +7,11 @@ class ProfitLoss(Report):
     download_method = 'quickbooks'
     upload_method = 'gdrive'
 
-    def _get_historical_values(self, row):
-        historical_values = []
-        self.load_table()
-
-        # exclude the first column (name of accounts) and last column (total)
-        min_col = 1
-        max_col = self.get_max_cell().col - 1
-        date_cells = self.iter_cells_in_row(1, min_col, max_col)
-        value_cells = self.iter_cells_in_row(row, min_col, max_col)
-        for date_cell, value_cell in zip(date_cells, value_cells):
-            historical_values.append((
-                self.get_date_from_cell(date_cell),
-                value_cell.value or 0.0,
-            ))
-        return historical_values
-
     def get_historical_revenues(self):
-        return self._get_historical_values(6)
+        return self.get_historical_values('GrossProfit')
 
     def get_historical_costs(self):
-        return self._get_historical_values(71)
+        return self.get_historical_values('TotalExpenses')
 
     def get_qbo_query_params(self):
         return (
@@ -53,7 +37,7 @@ class ProfitLoss(Report):
         return self._get_ytd_value(historical_costs)
 
     def get_average_fixed_cost(self):
-        fixed_cost_accounts = set([
+        fixed_cost_accounts = [
             'Marketing',
             'PublicRelations',
             'Bookkeeping',
@@ -61,15 +45,14 @@ class ProfitLoss(Report):
             'RegisteredAgent',
             'RentExpense',
             'TotalUtilities',
-        ])
+        ]
         historical_fixed_costs = []
-        for cell in self.iter_cells_in_col(0):
-            if cell.value in fixed_cost_accounts:
-                historical_account = self._get_historical_values(cell.row)
-                if not historical_fixed_costs:
-                    historical_fixed_costs = [0.0] * len(historical_account)
-                for i in range(len(historical_account)):
-                    historical_fixed_costs[i] += historical_account[i][1]
+        for fixed_cost_account in fixed_cost_accounts:
+            historical_account = self.get_historical_values(fixed_cost_account)
+            if not historical_fixed_costs:
+                historical_fixed_costs = [0.0] * len(historical_account)
+            for i in range(len(historical_account)):
+                historical_fixed_costs[i] += historical_account[i][1]
         return sum(historical_fixed_costs) / len(historical_fixed_costs)
 
     def get_historical_per_person_costs(self):

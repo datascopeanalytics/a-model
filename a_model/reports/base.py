@@ -22,6 +22,8 @@ from oauth2client.client import SignedJwtAssertionCredentials
 from dateutil.relativedelta import relativedelta
 
 from .. import utils
+from . import exceptions
+
 
 QUICKBOOKS_ROOT_URL = 'http://qbo.intuit.com'
 EXCEL_MIMETYPES = (
@@ -287,17 +289,56 @@ class Report(object):
             if min_row <= row <= max_row:
                 yield list(cells)
 
+    def _get_row_index(self, row_name, col=0):
+        """Get the row index for a row named `row_name` in `col`"""
+        if not isinstance(row_name, (str, unicode)):
+            raise TypeError('please provide the row_name')
+        for cell in self.iter_cells_in_col(col):
+            if cell.value == row_name:
+                return cell.row
+        raise exceptions.RowNotFound(row_name)
+
+    def _get_col_index(self, col_name, row=0):
+        """Get the col index for a col named `col_name` in `row`"""
+        if not isinstance(col_name, (str, unicode)):
+            raise TypeError('please provide the col_name')
+        for cell in self.iter_cells_in_row(row):
+            if cell.value == col_name:
+                return cell.col
+        raise exceptions.ColNotFound(col_name)
+
     def iter_cells_in_row(self, row, min_col=None, max_col=None):
+        if isinstance(row, (str, unicode)):
+            row = self._get_row_index(row)
         min_col, max_col = self._resolve_min_max(min_col, max_col)
         for cell in self.cells:
             if cell.row == row and (min_col <= cell.col <= max_col):
                 yield cell
 
     def iter_cells_in_col(self, col, min_row=None, max_row=None):
+        if isinstance(col, (str, unicode)):
+            col = self._get_col_index(col)
         min_row, max_row = self._resolve_min_max(min_row, max_row)
         for cell in self.cells:
             if cell.col == col and (min_row <= cell.row <= max_row):
                 yield cell
+
+    def get_historical_values(self, row_name):
+        """get all of the historical values from row that starts with `row_name`"""
+        historical_values = []
+        self.load_table()
+
+        # exclude the first column (name of accounts) and last column (total)
+        min_col = 1
+        max_col = self.get_max_cell().col - 1
+        date_cells = self.iter_cells_in_row(1, min_col, max_col)
+        value_cells = self.iter_cells_in_row(row_name, min_col, max_col)
+        for date_cell, value_cell in zip(date_cells, value_cells):
+            historical_values.append((
+                self.get_date_from_cell(date_cell),
+                value_cell.value or 0.0,
+            ))
+        return historical_values
 
     def get_date_from_cell(self, date_cell):
         if isinstance(date_cell.value, datetime.datetime):
