@@ -151,7 +151,7 @@ class Datascope(object):
             n_people = self.n_people(date)
             fixed_cost = self.profit_loss.get_average_fixed_cost()
             per_person_costs = \
-                self.profit_loss.get_historical_per_person_costs()
+                self.get_historical_per_person_costs()
             per_person_cost = sum(per_person_costs) / len(per_person_costs)
             cost = fixed_cost + n_people * per_person_cost
         return self.n_months_buffer * cost
@@ -164,6 +164,22 @@ class Datascope(object):
     def _get_months_from_now(self, date):
         # can use any report for this. happened to choose unpaid invoices
         return self.unpaid_invoices.get_months_from_now(date)
+
+    def get_historical_per_person_costs(self):
+        historical_costs = self.profit_loss.get_historical_costs()
+        fixed_costs = self.profit_loss.get_historical_fixed_costs()
+        dates, costs = zip(*historical_costs)
+        variable_costs = []
+        for date, cost, fixed_cost in zip(dates, costs, fixed_costs):
+            # TODO: this should also omit retirement contributions and bonuses
+            # as those are accounted for elsewhere
+            variable_costs.append((date, cost - fixed_cost))
+        historical_per_person_costs = []
+        for date, variable_cost in variable_costs:
+            n_people = float(self.n_people(date))
+            per_person_cost = (cost - fixed_cost) / n_people
+            historical_per_person_costs.append(per_person_cost)
+        return historical_per_person_costs
 
     # @read_or_run
     def simulate_revenues(self, universe, n_months):
@@ -216,7 +232,6 @@ class Datascope(object):
                 work_completion_noise() + ontime_noise()
             if month < n_months:
                 revenues[month] += balance
-
         return revenues
 
 #    @run_or_cache
@@ -226,7 +241,7 @@ class Datascope(object):
 
         # get fixed costs from P&L and treat it like a constant
         fixed_cost = self.profit_loss.get_average_fixed_cost()
-        per_person_costs = self.profit_loss.get_historical_per_person_costs()
+        per_person_costs = self.get_historical_per_person_costs()
 
         # variable costs (i) scale with the number of people and (ii) vary
         # quite a bit more.
@@ -244,7 +259,6 @@ class Datascope(object):
             # (shouldn't be more than a couple thousand)
             if date.month == 12:
                 costs[month] += n_people * self.retirement_contribution
-
         return costs
 
     def _simulate_single_universe_monthly_cash(self, universe, n_months):

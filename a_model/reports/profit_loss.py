@@ -36,7 +36,7 @@ class ProfitLoss(Report):
         historical_costs = self.get_historical_costs()
         return self._get_ytd_value(historical_costs)
 
-    def get_average_fixed_cost(self):
+    def get_historical_fixed_costs(self):
         fixed_cost_accounts = [
             'Marketing',
             'Public Relations',
@@ -53,15 +53,8 @@ class ProfitLoss(Report):
                 historical_fixed_costs = [0.0] * len(historical_account)
             for i in range(len(historical_account)):
                 historical_fixed_costs[i] += historical_account[i][1]
-        return sum(historical_fixed_costs) / len(historical_fixed_costs)
+        return historical_fixed_costs
 
-    def get_historical_per_person_costs(self):
-        fixed_cost = self.get_average_fixed_cost()
-        historical_per_person_costs = []
-        for _, cost in self.get_historical_costs():
-            # TODO: improve this when we correctly account for start and end
-            # dates for people. this is tentatively a really bad way to address
-            # this.
-            per_person_cost = (cost - fixed_cost) / 9.0
-            historical_per_person_costs.append(per_person_cost)
-        return historical_per_person_costs
+    def get_average_fixed_cost(self):
+        historical_fixed_costs = self.get_historical_fixed_costs()
+        return sum(historical_fixed_costs) / len(historical_fixed_costs)
