@@ -36,7 +36,7 @@ class Datascope(object):
         self.ar_aging = reports.ARAging(self.today)
         self.balance_sheet = reports.BalanceSheet(self.today)
         self.unpaid_invoices = reports.UnpaidInvoices(self.today)
-        self.revenue_projections = reports.RevenueProjections(self.today)
+        self.invoice_projections = reports.InvoiceProjections(self.today)
         self.roster = reports.Roster(self.today)
 
         # iterate over the config to instantiate each person
@@ -187,6 +187,9 @@ class Datascope(object):
             # TODO: could probably measure this from project planning doodie
             return random.randint(0, 2)
 
+        def payment_terms():
+            return 1
+
         # revenue from accounts receiveable is, all things considered,
         # extremely certain. The biggest question here is whether people will
         # pay on time.
@@ -207,9 +210,10 @@ class Datascope(object):
         # are two sources of variability: (i) whether the work is deemed done
         # in time to receive payment by the specified date and (ii) whether our
         # clients pay on time.
-        for date, balance in self.revenue_projections:
+        for date, balance in self.invoice_projections:
             months_from_now = self._get_months_from_now(date)
-            month = months_from_now + work_completion_noise() + ontime_noise()
+            month = months_from_now + payment_terms() + \
+                work_completion_noise() + ontime_noise()
             if month < n_months:
                 revenues[month] += balance
 
