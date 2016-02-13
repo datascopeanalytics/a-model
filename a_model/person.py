@@ -53,6 +53,8 @@ class Person(object):
             date = max([self.end_date or date, beg_of_year])
         numerator = (date - beg_of_year).days
         denominator = (end_of_year - beg_of_year).days
+        if numerator == 0:
+            return 0.0
         return float(numerator) / denominator
 
     def fraction_datascope_year(self, date):
