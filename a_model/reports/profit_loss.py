@@ -7,6 +7,12 @@ class ProfitLoss(Report):
     download_method = 'quickbooks'
     upload_method = 'gdrive'
 
+    def get_historical_values(self, row_name):
+        return super(ProfitLoss, self).get_historical_values(
+            row_name,
+            max_col=self.get_max_cell().col-1,
+        )
+
     def get_historical_revenues(self):
         return self.get_historical_values('Gross Profit')
 

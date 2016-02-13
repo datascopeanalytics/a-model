@@ -324,16 +324,15 @@ class Report(object):
             if cell.col == col and (min_row <= cell.row <= max_row):
                 yield cell
 
-    def get_historical_values(self, row_name):
+    def get_historical_values(self, row_name, min_col=1, max_col=None):
         """get all of the historical values from row that starts with
         `row_name`
         """
         historical_values = []
         self.load_table()
 
-        # exclude the first column (name of accounts) and last column (total)
-        min_col = 1
-        max_col = self.get_max_cell().col - 1
+        # iterate from min_col to max_col
+        max_col = max_col or self.get_max_cell().col
         date_cells = self.iter_cells_in_row(1, min_col, max_col)
         value_cells = self.iter_cells_in_row(row_name, min_col, max_col)
         for date_cell, value_cell in zip(date_cells, value_cells):
