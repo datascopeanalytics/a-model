@@ -19,6 +19,9 @@ class ProfitLoss(Report):
     def get_historical_costs(self):
         return self.get_historical_values('Total Expenses')
 
+    def get_historical_retirement_costs(self):
+        return self.get_historical_values('401(k) Profit Sharing Contribution')
+
     def get_qbo_query_params(self):
         return (
             ('rptId', 'reports/ProfitAndLossReport'),

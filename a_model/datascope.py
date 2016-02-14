@@ -166,18 +166,29 @@ class Datascope(object):
         return self.unpaid_invoices.get_months_from_now(date)
 
     def get_historical_per_person_costs(self):
+        """Get the historical per-person costs after removing things like fixed
+        costs (see `ProfitLoss.get_historical_fixed_costs` for details) and
+        401(k) contributions
+
+        TODO: this should also omit bonuses as those are accounted for in
+        Datascope._simulate_single_universe_monthly_cash
+        """
+
+        # calculate the variable cost
         historical_costs = self.profit_loss.get_historical_costs()
-        fixed_costs = self.profit_loss.get_historical_fixed_costs()
         dates, costs = zip(*historical_costs)
+        fixed_costs = self.profit_loss.get_historical_fixed_costs()
+        retirement_costs = self.profit_loss.get_historical_retirement_costs()
+        _, retirement_costs = zip(*retirement_costs)
+        iterator = zip(dates, costs, fixed_costs, retirement_costs)
         variable_costs = []
-        for date, cost, fixed_cost in zip(dates, costs, fixed_costs):
-            # TODO: this should also omit retirement contributions and bonuses
-            # as those are accounted for elsewhere
-            variable_costs.append((date, cost - fixed_cost))
+        for date, cost, fixed_cost, retirement_cost in iterator:
+            # TODO: this should also omit bonuses and old-style tax payments as
+            # those are accounted for elsewhere
+            variable_costs.append((date, cost - fixed_cost - retirement_cost))
         historical_per_person_costs = []
         for date, variable_cost in variable_costs:
-            n_people = float(self.n_people(date))
-            per_person_cost = (cost - fixed_cost) / n_people
+            per_person_cost = variable_cost / self.n_people(date)
             historical_per_person_costs.append(per_person_cost)
         return historical_per_person_costs
 
