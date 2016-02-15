@@ -17,13 +17,14 @@ class UnpaidInvoices(Report):
 
         min_row = 1
         max_row = self.get_max_cell().row - 1
-        date_cells = self.iter_cells_in_col(6, min_row, max_row)
-        balance_cells = self.iter_cells_in_col(8, min_row, max_row)
+        date_cells = self.iter_cells_in_col(5, min_row, max_row)
+        balance_cells = self.iter_cells_in_col(7, min_row, max_row)
         for date_cell, balance_cell in zip(date_cells, balance_cells):
-            projected_payments.append((
-                self.get_date_from_cell(date_cell),
-                balance_cell.value,
-            ))
+            if date_cell.value:
+                projected_payments.append((
+                    self.get_date_from_cell(date_cell),
+                    balance_cell.value,
+                ))
         return projected_payments
 
     def __iter__(self):
