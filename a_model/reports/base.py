@@ -150,13 +150,22 @@ class Report(object):
         )
         self.cells = []
 
-    def get_date_customized_params(self):
-        return (
-            ('high_date', utils.qbo_date_str(self.end_date)),
-            ('low_date', utils.qbo_date_str(self.start_date)),
+    def _get_date_customized_params(self):
+        return(
             ('date_macro', 'custom'),
             ('customized', 'yes'),
         )
+
+    def get_date_range_customized_params(self):
+        return (
+            ('high_date', utils.qbo_date_str(self.end_date)),
+            ('low_date', utils.qbo_date_str(self.start_date)),
+        ) + self._get_date_customized_params()
+
+    def get_report_date_customized_params(self):
+        return (
+            ('report_date', utils.qbo_date_str(self.end_date)),
+        ) + self._get_date_customized_params()
 
     def get_qbo_query_params(self):
         raise NotImplementedError

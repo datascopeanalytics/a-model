@@ -17,7 +17,7 @@ class BalanceSheet(Report):
             ('token', 'BAL_SHEET'),
             ('column', 'monthly'),
             ('collapse_subs', 'true'),
-        ) + self.get_date_customized_params()
+        ) + self.get_date_range_customized_params()
 
     def get_current_cash_in_bank(self):
         historical_cash_in_bank = self.get_historical_cash_in_bank()

@@ -33,7 +33,6 @@ class UnpaidInvoices(Report):
 
     def get_qbo_query_params(self):
         return (
-            ('rptId', 'txreports/TxListReport'),
-            ('arpaid', '2'),
-            ('token', 'INVOICE_LIST'),
-        ) + self.get_date_customized_params()
+            ('rptId', 'txreports/AgingDetailReport'),
+            ('token', 'AR_AGING_DET'),
+        ) + self.get_report_date_customized_params()

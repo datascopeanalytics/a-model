@@ -11,7 +11,4 @@ class ARAging(Report):
     def get_qbo_query_params(self):
         return (
             ('rptId', 'AR_AGING'),
-            ('report_date', utils.qbo_date_str(self.end_date)),
-            ('date_macro', 'custom'),
-            ('customized', 'yes'),
-        )
+        ) + self.get_report_date_customized_params()

@@ -26,7 +26,7 @@ class ProfitLoss(Report):
         return (
             ('rptId', 'reports/ProfitAndLossReport'),
             ('column', 'monthly'),
-        ) + self.get_date_customized_params()
+        ) + self.get_date_range_customized_params()
 
     def _get_ytd_value(self, historical_values):
         now = self.get_now()
