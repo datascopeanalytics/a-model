@@ -47,6 +47,8 @@ class Person(object):
         """
         beg_of_year = datetime.date(date.year, 1, 1)
         end_of_year = date
+        if self.start_date > end_of_year:
+            return 0.0
         start_date = max([self.start_date, beg_of_year])
         if self.end_date and self.end_date < end_of_year:
             date = max([self.end_date, beg_of_year])

@@ -89,3 +89,14 @@ class HiringParser(SimulationParser):
             help='the number of new people to consider adding to Datascope',
             default=3,
         )
+
+
+class CalculateBonusParser(BaseParser):
+
+    def __init__(self, *args, **kwargs):
+        super(CalculateBonusParser, self).__init__(*args, **kwargs)
+        self.add_argument(
+            'pool_size',
+            type=float,
+            help='the total size of the bonus pool',
+        )
