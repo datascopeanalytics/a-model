@@ -101,8 +101,7 @@ class CalculateBonusParser(BaseParser):
             help='the total size of the bonus pool',
         )
         self.add_argument(
-            '-e', '--exclude',
-            action='append',
-            default=[],
-            help='exclude people from bonus calculation. can use repeatedly',
+            '-p', '--prepare-csv',
+            action='store_true',
+            help='prepare the CSV to be used in creating the bonuses',
         )
