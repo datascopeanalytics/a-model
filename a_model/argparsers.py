@@ -96,12 +96,12 @@ class CalculateBonusParser(BaseParser):
     def __init__(self, *args, **kwargs):
         super(CalculateBonusParser, self).__init__(*args, **kwargs)
         self.add_argument(
-            'pool_size',
-            type=float,
-            help='the total size of the bonus pool',
-        )
-        self.add_argument(
             '-p', '--prepare-csv',
             action='store_true',
             help='prepare the CSV to be used in creating the bonuses',
+        )
+        self.add_argument(
+            '-i', '--input-csv',
+            default='bonus.csv',
+            help='the input spreadsheet to use for the bonus calculation',
         )

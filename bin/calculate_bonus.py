@@ -26,10 +26,11 @@ datascope = Datascope(today=args.today)
 # get the date for which we are calculating the bonuses
 end_of_last_year = datetime.date(args.today.year-1, 12, 31)
 
-# prepare initial spreadsheet
+# prepare initial spreadsheet as necessary
 if args.prepare_csv:
-    with open('bonus.csv', 'w') as stream:
+    with open(args.input_csv, 'w') as stream:
         writer = csv.writer(stream)
+        writer.writerow(('total bonus pool', 0))
         writer.writerow((
             'name', 'ownership', 'fraction of year', 'award bonus'
         ))
@@ -40,33 +41,64 @@ if args.prepare_csv:
                     person.name,
                     person.ownership,
                     f,
-                    'tktk',
+                    0,
                 ))
-        print stream.name, "contains starting point for bonus calculation"
+        print args.input_csv, "contains starting point for bonus calculation"
     exit()
 
+
+class PersonMock(object):
+    def __init__(self, row):
+        self.name = row['name']
+        self.ownership = self.cast_as_float(row['ownership'])
+        self.fraction_of_year = self.cast_as_float(row['fraction of year'])
+        self.award_bonus = self.cast_as_float(row['award bonus'])
+
+    def cast_as_float(self, s):
+        if s == '':
+            return 0.0
+        return float(s)
+
+# read the bonus pool spreadsheet
+people = []
+with open(args.input_csv, 'rU') as stream:
+    line = stream.readline()
+    row = line.split(',', 1)
+    if row[0] != 'total bonus pool':
+        raise ValueError(
+            'expected first row of spreadsheet to specify bonus pool size'
+        )
+    pool_size = float(row[1])
+
+    reader = csv.DictReader(stream)
+    for row in reader:
+        person = PersonMock(row)
+        people.append(person)
+
 # print out the bonuses for each person
+total_time = sum([person.fraction_of_year for person in people])
+total_award = sum([person.award_bonus for person in people])
 totals = {'dividends': 0.0, 'time_bonus': 0.0, 'award_bonus': 0.0}
 print "BONUSES FOR", end_of_last_year.year
 print ''
 print "{:>12} {:>12} {:>12} {:>12} {:>12}".format(
     'name', 'dividends', 'time bonus', 'award bonus', 'total'
 )
-for person in datascope.iter_people():
-    if person.name in args.exclude:
-        continue
-    bonus = person.fraction_bonus(end_of_last_year) * args.pool_size
-    if bonus > 0.0:
-        dividends = person.fraction_dividends() * args.pool_size
-        time_bonus = bonus * datascope.fraction_time_bonus
-        award_bonus = 0 #bonus - time_bonus
-        person_total = dividends + time_bonus + award_bonus
-        totals['dividends'] += dividends
-        totals['time_bonus'] += time_bonus
-        totals['award_bonus'] += award_bonus
-        print "{:>12} {:12,.2f} {:12,.2f} {:12,.2f} {:12,.2f}".format(
-            person.name, dividends, time_bonus, award_bonus, person_total,
-        )
+f = datascope.fraction_profit_for_dividends
+F = datascope.fraction_time_bonus
+for person in people:
+    proportion_time = person.fraction_of_year / total_time
+    proportion_award = person.award_bonus / total_award
+    dividends = f * pool_size * person.ownership
+    time_bonus = (1.0 - f) * F * pool_size * proportion_time
+    award_bonus = (1.0 - f) * (1.0 - F) * pool_size * proportion_award
+    person_total = dividends + time_bonus + award_bonus
+    totals['dividends'] += dividends
+    totals['time_bonus'] += time_bonus
+    totals['award_bonus'] += award_bonus
+    print "{:>12} {:12,.2f} {:12,.2f} {:12,.2f} {:12,.2f}".format(
+        person.name, dividends, time_bonus, award_bonus, person_total,
+    )
 print ''
 print "{:>12} {:12,.2f} {:12,.2f} {:12,.2f} {:12,.2f}".format(
     'TOTAL',
