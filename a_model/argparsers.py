@@ -100,3 +100,9 @@ class CalculateBonusParser(BaseParser):
             type=float,
             help='the total size of the bonus pool',
         )
+        self.add_argument(
+            '-e', '--exclude',
+            action='append',
+            default=[],
+            help='exclude people from bonus calculation. can use repeatedly',
+        )
