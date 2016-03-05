@@ -44,6 +44,7 @@ if args.prepare_csv:
                     0,
                 ))
         print args.input_csv, "contains starting point for bonus calculation"
+        print "edit that spreadsheet and then re-run this command without -p"
     exit()
 
 
