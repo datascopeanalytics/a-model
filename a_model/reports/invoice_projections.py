@@ -18,7 +18,7 @@ class InvoiceProjections(Report):
 
         # aggregate all of the dates
         dates = []
-        first_col = 2
+        first_col = 3
         for cell in self.iter_cells_in_row(0, first_col):
             dates.append(self.get_date_from_cell(cell))
 
