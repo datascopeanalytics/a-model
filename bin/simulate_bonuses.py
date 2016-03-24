@@ -33,7 +33,7 @@ _, bonus_pool_outcomes, _ = datascope.simulate_monthly_cash(
 eoy = datetime.date(datetime.date.today().year, 12, 31)
 person_bonuses = []
 for bonus_pool in bonus_pool_outcomes:
-    for person in datascope.iter_people():
+    for person in datascope.iter_people(date=eoy):
         bonus = bonus_pool * person.net_fraction_of_profits(eoy)
         person_bonuses.append((person.name.capitalize(), bonus))
 
@@ -51,7 +51,7 @@ sns.stripplot(x=x, y=y, data=df,
               jitter=True, size=3, color=".3", linewidth=0, alpha=0.1)
 
 # add the goal lines for each person
-for i, person in enumerate(datascope.iter_people()):
+for i, person in enumerate(datascope.iter_people(date=eoy)):
     goal = 12 * person.before_tax_target_bonus_dividends(eoy)
     ax.plot([i-0.5, i+0.5], [goal, goal], color='k', linestyle='--')
 
