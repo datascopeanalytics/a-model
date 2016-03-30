@@ -215,6 +215,8 @@ class Datascope(object):
             return random.randint(0, 2)
 
         def payment_terms():
+            # TODO: could probably get this from quickbooks some how, or
+            # perhaps we could infer this from the due date on invoices?
             return 1
 
         # revenue from accounts receiveable is, all things considered,

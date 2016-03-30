@@ -12,7 +12,7 @@ class Roster(Report):
 
     def iter_people(self):
         self.load_table()
-        for row in self.iter_rows(min_row=3):
+        for row in self.iter_rows(min_row=1):
             values = [cell.value for cell in row]
             values[1] = cast_as_date(values[1])
             values[2] = cast_as_date(values[2])
