@@ -352,10 +352,24 @@ class Datascope(object):
                 quarterly_tax_outputs[month].append(quarterly_taxes[month])
         return monthly_cash_outputs, bonus_pool_outputs, quarterly_tax_outputs
 
+    def get_cash_goal(self):
+        """do a goal seek to figure out how much revenue per datascoper per
+        month we need to generate to meet our goal profitability
+        """
+        t0 = datetime.date(datetime.date.today().year, 1, 1)
+        t1 = datetime.date(datetime.date.today().year, 12, 31)
+        result = []
+        for t in utils.iter_end_of_months(t0, t1):
+            cash_goal = self.get_cash_buffer(t)
+            cash_goal += t.month * self.after_tax_target_profit(t)
+            result.append((t, cash_goal))
+        return result
+
     def get_cash_goal_in_month(self, month):
         """calculate the cash we want to have in the bank in `month` months
         from now
         """
+        # TODO: DEPRECATE
         cash_goal = self.n_months_buffer * self.average_historical_costs()
         date = utils.date_in_n_months(month)
         cash_goal += date.month * self.after_tax_target_profit(date)

@@ -151,6 +151,10 @@ plt.fill_between(
     **outcome_region_params
 )
 
+# plot the new goal line
+result = datascope.get_cash_goal()
+plt.plot(*zip(*result), color='red')
+
 # axis labels
 plt.ylabel('cash in bank')
 
