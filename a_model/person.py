@@ -25,6 +25,9 @@ class Person(object):
     def is_partner(self, date):
         return self.partner_date and date >= self.partner_date
 
+    def is_active_or_partner(self, date):
+        return self.is_active(date) or self.is_partner(date)
+
     @property
     def after_tax_target_salary(self):
         """This is on a per month basis, but includes biweekly salary as well

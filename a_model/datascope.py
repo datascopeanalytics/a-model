@@ -51,7 +51,7 @@ class Datascope(object):
     def iter_people(self, date=None):
         """iterate over all people present at Datascope on `date`."""
         for person in self.people:
-            if date is None or person.is_active(date) or person.is_partner(date):
+            if date is None or person.is_active_or_partner(date):
                 yield person
 
     def __len__(self):
