@@ -325,7 +325,7 @@ class Datascope(object):
             # counts as an expense and reduces our tax burden. taxes have
             # already been paid on dividends and are just drawn from the bank.
             if date.month == 12:
-                buffer = self.get_cash_buffer()
+                buffer = self.get_cash_buffer(date)
                 bonus_pool = max([0.0, cash - buffer])
                 f = self.fraction_profit_for_dividends
                 costs[month] += (1.0 - f) * bonus_pool
