@@ -8,6 +8,7 @@ import time
 import datetime
 
 import numpy
+import scipy.optimize
 from dateutil.relativedelta import relativedelta
 
 from .person import Person
@@ -375,16 +376,73 @@ class Datascope(object):
         """do a goal seek to figure out how much revenue per datascoper per
         month we need to generate to meet our goal profitability
         """
-        t0 = datetime.date(datetime.date.today().year, 1, 1)
+        t0 = utils.end_of_month(
+            datetime.date(datetime.date.today().year, 1, 1)
+        )
         t1 = datetime.date(datetime.date.today().year, 12, 31)
-        result = []
+        cash0 = self.get_cash_buffer(t0)
 
-
-
+        # costs are fixed for the year by the number of people
+        costs = []
+        fixed_cost = self.profit_loss.get_average_fixed_cost()
+        per_person_cost = numpy.mean(
+            self.get_historical_per_person_costs()
+        )
         for t in utils.iter_end_of_months(t0, t1):
-            cash_goal = self.get_cash_buffer(t)
-            cash_goal += t.month * self.after_tax_target_profit(t)
-            result.append((t, cash_goal))
+            n = self.n_people(t)
+            costs.append(fixed_cost + n * per_person_cost)
+        costs[-1] += n * self.retirement_contribution
+        print costs
+
+
+        def constant_revenues(monthly_revenue_per_person):
+            revenues = []
+            for t in utils.iter_end_of_months(t0, t1):
+                n = self.n_people(t)
+                revenues.append(n * monthly_revenue_per_person)
+            return revenues
+
+
+        def helper(monthly_revenue_per_person):
+            # fit the eoy cash to be the same as the cash buffer. square the
+            # result to make sure the numer is positive for optimization
+            # purposes
+            revenues = constant_revenues(monthly_revenue_per_person)
+            monthly_cash, _, _ = self.get_monthly_cash(
+                t0, revenues, costs, cash=cash0,
+                ytd_revenue=0.0, ytd_cost=0.0, ytd_tax_draws=0.0,
+            )
+            # TODO: does this do the correct thing with Q4 taxes in january
+            x = monthly_cash[-1] - self.get_cash_buffer(t1)
+            return x*x
+
+        # optimize the function above to find the amount of revenue per person
+        # per month that is necessary to meet our target
+        opt = scipy.optimize.minimize_scalar(helper, bounds=(7000, 20000))
+
+        import ipdb; ipdb.set_trace()
+
+        nave = 0.0
+        d = 0.0
+        for t in utils.iter_end_of_months(t0, t1):
+            nave += self.n_people(t)
+            d += 1
+        nave /= d
+        print "ave people", nave, d
+
+        # get the cash goal by simulating this idealized revenue stream
+        revenues = constant_revenues(opt.x)
+        print sum(revenues)
+        print sum(revenues) / nave
+        print opt.x * 12, opt.x
+        monthly_cash, _, _ = self.get_monthly_cash(
+            t0, revenues, costs, cash=cash0,
+            ytd_revenue=0.0, ytd_cost=0.0, ytd_tax_draws=0.0,
+        )
+        print monthly_cash
+        result = [(datetime.date(t0.year, t0.month, 1), cash0)]
+        for t, cash in zip(utils.iter_end_of_months(t0, t1), monthly_cash):
+            result.append((t, cash))
         return result
 
     def get_cash_goal_in_month(self, month):
