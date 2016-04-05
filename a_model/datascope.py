@@ -383,16 +383,17 @@ class Datascope(object):
         cash0 = self.get_cash_buffer(t0)
 
         # costs are fixed for the year by the number of people
-        costs = []
-        fixed_cost = self.profit_loss.get_average_fixed_cost()
-        per_person_cost = numpy.mean(
-            self.get_historical_per_person_costs()
-        )
-        for t in utils.iter_end_of_months(t0, t1):
-            n = self.n_people(t)
-            costs.append(fixed_cost + n * per_person_cost)
-        costs[-1] += n * self.retirement_contribution
-        print costs
+        def constant_costs():
+            costs = []
+            fixed_cost = self.profit_loss.get_average_fixed_cost()
+            per_person_cost = numpy.mean(
+                self.get_historical_per_person_costs()
+            )
+            for t in utils.iter_end_of_months(t0, t1):
+                n = self.n_people(t)
+                costs.append(fixed_cost + n * per_person_cost)
+            costs[-1] += n * self.retirement_contribution
+            return costs
 
 
         def constant_revenues(monthly_revenue_per_person):
@@ -408,7 +409,8 @@ class Datascope(object):
             # result to make sure the numer is positive for optimization
             # purposes
             revenues = constant_revenues(monthly_revenue_per_person)
-            monthly_cash, _, _ = self.get_monthly_cash(
+            costs = constant_costs()
+            monthly_cash, bonus_pool, quarterly_taxes = self.get_monthly_cash(
                 t0, revenues, costs, cash=cash0,
                 ytd_revenue=0.0, ytd_cost=0.0, ytd_tax_draws=0.0,
             )
@@ -420,22 +422,12 @@ class Datascope(object):
         # per month that is necessary to meet our target
         opt = scipy.optimize.minimize_scalar(helper, bounds=(7000, 20000))
 
-        import ipdb; ipdb.set_trace()
-
-        nave = 0.0
-        d = 0.0
-        for t in utils.iter_end_of_months(t0, t1):
-            nave += self.n_people(t)
-            d += 1
-        nave /= d
-        print "ave people", nave, d
-
         # get the cash goal by simulating this idealized revenue stream
         revenues = constant_revenues(opt.x)
+        costs = constant_costs()
         print sum(revenues)
-        print sum(revenues) / nave
         print opt.x * 12, opt.x
-        monthly_cash, _, _ = self.get_monthly_cash(
+        monthly_cash, bonus_pool, quarterly_taxes = self.get_monthly_cash(
             t0, revenues, costs, cash=cash0,
             ytd_revenue=0.0, ytd_cost=0.0, ytd_tax_draws=0.0,
         )
@@ -443,6 +435,7 @@ class Datascope(object):
         result = [(datetime.date(t0.year, t0.month, 1), cash0)]
         for t, cash in zip(utils.iter_end_of_months(t0, t1), monthly_cash):
             result.append((t, cash))
+        import ipdb; ipdb.set_trace()
         return result
 
     def get_cash_goal_in_month(self, month):
