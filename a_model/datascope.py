@@ -8,6 +8,7 @@ import time
 import datetime
 
 import numpy
+from dateutil.relativedelta import relativedelta
 
 from .person import Person
 from . import utils
@@ -274,21 +275,30 @@ class Datascope(object):
                 costs[month] += n_people * self.retirement_contribution
         return costs
 
-    def _simulate_single_universe_monthly_cash(self, universe, n_months):
-        tax_months = set([1, 4, 6, 9])
-        cash = self.balance_sheet.get_current_cash_in_bank()
-        ytd_revenue = self.profit_loss.get_ytd_revenue()
-        ytd_cost = self.profit_loss.get_ytd_cost()
+    def get_monthly_cash(self, start_date, revenues, costs, cash=None,
+                         ytd_revenue=None, ytd_cost=None, ytd_tax_draws=None):
+
+        """This function takes some predefined revenues, costs, and any other
+        relevant financial information and computes the monthly_cash
+        """
+        assert len(revenues) == len(costs)
+        if cash is None:
+            cash = self.balance_sheet.get_current_cash_in_bank()
+        if ytd_revenue is None:
+            ytd_revenue = self.profit_loss.get_ytd_revenue()
+        if ytd_cost is None:
+            ytd_cost = self.profit_loss.get_ytd_cost()
         # TODO get Lyuda / Matt to help us have a quickbooks report that makes
         # it easy to get this information directly from quickbooks instead of
         # having to enter it by hand in the config.ini
-        ytd_tax_draws = self.ytd_tax_draws
-        revenues = self.simulate_revenues(universe, n_months)
-        costs = self.simulate_costs(universe, n_months)
+        if ytd_tax_draws is None:
+            ytd_tax_draws = self.ytd_tax_draws
+        tax_months = set([1, 4, 6, 9])
+        quarterly_taxes = dict((month, None) for month in tax_months)
         monthly_cash = []
         bonus_pool = None
-        quarterly_taxes = dict((month, None) for month in tax_months)
-        for month, date in enumerate(self.iter_future_months(n_months)):
+        for month in range(len(revenues)):
+            date = start_date + relativedelta(months=month)
 
             # quarterly tax draws only decrease the cash in the bank; they do
             # not count as a cost for datascope. the tax draw in january is for
@@ -333,6 +343,15 @@ class Datascope(object):
             monthly_cash.append(cash)
         return monthly_cash, bonus_pool, quarterly_taxes
 
+    def _simulate_single_universe_monthly_cash(self, universe, n_months):
+        for start_date in self.iter_future_months(1):
+            pass
+        return self.get_monthly_cash(
+           start_date,
+           self.simulate_revenues(universe, n_months),
+           self.simulate_costs(universe, n_months),
+        )
+
     def simulate_monthly_cash(self, n_months=12, n_universes=1000,
                               verbose=False):
         """Simulate finances and the cash in the bank at the end of every
@@ -359,6 +378,9 @@ class Datascope(object):
         t0 = datetime.date(datetime.date.today().year, 1, 1)
         t1 = datetime.date(datetime.date.today().year, 12, 31)
         result = []
+
+
+
         for t in utils.iter_end_of_months(t0, t1):
             cash_goal = self.get_cash_buffer(t)
             cash_goal += t.month * self.after_tax_target_profit(t)
