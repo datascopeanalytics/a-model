@@ -60,7 +60,6 @@ median_monthly_cash = []
 for month_of_cash in zip(*monthly_cash_outcomes):
     median_monthly_cash.append(numpy.median(month_of_cash))
     max_cash = max(max_cash, max(month_of_cash))
-max_cash = 1500000
 
 # set the domain of the graph
 t_domain = [

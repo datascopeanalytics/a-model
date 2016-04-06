@@ -382,6 +382,14 @@ class Datascope(object):
         t1 = datetime.date(datetime.date.today().year, 12, 31)
         cash0 = self.get_cash_buffer(t0)
 
+        # average number of people
+        n_average, n = 0.0, 0.0
+        for t in utils.iter_end_of_months(t0, t1):
+            n_average += self.n_people(t)
+            print "DATE", t
+            n += 1.0
+        n_average /= n
+
         # costs are fixed for the year by the number of people
         def constant_costs():
             costs = []
@@ -414,13 +422,25 @@ class Datascope(object):
                 t0, revenues, costs, cash=cash0,
                 ytd_revenue=0.0, ytd_cost=0.0, ytd_tax_draws=0.0,
             )
-            # TODO: does this do the correct thing with Q4 taxes in january
-            x = monthly_cash[-1] - self.get_cash_buffer(t1)
-            return x*x
+            a = monthly_cash[-1] - self.get_cash_buffer(t1)
+
+            # calculate the target bonus pool size and make sure the actual
+            # bonus pool is close
+            before_tax_salary = self.after_tax_salary / (1.0 - self.tax_rate)
+            monthly_salary = before_tax_salary * n_average
+            target_pool = self.n_months_after_tax_bonus * monthly_salary
+            b = bonus_pool - target_pool
+
+
+            # # TODO: does this do the correct thing with Q4 taxes in january
+            print monthly_revenue_per_person, bonus_pool, target_pool, a, b
+            return a*a / 100 + b * b
 
         # optimize the function above to find the amount of revenue per person
         # per month that is necessary to meet our target
-        opt = scipy.optimize.minimize_scalar(helper, bounds=(7000, 20000))
+        opt = scipy.optimize.minimize_scalar(helper, bounds=(7000, 30000))
+
+        # import ipdb; ipdb.set_trace()
 
         # get the cash goal by simulating this idealized revenue stream
         revenues = constant_revenues(opt.x)
@@ -432,10 +452,14 @@ class Datascope(object):
             ytd_revenue=0.0, ytd_cost=0.0, ytd_tax_draws=0.0,
         )
         print monthly_cash
+        print bonus_pool
+        print quarterly_taxes
+        print 'COSTS', costs
+        print 'BUFF', self.get_cash_buffer(t1)
         result = [(datetime.date(t0.year, t0.month, 1), cash0)]
         for t, cash in zip(utils.iter_end_of_months(t0, t1), monthly_cash):
             result.append((t, cash))
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         return result
 
     def get_cash_goal_in_month(self, month):
