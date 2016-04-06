@@ -422,7 +422,7 @@ class Datascope(object):
                 t0, revenues, costs, cash=cash0,
                 ytd_revenue=0.0, ytd_cost=0.0, ytd_tax_draws=0.0,
             )
-            a = monthly_cash[-1] - self.get_cash_buffer(t1)
+            # a = monthly_cash[-1] - self.get_cash_buffer(t1)
 
             # calculate the target bonus pool size and make sure the actual
             # bonus pool is close
@@ -432,13 +432,18 @@ class Datascope(object):
             b = bonus_pool - target_pool
 
 
-            # # TODO: does this do the correct thing with Q4 taxes in january
-            print monthly_revenue_per_person, bonus_pool, target_pool, a, b
-            return a*a / 100 + b * b
+            # TODO: does this do the correct thing with Q4 taxes in january
+            # print monthly_revenue_per_person, bonus_pool, target_pool, a, b
+            return b * b
 
         # optimize the function above to find the amount of revenue per person
         # per month that is necessary to meet our target
-        opt = scipy.optimize.minimize_scalar(helper, bounds=(7000, 30000))
+        # http://bit.ly/1q5XNE8
+        opt = scipy.optimize.minimize_scalar(
+            helper,
+            bounds=(5000, 30000),
+            method='bounded',
+        )
 
         # import ipdb; ipdb.set_trace()
 
