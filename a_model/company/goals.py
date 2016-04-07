@@ -1,55 +1,16 @@
+import datetime
+
+import numpy
+import collections
+import scipy.optimize
+
+from .. import utils
 
 
 class GoalCompanyMixin(object):
     """This Mixin holds all of the functionality related to calculating the
     financial goals of the Company.
     """
-
-    # def after_tax_target_profit(self, date):
-    #     """Based on everyone's personal take-home pay goals in config.ini,
-    #     determine the target profit for datascope after taxes
-    #     """
-    #
-    #     # estimate how much profit datascope would have to make so that each
-    #     # person's personal goals are satisfied
-    #     personal_after_tax_target_profits = []
-    #     for person in self.iter_people(date):
-    #         personal_after_tax_target_profits.append(
-    #             person.after_tax_target_salary_from_bonus_dividends() /
-    #             person.net_fraction_of_profits(date)
-    #         )
-    #
-    #     # if we take the maximum here, then everyone is guaranteed to make *at
-    #     # least* their target take home pay. The median approach makes sure at
-    #     # least half of everyone at datascope meets their personal target take
-    #     # home pay goals.
-    #     return numpy.median(personal_after_tax_target_profits)
-    #     # return max(personal_after_tax_target_profits)
-    #
-    # def before_tax_target_profit(self, date):
-    #     # partners must pay taxes at tax_rate, so we need to make
-    #     # 1/(1-tax_rate) more money to account for this
-    #     profit = self.after_tax_target_profit(date) / (1 - self.tax_rate)
-    #
-    #     # partners also pay taxes on their guaranteed payments
-    #     guaranteed_payment = self.after_tax_salary / (1 - self.tax_rate)
-    #     guaranteed_payment_tax = guaranteed_payment * self.tax_rate
-    #     profit += self.n_partners(date) * guaranteed_payment_tax
-    #     return profit
-
-    # def revenue_per_person(self, date):
-    #     """Annual revenue per person to meet revenue targets"""
-    #     return self.revenue(date) * 12 / self.n_people(date)
-    #
-    # def minimum_hourly_rate(self, date):
-    #     """This is the minimum hourly rate necessary to meet our revenue
-    #     targets for the year, without growing.
-    #     """
-    #     yearly_revenue = self.revenue(date) * 12
-    #     yearly_billable_hours = self.billable_hours_per_year * \
-    #         self.n_people(date)
-    #     return yearly_revenue / yearly_billable_hours
-
 
     def get_cash_goal(self):
         """do a goal seek to figure out how much revenue per datascoper per
@@ -194,13 +155,58 @@ class GoalCompanyMixin(object):
             cost = fixed_cost + n_people * per_person_cost
         return self.n_months_buffer * cost
 
-    # def get_cash_goal_in_month(self, month):
-    #     """calculate the cash we want to have in the bank in `month` months
-    #     from now
-    #     """
-    #     # TODO: DEPRECATE
-    #     cash_goal = self.n_months_buffer * self.average_historical_costs()
-    #     date = utils.date_in_n_months(month)
-    #     cash_goal += date.month * self.after_tax_target_profit(date)
-    #     return cash_goal
-    #
+    ########################################################## DEPRICATE THESE
+    def get_cash_goal_in_month(self, month):
+        """calculate the cash we want to have in the bank in `month` months
+        from now
+        """
+        # TODO: DEPRECATE
+        cash_goal = self.n_months_buffer * self.average_historical_costs()
+        date = utils.date_in_n_months(month)
+        cash_goal += date.month * self.after_tax_target_profit(date)
+        return cash_goal
+
+    def after_tax_target_profit(self, date):
+        """Based on everyone's personal take-home pay goals in config.ini,
+        determine the target profit for datascope after taxes
+        """
+
+        # estimate how much profit datascope would have to make so that each
+        # person's personal goals are satisfied
+        personal_after_tax_target_profits = []
+        for person in self.iter_people(date):
+            personal_after_tax_target_profits.append(
+                person.after_tax_target_salary_from_bonus_dividends() /
+                person.net_fraction_of_profits(date)
+            )
+
+        # if we take the maximum here, then everyone is guaranteed to make *at
+        # least* their target take home pay. The median approach makes sure at
+        # least half of everyone at datascope meets their personal target take
+        # home pay goals.
+        return numpy.median(personal_after_tax_target_profits)
+        # return max(personal_after_tax_target_profits)
+
+    def before_tax_target_profit(self, date):
+        # partners must pay taxes at tax_rate, so we need to make
+        # 1/(1-tax_rate) more money to account for this
+        profit = self.after_tax_target_profit(date) / (1 - self.tax_rate)
+
+        # partners also pay taxes on their guaranteed payments
+        guaranteed_payment = self.after_tax_salary / (1 - self.tax_rate)
+        guaranteed_payment_tax = guaranteed_payment * self.tax_rate
+        profit += self.n_partners(date) * guaranteed_payment_tax
+        return profit
+
+    def revenue_per_person(self, date):
+        """Annual revenue per person to meet revenue targets"""
+        return self.revenue(date) * 12 / self.n_people(date)
+
+    def minimum_hourly_rate(self, date):
+        """This is the minimum hourly rate necessary to meet our revenue
+        targets for the year, without growing.
+        """
+        yearly_revenue = self.revenue(date) * 12
+        yearly_billable_hours = self.billable_hours_per_year * \
+            self.n_people(date)
+        return yearly_revenue / yearly_billable_hours

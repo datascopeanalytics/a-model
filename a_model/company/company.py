@@ -3,6 +3,8 @@ import ConfigParser
 import datetime
 
 from .. import reports
+from .. import utils
+from ..person import Person
 
 
 class BaseCompany(object):
