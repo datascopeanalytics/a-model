@@ -316,7 +316,7 @@ class Datascope(object):
 
             # reset the ytd calculations as necessary to make the tax
             # calculations correct
-            if date.month == 1:
+            if date.month == 12:
                 ytd_revenue, ytd_cost = 0.0, 0.0
                 ytd_tax_draws = 0.0
 
@@ -421,15 +421,16 @@ class Datascope(object):
                 t0, revenues, costs, cash=cash0,
                 ytd_revenue=0.0, ytd_cost=0.0, ytd_tax_draws=0.0,
             )
-            # a = monthly_cash[-1] - self.get_cash_buffer(t1)
+            a = monthly_cash[-1] - self.get_cash_buffer(t1)
 
             # calculate the target bonus pool size and make sure the actual
             # bonus pool is close
-            before_tax_salary = self.after_tax_salary / (1.0 - self.tax_rate)
-            monthly_salary = before_tax_salary * n_average
-            target_pool = self.n_months_after_tax_bonus * monthly_salary
-            b = bonus_pool - target_pool
-
+            target_takehome = self.after_tax_salary * \
+                self.n_months_after_tax_bonus
+            target_bonus = target_takehome / (1.0 - self.tax_rate)
+            target_bonus_pool = n_average * target_bonus / \
+                (1.0 - self.fraction_profit_for_dividends)
+            b = bonus_pool - target_bonus_pool
 
             # TODO: does this do the correct thing with Q4 taxes in january
             # print monthly_revenue_per_person, bonus_pool, target_pool, a, b
@@ -449,8 +450,8 @@ class Datascope(object):
         # get the cash goal by simulating this idealized revenue stream
         revenues = constant_revenues(opt.x)
         costs = constant_costs()
-        print sum(revenues)
-        print opt.x * 12, opt.x
+        print "TARGET REVENUE", utils.currency_str(sum(revenues))
+        print opt.x * 12, opt.x, opt.x*12*n_average
         monthly_cash, bonus_pool, quarterly_taxes = self.get_monthly_cash(
             t0, revenues, costs, cash=cash0,
             ytd_revenue=0.0, ytd_cost=0.0, ytd_tax_draws=0.0,
