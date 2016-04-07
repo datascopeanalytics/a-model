@@ -13,15 +13,15 @@ import datetime
 import csv
 
 from a_model import reports
-from a_model.datascope import Datascope
+from a_model.company import Company
 from a_model.argparsers import CalculateBonusParser
 
 # parse command line arguments
 parser = CalculateBonusParser(description=__doc__)
 args = parser.parse_args()
 
-# get some credentials from the datascope object
-datascope = Datascope(today=args.today)
+# get some credentials from the company object
+company = Company(today=args.today)
 
 # get the date for which we are calculating the bonuses
 end_of_last_year = datetime.date(args.today.year-1, 12, 31)
@@ -34,7 +34,7 @@ if args.prepare_csv:
         writer.writerow((
             'name', 'ownership', 'fraction of year', 'award bonus'
         ))
-        for person in datascope.iter_people():
+        for person in company.iter_people():
             f = person.fraction_of_year(end_of_last_year)
             if f > 0:
                 writer.writerow((
@@ -85,8 +85,8 @@ print ''
 print "{:>12} {:>12} {:>12} {:>12} {:>12}".format(
     'name', 'dividends', 'time bonus', 'award bonus', 'total'
 )
-f = datascope.fraction_profit_for_dividends
-F = datascope.fraction_time_bonus
+f = company.fraction_profit_for_dividends
+F = company.fraction_time_bonus
 for person in people:
     proportion_time = person.fraction_of_year / total_time
     proportion_award = person.award_bonus / total_award

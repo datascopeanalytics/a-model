@@ -13,33 +13,33 @@ are all working half-time.
 import argparse
 import datetime
 
-from a_model.datascope import Datascope
+from a_model.company import Company
 from a_model.utils import currency_str
 
 # parse command line arguments
 parser = argparse.ArgumentParser(description=__doc__)
 args = parser.parse_args()
 
-# instantiate datascope
-datascope = Datascope()
+# instantiate company
+company = Company()
 eoy = datetime.date(datetime.date.today().year, 12, 31)
 
 # calculate the financials from the information provided in config.ini
 print "If we met the happiness goals we have, we would have the "
 print "following outcomes..."
 print ""
-print "%40s%16s" % ("EBIT", '{:.2%}'.format(datascope.ebit(eoy)))
+print "%40s%16s" % ("EBIT", '{:.2%}'.format(company.ebit(eoy)))
 print "%40s%15s" % (
     "REVENUE PER PERSON",
-    currency_str(datascope.revenue_per_person(eoy)),
+    currency_str(company.revenue_per_person(eoy)),
 )
 print "%40s%15s" % (
     "MINIMUM HOURLY RATE",
-    currency_str(datascope.minimum_hourly_rate(eoy)),
+    currency_str(company.minimum_hourly_rate(eoy)),
 )
 print ""
 print "PERSONAL MONTHLY TAKE HOME PAY:"
-for person in datascope.iter_people():
+for person in company.iter_people():
     print "%10s%15s%15s" % (
         person.name,
         currency_str(person.after_tax_target_salary),
