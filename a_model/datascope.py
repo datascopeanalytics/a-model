@@ -314,9 +314,11 @@ class Datascope(object):
                 cash -= quarterly_tax
                 ytd_tax_draws += quarterly_tax
 
-            # pay all normal expenses and add revenues for the month
-            cash -= costs[month]
-            cash += revenues[month]
+            # reset the ytd calculations as necessary to make the tax
+            # calculations correct
+            if date.month == 1:
+                ytd_revenue, ytd_cost = 0.0, 0.0
+                ytd_tax_draws = 0.0
 
             # pay bonuses at the end of December. can instead count this in
             # January if it looks like Datascope's profits will grow in the
@@ -332,11 +334,9 @@ class Datascope(object):
                 costs[month] += (1.0 - f) * bonus_pool
                 cash -= f * bonus_pool
 
-            # reset the ytd calculations as necessary to make the tax
-            # calculations correct
-            if date.month == 1:
-                ytd_revenue, ytd_cost = 0.0, 0.0
-                ytd_tax_draws = 0.0
+            # pay all normal expenses and add revenues for the month
+            cash -= costs[month]
+            cash += revenues[month]
             ytd_cost += costs[month]
             ytd_revenue += revenues[month]
 
@@ -386,7 +386,6 @@ class Datascope(object):
         n_average, n = 0.0, 0.0
         for t in utils.iter_end_of_months(t0, t1):
             n_average += self.n_people(t)
-            print "DATE", t
             n += 1.0
         n_average /= n
 
