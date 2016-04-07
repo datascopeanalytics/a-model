@@ -141,6 +141,15 @@ class BaseCompany(object):
             cost = fixed_cost + n_people * per_person_cost
         return self.n_months_buffer * cost
 
+    def average_tax_rate(self, date):
+        """calculate the mean tax rate across all datascopers"""
+        tax_rate = 0.0
+        n = 0.0
+        for person in self.iter_people(date):
+            tax_rate += person.tax_rate(date)
+            n += 1
+        return tax_rate / n
+
     ######################################################## TODO: REFACTOR ME
     def iter_future_months(self, n_months):
         # can use any report for this. happened to choose unpaid invoices

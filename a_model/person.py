@@ -5,6 +5,7 @@ import datetime
 class Person(object):
     def __init__(self, datascope, name, start_date=None,
                  end_date=None, partner_date=None, ownership=0.0):
+        # TODO: rename self.datascope -> self.company everywhere
         self.datascope = datascope
         self.name = name
         self.start_date = start_date or datetime.date.today()
@@ -27,6 +28,43 @@ class Person(object):
 
     def is_active_or_partner(self, date):
         return self.is_active(date) or self.is_partner(date)
+
+    def tax_rate(self, date):
+        """calculate the approximate tax rate for this person using the IRS tax
+        tables.
+        """
+        # partners are treated differently due to a variety of factors
+        if self.is_partner(date):
+            return self.datascope.tax_rate
+
+        # calculate the salary
+        # TODO: this is mixing before and after tax things
+        factor = (12.0 + self.datascope.n_months_after_tax_bonus) / 12.0
+        salary = factor * self.datascope.before_tax_annual_salary
+
+        # use the head of household tables to estimate total tax paid. this
+        # isn't perfect, but is a good start
+        # http://taxfoundation.org/article/2016-tax-brackets
+        inf = float('inf')
+        tax_table = (
+            ( 13250, 0.100),
+            ( 50400, 0.150),
+            (130150, 0.250),
+            (210800, 0.280),
+            (413350, 0.330),
+            (441000, 0.350),
+            (   inf, 0.396)
+        )
+        tax = 0.0
+        lower_bound = 0.0
+        for upper_bound, marginal_rate in tax_table:
+            if lower_bound <= salary <= upper_bound:
+                tax += marginal_rate * (salary - lower_bound)
+                break
+            else:
+                tax += marginal_rate * (upper_bound - lower_bound)
+            lower_bound = upper_bound
+        return tax / salary
 
     @property
     def after_tax_target_salary(self):

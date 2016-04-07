@@ -67,7 +67,7 @@ class GoalCompanyMixin(object):
             # bonus pool is close
             target_takehome = self.after_tax_salary * \
                 self.n_months_after_tax_bonus
-            target_bonus = target_takehome / (1.0 - self.tax_rate)
+            target_bonus = target_takehome / (1.0 - self.average_tax_rate(t1))
             target_bonus_pool = n_average * target_bonus / \
                 (1.0 - self.fraction_profit_for_dividends)
             b = bonus_pool - target_bonus_pool
