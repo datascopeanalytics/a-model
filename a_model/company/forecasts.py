@@ -102,6 +102,7 @@ class ForecastCompanyMixin(object):
             ytd_revenue = self.profit_loss.get_ytd_revenue()
         if ytd_cost is None:
             ytd_cost = self.profit_loss.get_ytd_cost()
+
         # TODO get Lyuda / Matt to help us have a quickbooks report that makes
         # it easy to get this information directly from quickbooks instead of
         # having to enter it by hand in the config.ini
