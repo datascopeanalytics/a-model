@@ -127,12 +127,6 @@ class ForecastCompanyMixin(object):
                 cash -= quarterly_tax
                 ytd_tax_draws += quarterly_tax
 
-            # reset the ytd calculations as necessary to make the tax
-            # calculations correct
-            if date.month == 12:
-                ytd_revenue, ytd_cost = 0.0, 0.0
-                ytd_tax_draws = 0.0
-
             # pay bonuses at the end of December. can instead count this in
             # January if it looks like Datascope's profits will grow in the
             # next year, but this gives us the flexibility to pay bonuses early
@@ -153,6 +147,12 @@ class ForecastCompanyMixin(object):
             cash += revenues[month]
             ytd_cost += costs[month]
             ytd_revenue += revenues[month]
+
+            # reset the ytd calculations as necessary to make the tax
+            # calculations correct
+            if date.month == 12:
+                ytd_revenue, ytd_cost = 0.0, 0.0
+                ytd_tax_draws = 0.0
 
             # record and return the cash in the bank at the end of the month
             monthly_cash.append(cash)
