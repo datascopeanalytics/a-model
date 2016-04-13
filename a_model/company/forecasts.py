@@ -141,8 +141,9 @@ class ForecastCompanyMixin(object):
             # counts as an expense and reduces our tax burden. taxes have
             # already been paid on dividends and are just drawn from the bank.
             if date.month == 12:
+                eom_cash = cash + revenues[month] - costs[month]
                 buffer = self.get_cash_buffer(date)
-                bonus_pool = max([0.0, cash - buffer])
+                bonus_pool = max([0.0, eom_cash - buffer])
                 f = self.fraction_profit_for_dividends
                 costs[month] += (1.0 - f) * bonus_pool
                 cash -= f * bonus_pool
