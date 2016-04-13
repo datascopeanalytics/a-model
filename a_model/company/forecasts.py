@@ -70,6 +70,7 @@ class ForecastCompanyMixin(object):
 
         # get fixed costs from P&L and treat it like a constant
         fixed_cost = self.profit_loss.get_average_fixed_cost()
+        # TODO FIX THIS TO WORK WITH ACTIVE PEOPLE
         per_person_costs = self.get_historical_per_person_costs()
 
         # variable costs (i) scale with the number of people and (ii) vary
@@ -86,6 +87,8 @@ class ForecastCompanyMixin(object):
             #
             # TODO: also need to even up partner safe harbor contributions
             # (shouldn't be more than a couple thousand)
+            #
+            # TODO: should only do this for 401k eligible people
             if date.month == 12:
                 costs[month] += n_people * self.retirement_contribution
         return costs

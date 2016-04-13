@@ -91,14 +91,23 @@ class GoalCompanyMixin(object):
         revenues = constant_revenues(opt.x)
         costs = constant_costs()
         print "TARGET REVENUE", utils.currency_str(sum(revenues))
-        print opt.x * 12, opt.x, opt.x*12*n_average
+        print "REVENUE PER PESON", utils.currency_str(opt.x * 12)
         monthly_cash, bonus_pool, quarterly_taxes = self.get_monthly_cash(
             t0, revenues, costs, cash=cash0,
             ytd_revenue=0.0, ytd_cost=0.0, ytd_tax_draws=0.0,
         )
-        print monthly_cash
-        print bonus_pool
-        print quarterly_taxes
+        print "MONTHLY CASH", monthly_cash
+        print "BONUS POOL", bonus_pool
+        x = 0.0
+        for person in self.iter_people_and_partners(t1):
+            b = person.net_fraction_of_profits(t1) * bonus_pool
+            x += b
+            print "BONUS %30s %15s" % (
+                person.name,
+                utils.currency_str(b),
+            )
+        print "BONUS POOL CHECK", x
+        print "QUARTERLY TAXES", quarterly_taxes
         print 'COSTS', costs
         print 'BUFF', self.get_cash_buffer(t1)
         result = [(datetime.date(t0.year, t0.month, 1), cash0)]
@@ -174,7 +183,7 @@ class GoalCompanyMixin(object):
         # estimate how much profit datascope would have to make so that each
         # person's personal goals are satisfied
         personal_after_tax_target_profits = []
-        for person in self.iter_people(date):
+        for person in self.iter_people_and_partners(date):
             personal_after_tax_target_profits.append(
                 person.after_tax_target_salary_from_bonus_dividends() /
                 person.net_fraction_of_profits(date)

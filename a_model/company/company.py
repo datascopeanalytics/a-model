@@ -58,21 +58,33 @@ class BaseCompany(object):
         return person
 
     def iter_people(self, date=None):
-        """iterate over all people present at Datascope on `date`."""
+        """iterate over all active people at Datascope on `date`."""
         for person in self.people:
+            if date is None or person.is_active(date):
+                yield person
+
+    def iter_people_and_partners(self, date=None):
+        """iterate over all active people and partners at Datascope on `date`.
+        """
+        for person in self.iter_people():
             if date is None or person.is_active_or_partner(date):
                 yield person
 
-    def __len__(self):
-        return len(self.people)
+    def iter_partners(self, date):
+        for person in self.iter_people():
+            if person.is_partner(date):
+                yield person
 
     def n_people(self, date):
         """number of people that are active datascopers"""
         return len([person for person in self.iter_people(date)])
 
+    def n_people_and_partners(self, date):
+        """number of people or partners at Datacope"""
+        return len([person for person in self.iter_people_and_partners(date)])
+
     def n_partners(self, date):
-        return len([person for person in self.iter_people()
-                    if person.is_partner(date)])
+        return len([person for person in self.iter_partners(date)])
 
     ######################################################### BASIC FINANCIALS
     def average_historical_costs(self):
@@ -142,7 +154,7 @@ class BaseCompany(object):
         return self.n_months_buffer * cost
 
     def average_tax_rate(self, date):
-        """calculate the mean tax rate across all datascopers"""
+        """calculate the mean tax rate across all active datascopers"""
         tax_rate = 0.0
         n = 0.0
         for person in self.iter_people(date):

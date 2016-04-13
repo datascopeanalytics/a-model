@@ -34,7 +34,7 @@ if args.prepare_csv:
         writer.writerow((
             'name', 'ownership', 'fraction of year', 'award bonus'
         ))
-        for person in company.iter_people():
+        for person in company.iter_people_and_partners(end_of_last_year):
             f = person.fraction_of_year(end_of_last_year)
             if f > 0:
                 writer.writerow((
