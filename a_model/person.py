@@ -64,6 +64,22 @@ class Person(object):
             else:
                 tax += marginal_rate * (upper_bound - lower_bound)
             lower_bound = upper_bound
+
+        # handle social security taxes
+        # https://www.ssa.gov/oact/cola/cbb.html
+        social_security_max = 118500
+        social_security_rate = 0.062
+        tax += social_security_rate * min([salary, social_security_max])
+
+        # handle medicare taxes
+        # https://www.irs.gov/taxtopics/tc751.html
+        medicare_threshold = 200000
+        medicare_rate_low = 0.0145
+        medicare_rate_high = medicare_rate_low + 0.009
+        tax += medicare_rate_low * min([salary, medicare_threshold])
+        if salary > medicare_threshold:
+            tax += medicare_rate_high * (salary - medicare_threshold)
+
         return tax / salary
 
     @property
