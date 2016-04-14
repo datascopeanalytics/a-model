@@ -4,6 +4,7 @@ import collections
 from dateutil.relativedelta import relativedelta
 import numpy
 
+
 class ForecastCompanyMixin(object):
     """This Mixin holds everything related to forecasting cashflow into the
     future"""
