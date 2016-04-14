@@ -134,7 +134,19 @@ class ForecastCompanyMixin(object):
             # counts as an expense and reduces our tax burden. taxes have
             # already been paid on dividends and are just drawn from the bank.
             if date.month == 12:
-                eom_cash = cash + revenues[month] - costs[month]
+                # TODO: half of the bonus_pool counts as a cost for the
+                # business, which would reduce our Q4 tax burden if we actually
+                # pay bonuses in december
+                #
+                # TODO: have command line option to do bonuses after the new
+                # year
+                _ytd_revenue = ytd_revenue + revenues[month]
+                _ytd_cost = ytd_cost + costs[month]
+                _ytd_profit = max([0.0, _ytd_revenue - _ytd_cost])
+                q4_tax = self.tax_rate * _ytd_profit - ytd_tax_draws
+                q4_tax = max([0.0, q4_tax])
+                print "Q4 TAX", q4_tax
+                eom_cash = cash + revenues[month] - costs[month] - q4_tax
                 buffer = self.get_cash_buffer(date)
                 bonus_pool = max([0.0, eom_cash - buffer])
                 f = self.fraction_profit_for_dividends
