@@ -72,10 +72,31 @@ class SimulationParser(BaseParser):
             default=1000,
         )
         self.add_argument(
+            '--ontime-payment',
+            action="store_true",
+            help='remove noise in payments',
+        )
+        self.add_argument(
+            '--ontime-completion',
+            action="store_true",
+            help='remove project completion noise',
+        )
+        self.add_argument(
+            '--ontime',
+            action="store_true",
+            help='equivalent to --ontime-payment --ontime-completion',
+        )
+        self.add_argument(
             '-v', '--verbose',
             action="store_true",
             help='print more information during the simulations',
         )
+
+    def parse_args(self, *args, **kwargs):
+        result = super(SimulationParser, self).parse_args(*args, **kwargs)
+        if result.ontime:
+            result.ontime_completion = result.ontime_payment = result.ontime
+        return result
 
 
 class HiringParser(SimulationParser):

@@ -34,6 +34,8 @@ outcomes = company.simulate_monthly_cash(
     n_months=args.n_months,
     n_universes=args.n_universes,
     verbose=args.verbose,
+    ontime_payment=args.ontime_payment,
+    ontime_completion=args.ontime_completion,
 )
 monthly_cash_outcomes = outcomes[0]
 bonus_pool_outcomes = outcomes[1]

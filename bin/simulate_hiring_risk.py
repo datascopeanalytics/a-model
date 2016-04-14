@@ -33,6 +33,8 @@ def get_all_n00b_outcomes():
             n_months=args.n_months,
             n_universes=args.n_universes,
             verbose=args.verbose,
+            ontime_payment=args.ontime_payment,
+            ontime_completion=args.ontime_completion,
         )
 
         # create a data structure to store the information in a relevant way

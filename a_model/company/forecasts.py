@@ -9,7 +9,7 @@ class ForecastCompanyMixin(object):
     future"""
 
     # @read_or_run
-    def simulate_revenues(self, universe, n_months):
+    def simulate_revenues(self, universe, n_months, **kwargs):
         """Simulate revenues from accounts receivable data.
         """
         # TODO: Add in revenue from the 'Finalize (SOW/Legal)' Trello list
@@ -18,16 +18,20 @@ class ForecastCompanyMixin(object):
 
         revenues = [0.0] * n_months
 
-        def ontime_noise():
+        def ontime_payment_noise():
             """Clients rarely pay early and tend to pay late"""
             # TODO: can measure this and make it a not crappy model
+            if kwargs.get('ontime_payment', False):
+                return 0
             return random.randint(0, 2)
 
-        def work_completion_noise():
+        def ontime_completion_noise():
             """The end of projects can sometimes drag on a bit, delaying
             payment.
             """
             # TODO: could probably measure this from project planning doodie
+            if kwargs.get('ontime_completion', False):
+                return 0
             return random.randint(0, 2)
 
         def payment_terms():
@@ -47,7 +51,7 @@ class ForecastCompanyMixin(object):
 
             # add this balance to the revenues if the revenue hits in the
             # simulation time window
-            month = months_from_now + ontime_noise()
+            month = months_from_now + ontime_payment_noise()
             if month < n_months:
                 revenues[month] += balance
 
@@ -58,13 +62,13 @@ class ForecastCompanyMixin(object):
         for date, balance in self.invoice_projections:
             months_from_now = self._get_months_from_now(date)
             month = months_from_now + payment_terms() + \
-                work_completion_noise() + ontime_noise()
+                ontime_completion_noise() + ontime_payment_noise()
             if month < n_months:
                 revenues[month] += balance
         return revenues
 
 #    @run_or_cache
-    def simulate_costs(self, universe, n_months):
+    def simulate_costs(self, universe, n_months, **kwargs):
         """Simulate datascope's costs over time
         """
 
@@ -172,17 +176,18 @@ class ForecastCompanyMixin(object):
 
         return monthly_cash, bonus_pool, quarterly_taxes
 
-    def _simulate_single_universe_monthly_cash(self, universe, n_months):
+    def _simulate_single_universe_monthly_cash(self, universe, n_months,
+                                               **kwargs):
         for start_date in self.iter_future_months(1):
             pass
         return self.get_monthly_cash(
            start_date,
-           self.simulate_revenues(universe, n_months),
-           self.simulate_costs(universe, n_months),
+           self.simulate_revenues(universe, n_months, **kwargs),
+           self.simulate_costs(universe, n_months, **kwargs),
         )
 
     def simulate_monthly_cash(self, n_months=12, n_universes=1000,
-                              verbose=False):
+                              verbose=False, **kwargs):
         """Simulate finances and the cash in the bank at the end of every
         month.
         """
@@ -193,7 +198,9 @@ class ForecastCompanyMixin(object):
             if verbose and universe % 100 == 0:
                 print >> sys.stderr, "simulation %d" % universe
             monthly_cash, bonus_pool, quarterly_taxes = \
-                self._simulate_single_universe_monthly_cash(universe, n_months)
+                self._simulate_single_universe_monthly_cash(
+                    universe, n_months, **kwargs
+                )
             monthly_cash_outputs.append(monthly_cash)
             bonus_pool_outputs.append(bonus_pool)
             for month in quarterly_taxes:
