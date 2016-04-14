@@ -104,15 +104,17 @@ class Person(object):
         """
         beg_of_year = datetime.date(date.year, 1, 1)
         end_of_year = date
+        if self.end_date and self.end_date < beg_of_year:
+            return 0.0
         if self.start_date > end_of_year:
             return 0.0
         start_date = max([self.start_date, beg_of_year])
         if self.end_date and self.end_date < end_of_year:
             date = max([self.end_date, beg_of_year])
         # add one to the difference to include beg_of_year
-        numerator = (date - beg_of_year).days + 1.0
+        numerator = (date - start_date).days + 1.0
         denominator = (end_of_year - beg_of_year).days + 1.0
-        return float(numerator) / denominator
+        return numerator / denominator
 
     def fraction_datascope_year(self, date):
         """returns the fraction of all datascopers' year that this person has

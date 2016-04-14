@@ -99,13 +99,14 @@ class GoalCompanyMixin(object):
         print "MONTHLY CASH", monthly_cash
         print "BONUS POOL", bonus_pool
         x = 0.0
-        for person in self.iter_people_and_partners(t1):
+        for person in self.iter_people():
             b = person.net_fraction_of_profits(t1) * bonus_pool
-            x += b
-            print "BONUS %30s %15s" % (
-                person.name,
-                utils.currency_str(b),
-            )
+            if b > 0:
+                x += b
+                print "BONUS %30s %15s" % (
+                    person.name,
+                    utils.currency_str(b),
+                )
         print "BONUS POOL CHECK", x
         print "QUARTERLY TAXES", quarterly_taxes
         print 'COSTS', costs
