@@ -17,7 +17,7 @@ import matplotlib.patheffects as patheffects
 
 from a_model.company import Company
 from a_model.argparsers import SimulationParser
-from a_model.utils import iter_end_of_months
+from a_model.utils import iter_end_of_months, currency_str
 
 # parse command line arguments
 parser = SimulationParser(description=__doc__)
@@ -193,12 +193,14 @@ for tic in ax.yaxis.get_major_ticks():
 filename = 'cash_in_bank.png'
 plt.savefig(filename)
 print "results now available in", filename
+
+# report some helpful statistics
 print "2.5/50/97.5 percentile bonus pool size:", \
-    numpy.percentile(bonus_pool_outcomes, 2.5), \
-    numpy.percentile(bonus_pool_outcomes, 50), \
-    numpy.percentile(bonus_pool_outcomes, 97.5)
+    currency_str(numpy.percentile(bonus_pool_outcomes, 2.5)), \
+    currency_str(numpy.percentile(bonus_pool_outcomes, 50)), \
+    currency_str(numpy.percentile(bonus_pool_outcomes, 97.5))
 for month, values in sorted(quarterly_tax_outcomes.iteritems()):
     print "2.5/50/97.5 percentile tax draw in month %d:" % month, \
-        numpy.percentile(values, 2.5), \
-        numpy.percentile(values, 50), \
-        numpy.percentile(values, 97.5)
+        currency_str(numpy.percentile(values, 2.5)), \
+        currency_str(numpy.percentile(values, 50)), \
+        currency_str(numpy.percentile(values, 97.5))

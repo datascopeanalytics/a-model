@@ -105,6 +105,12 @@ class GoalCompanyMixin(object):
         self._annual_cash_goals[year] = result
         for t, cash in zip(utils.iter_end_of_months(t0, t1), monthly_cash):
             result.append((t, cash))
+
+        # print out some helpful statistics
+        r = sum(revenues)
+        print "TARGET %d REVENUES" % year, utils.currency_str(r)
+        print "...THAT's %s PER PERSON" % utils.currency_str(r / n_average)
+
         return result
 
     def get_outcomes_in_month(self, month, monthly_cash_outcomes):
