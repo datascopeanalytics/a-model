@@ -12,14 +12,22 @@ class GoalCompanyMixin(object):
     financial goals of the Company.
     """
 
-    def get_cash_goal(self):
+    def get_cash_goal(self, date):
+        annual_cash_goal = dict(self.get_annual_cash_goal(date.year))
+        return annual_cash_goal[date]
+
+    def get_annual_cash_goal(self, year):
         """do a goal seek to figure out how much revenue per datascoper per
         month we need to generate to meet our goal profitability
         """
+        if not hasattr(self, '_annual_cash_goals'):
+            self._annual_cash_goals = {}
+        if year in self._annual_cash_goals:
+            return self._annual_cash_goals[year]
         t0 = utils.end_of_month(
-            datetime.date(datetime.date.today().year, 1, 1)
+            datetime.date(year, 1, 1)
         )
-        t1 = datetime.date(datetime.date.today().year, 12, 31)
+        t1 = datetime.date(year, 12, 31)
         cash0 = self.get_cash_buffer(t0)
         average_tax_rate = self.average_tax_rate(t1)
 
@@ -93,6 +101,7 @@ class GoalCompanyMixin(object):
             ytd_revenue=0.0, ytd_cost=0.0, ytd_tax_draws=0.0,
         )
         result = [(datetime.date(t0.year, t0.month, 1), cash0)]
+        self._annual_cash_goals[year] = result
         for t, cash in zip(utils.iter_end_of_months(t0, t1), monthly_cash):
             result.append((t, cash))
         return result

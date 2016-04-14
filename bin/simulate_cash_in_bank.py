@@ -67,7 +67,7 @@ t_domain = [
     max(monthly_t)+datetime.timedelta(days=1),
 ]
 yunit = company.line_of_credit
-ymax = math.ceil(max_cash / yunit) * yunit
+ymax = (math.ceil(max_cash / yunit) + 1) * yunit
 plt.axis(t_domain + [-yunit, ymax])
 ax = plt.gca()
 ax.set_autoscale_on(False)
@@ -130,8 +130,7 @@ for date in iter_end_of_months(t_domain[0], t_domain[1]):
         cash_goals.append(cash_buffer)
     goal_dates.append(date)
     cash_buffers.append(cash_buffer)
-    target_monthly_profit = company.after_tax_target_profit(date)
-    cash_goals.append(cash_buffer + date.month * target_monthly_profit)
+    cash_goals.append(company.get_cash_goal(date))
     if date == eoy:
         eoy_cash_buffer = cash_buffers[-1]
         eoy_cash_goal = cash_goals[-1]
@@ -150,10 +149,6 @@ plt.fill_between(
     facecolor=outcome_colors[0],
     **outcome_region_params
 )
-
-# plot the new goal line
-result = company.get_cash_goal()
-plt.plot(*zip(*result), color='red')
 
 # axis labels
 plt.ylabel('cash in bank')
