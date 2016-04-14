@@ -66,9 +66,8 @@ class GoalCompanyMixin(object):
 
             # calculate the target bonus pool size and make sure the actual
             # bonus pool is close
-            target_takehome = self.after_tax_salary * \
-                self.n_months_after_tax_bonus
-            target_bonus = target_takehome / (1.0 - average_tax_rate)
+            monthly_salary = self.before_tax_annual_salary / 12.0
+            target_bonus = monthly_salary * self.n_months_before_tax_bonus
             target_bonus_pool = n_average * target_bonus / \
                 (1.0 - self.fraction_profit_for_dividends)
             b = bonus_pool - target_bonus_pool

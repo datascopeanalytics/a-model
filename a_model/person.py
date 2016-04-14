@@ -38,8 +38,7 @@ class Person(object):
             return self.datascope.tax_rate
 
         # calculate the salary
-        # TODO: this is mixing before and after tax things
-        factor = (12.0 + self.datascope.n_months_after_tax_bonus) / 12.0
+        factor = (12.0 + self.datascope.n_months_before_tax_bonus) / 12.0
         salary = factor * self.datascope.before_tax_annual_salary
 
         # use the head of household tables to estimate total tax paid. this
@@ -87,22 +86,6 @@ class Person(object):
 
         return tax / salary
 
-    @property
-    def after_tax_target_salary(self):
-        """This is on a per month basis, but includes biweekly salary as well
-        as annual bonus and dividends. If the target take home pay is not
-        specified, then we estimate the target take home pay from the monthly
-        after tax pay and the number of months of after tax bonus expected at
-        the end of the year.
-        """
-        default_pay = self.datascope.after_tax_salary
-        default_pay *= (1 + self.datascope.n_months_after_tax_bonus/12)
-        try:
-            pay = self.datascope.config.getfloat('take home pay', self.name)
-        except (ConfigParser.NoOptionError, ValueError):
-            pay = default_pay
-        return pay
-
     def fraction_of_year(self, date):
         """returns the fraction of the year (up to `date`) that this person
         worked
@@ -144,6 +127,23 @@ class Person(object):
     def net_fraction_of_profits(self, date):
         """Net fraction of all profits"""
         return self.fraction_dividends() + self.fraction_bonus(date)
+
+    ################################################################ DEPRICATE
+    @property
+    def after_tax_target_salary(self):
+        """This is on a per month basis, but includes biweekly salary as well
+        as annual bonus and dividends. If the target take home pay is not
+        specified, then we estimate the target take home pay from the monthly
+        after tax pay and the number of months of after tax bonus expected at
+        the end of the year.
+        """
+        default_pay = self.datascope.after_tax_salary
+        default_pay *= (1 + self.datascope.n_months_before_tax_bonus/12)
+        try:
+            pay = self.datascope.config.getfloat('take home pay', self.name)
+        except (ConfigParser.NoOptionError, ValueError):
+            pay = default_pay
+        return pay
 
     def after_tax_target_salary_from_bonus_dividends(self):
         return self.after_tax_target_salary - self.datascope.after_tax_salary
