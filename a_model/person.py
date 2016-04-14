@@ -128,6 +128,6 @@ class Person(object):
         return self.fraction_dividends() + self.fraction_bonus(date)
 
     def before_tax_target_bonus_dividends(self, date):
-        goal = self.datascope.get_cash_goal(date)
-        buffer = self.datascope.get_cash_buffer(date)
-        return self.net_fraction_of_profits(date) * (goal - buffer)
+        cash_goal = self.datascope.get_annual_cash_goal(date.year)
+        profit = cash_goal[-2][1] - cash_goal[-1][1]
+        return self.net_fraction_of_profits(date) * profit

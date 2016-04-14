@@ -105,6 +105,10 @@ class GoalCompanyMixin(object):
         self._annual_cash_goals[year] = result
         for t, cash in zip(utils.iter_end_of_months(t0, t1), monthly_cash):
             result.append((t, cash))
+        result.append((
+            t1 + datetime.timedelta(days=1),
+            monthly_cash[-1]-bonus_pool,
+        ))
 
         # print out some helpful statistics
         r = sum(revenues)
