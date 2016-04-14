@@ -83,14 +83,9 @@ class ForecastCompanyMixin(object):
             n_people = self.n_people(date)
             costs[month] += fixed_cost + variable_cost(n_people)
 
-            # 401k contributions
-            #
-            # TODO: also need to even up partner safe harbor contributions
-            # (shouldn't be more than a couple thousand)
-            #
-            # TODO: should only do this for 401k eligible people
+            # handle big, consistently timed expenses here
             if date.month == 12:
-                costs[month] += n_people * self.retirement_contribution
+                costs[month] += self.get_401k_contribution(date)
         return costs
 
     def get_monthly_cash(self, start_date, revenues, costs, cash=None,

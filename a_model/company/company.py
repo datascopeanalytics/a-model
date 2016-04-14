@@ -86,6 +86,15 @@ class BaseCompany(object):
     def n_partners(self, date):
         return len([person for person in self.iter_partners(date)])
 
+    ################################################################# BENEFITS
+    def get_401k_contribution(self, date):
+        # TODO: also need to even up partner safe harbor contributions
+        # (shouldn't be more than a couple thousand)
+        #
+        # TODO: should only do this for 401k eligible people
+        return self.n_people(date) * self.retirement_contribution
+
+
     ######################################################### BASIC FINANCIALS
     def average_historical_costs(self):
         """Estimate rough monthly costs for Datascope"""

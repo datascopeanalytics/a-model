@@ -21,6 +21,7 @@ class GoalCompanyMixin(object):
         )
         t1 = datetime.date(datetime.date.today().year, 12, 31)
         cash0 = self.get_cash_buffer(t0)
+        average_tax_rate = self.average_tax_rate(t1)
 
         # average number of people
         n_average, n = 0.0, 0.0
@@ -39,7 +40,7 @@ class GoalCompanyMixin(object):
             for t in utils.iter_end_of_months(t0, t1):
                 n = self.n_people(t)
                 costs.append(fixed_cost + n * per_person_cost)
-            costs[-1] += n * self.retirement_contribution
+            costs[-1] += self.get_401k_contribution(t1)
             return costs
 
 
@@ -67,7 +68,7 @@ class GoalCompanyMixin(object):
             # bonus pool is close
             target_takehome = self.after_tax_salary * \
                 self.n_months_after_tax_bonus
-            target_bonus = target_takehome / (1.0 - self.average_tax_rate(t1))
+            target_bonus = target_takehome / (1.0 - average_tax_rate)
             target_bonus_pool = n_average * target_bonus / \
                 (1.0 - self.fraction_profit_for_dividends)
             b = bonus_pool - target_bonus_pool
@@ -96,20 +97,24 @@ class GoalCompanyMixin(object):
             t0, revenues, costs, cash=cash0,
             ytd_revenue=0.0, ytd_cost=0.0, ytd_tax_draws=0.0,
         )
+        print "N AVERAGE", n_average
         print "MONTHLY CASH", monthly_cash
-        print "BONUS POOL", bonus_pool
+        print "BONUS POOL", utils.currency_str(bonus_pool)
         x = 0.0
         for person in self.iter_people():
             b = person.net_fraction_of_profits(t1) * bonus_pool
             if b > 0:
                 x += b
-                print "BONUS %30s %15s" % (
+                c = person.fraction_bonus(t1) * bonus_pool * (1 - person.tax_rate(t1))
+                print "BONUS %30s %15s %15s" % (
                     person.name,
                     utils.currency_str(b),
+                    utils.currency_str(c),
                 )
         print "BONUS POOL CHECK", x
         print "QUARTERLY TAXES", quarterly_taxes
         print 'COSTS', costs
+        print 'REVENUES', revenues
         print 'BUFF', self.get_cash_buffer(t1)
         result = [(datetime.date(t0.year, t0.month, 1), cash0)]
         for t, cash in zip(utils.iter_end_of_months(t0, t1), monthly_cash):
