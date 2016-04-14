@@ -128,44 +128,8 @@ class Person(object):
         """Net fraction of all profits"""
         return self.fraction_dividends() + self.fraction_bonus(date)
 
-    ################################################################ DEPRICATE
-    @property
-    def after_tax_target_salary(self):
-        """This is on a per month basis, but includes biweekly salary as well
-        as annual bonus and dividends. If the target take home pay is not
-        specified, then we estimate the target take home pay from the monthly
-        after tax pay and the number of months of after tax bonus expected at
-        the end of the year.
-        """
-        default_pay = self.datascope.after_tax_salary
-        default_pay *= (1 + self.datascope.n_months_before_tax_bonus/12)
-        try:
-            pay = self.datascope.config.getfloat('take home pay', self.name)
-        except (ConfigParser.NoOptionError, ValueError):
-            pay = default_pay
-        return pay
-
-    def after_tax_target_salary_from_bonus_dividends(self):
-        return self.after_tax_target_salary - self.datascope.after_tax_salary
-
-    def after_tax_salary_from_bonus(self, date):
-        return self.fraction_bonus(date) *\
-            self.datascope.after_tax_target_profit(date)
-
-    def after_tax_salary_from_dividends(self, date):
-        return self.fraction_dividends() *\
-            self.datascope.after_tax_target_profit(date)
-
-    def after_tax_salary(self, date):
-        return (
-            self.after_tax_salary_from_bonus(date) +
-            self.after_tax_salary_from_dividends(date) +
-            self.datascope.after_tax_salary
-        )
-
     def before_tax_target_bonus_dividends(self, date):
-        # only bonuses are taxed at tax rate.
-        target_bonus = self.after_tax_salary_from_bonus(date) / \
-            (1 - self.datascope.tax_rate)
-        target_dividends = self.after_tax_salary_from_dividends(date)
-        return target_bonus + target_dividends
+        goal = self.datascope.get_cash_goal(date)
+        buffer = self.datascope.get_cash_buffer(date)
+        print "WTF", self.name, goal - buffer, self.net_fraction_of_profits(date)
+        return self.net_fraction_of_profits(date) * (goal - buffer)
