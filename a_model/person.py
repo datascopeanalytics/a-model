@@ -80,6 +80,11 @@ class Person(object):
         if salary > medicare_threshold:
             tax += medicare_rate_high * (salary - medicare_threshold)
 
+        # illinois tax rate
+        # http://www.revenue.state.il.us/TaxRates/Income.htm
+        il_rate = 0.0375
+        tax += il_rate * salary
+
         return tax / salary
 
     @property
