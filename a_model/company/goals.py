@@ -51,14 +51,12 @@ class GoalCompanyMixin(object):
             costs[-1] += self.get_401k_contribution(t1)
             return costs
 
-
         def constant_revenues(monthly_revenue_per_person):
             revenues = []
             for t in utils.iter_end_of_months(t0, t1):
                 n = self.n_people(t)
                 revenues.append(n * monthly_revenue_per_person)
             return revenues
-
 
         def helper(monthly_revenue_per_person):
             # fit the eoy cash to be the same as the cash buffer. square the

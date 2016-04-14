@@ -44,15 +44,14 @@ class Person(object):
         # use the head of household tables to estimate total tax paid. this
         # isn't perfect, but is a good start
         # http://taxfoundation.org/article/2016-tax-brackets
-        inf = float('inf')
         tax_table = (
-            ( 13250, 0.100),
-            ( 50400, 0.150),
+            (13250, 0.100),
+            (50400, 0.150),
             (130150, 0.250),
             (210800, 0.280),
             (413350, 0.330),
             (441000, 0.350),
-            (   inf, 0.396)
+            (float('inf'), 0.396)
         )
         tax = 0.0
         lower_bound = 0.0
@@ -131,5 +130,4 @@ class Person(object):
     def before_tax_target_bonus_dividends(self, date):
         goal = self.datascope.get_cash_goal(date)
         buffer = self.datascope.get_cash_buffer(date)
-        print "WTF", self.name, goal - buffer, self.net_fraction_of_profits(date)
         return self.net_fraction_of_profits(date) * (goal - buffer)

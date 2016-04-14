@@ -47,7 +47,7 @@ class BaseCompany(object):
         """This just accesses the value from the config.ini directly"""
         return self.config.getfloat('parameters', name)
 
-    ############################################################ MANAGE PEOPLE
+    #                                                             MANAGE PEOPLE
     def add_person(self, person_or_name, *args, **kwargs):
         if isinstance(person_or_name, Person):
             person = person_or_name
@@ -86,7 +86,7 @@ class BaseCompany(object):
     def n_partners(self, date):
         return len([person for person in self.iter_partners(date)])
 
-    ################################################################# BENEFITS
+    #                                                                  BENEFITS
     def get_401k_contribution(self, date):
         # TODO: also need to even up partner safe harbor contributions
         # (shouldn't be more than a couple thousand)
@@ -94,8 +94,7 @@ class BaseCompany(object):
         # TODO: should only do this for 401k eligible people
         return self.n_people(date) * self.retirement_contribution
 
-
-    ######################################################### BASIC FINANCIALS
+    #                                                          BASIC FINANCIALS
     def average_historical_costs(self):
         """Estimate rough monthly costs for Datascope"""
         _, costs = zip(*self.profit_loss.get_historical_costs())
@@ -171,7 +170,7 @@ class BaseCompany(object):
             n += 1
         return tax_rate / n
 
-    ######################################################## TODO: REFACTOR ME
+    #                                                         TODO: REFACTOR ME
     def iter_future_months(self, n_months):
         # can use any report for this. happened to choose unpaid invoices
         for month in range(1, n_months+1):
