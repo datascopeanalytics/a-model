@@ -85,40 +85,16 @@ class GoalCompanyMixin(object):
             method='bounded',
         )
 
-        # import ipdb; ipdb.set_trace()
-
         # get the cash goal by simulating this idealized revenue stream
         revenues = constant_revenues(opt.x)
         costs = constant_costs()
-        print "TARGET REVENUE", utils.currency_str(sum(revenues))
-        print "REVENUE PER PESON", utils.currency_str(opt.x * 12)
         monthly_cash, bonus_pool, quarterly_taxes = self.get_monthly_cash(
             t0, revenues, costs, cash=cash0,
             ytd_revenue=0.0, ytd_cost=0.0, ytd_tax_draws=0.0,
         )
-        print "N AVERAGE", n_average
-        print "MONTHLY CASH", monthly_cash
-        print "BONUS POOL", utils.currency_str(bonus_pool)
-        x = 0.0
-        for person in self.iter_people():
-            b = person.net_fraction_of_profits(t1) * bonus_pool
-            if b > 0:
-                x += b
-                c = person.fraction_bonus(t1) * bonus_pool * (1 - person.tax_rate(t1))
-                print "BONUS %30s %15s %15s" % (
-                    person.name,
-                    utils.currency_str(b),
-                    utils.currency_str(c),
-                )
-        print "BONUS POOL CHECK", x
-        print "QUARTERLY TAXES", quarterly_taxes
-        print 'COSTS', costs
-        print 'REVENUES', revenues
-        print 'BUFF', self.get_cash_buffer(t1)
         result = [(datetime.date(t0.year, t0.month, 1), cash0)]
         for t, cash in zip(utils.iter_end_of_months(t0, t1), monthly_cash):
             result.append((t, cash))
-        # import ipdb; ipdb.set_trace()
         return result
 
     def get_outcomes_in_month(self, month, monthly_cash_outcomes):
