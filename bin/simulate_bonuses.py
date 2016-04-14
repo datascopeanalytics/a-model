@@ -11,7 +11,7 @@ from matplotlib.ticker import FuncFormatter
 import seaborn as sns
 import pandas as pd
 
-from a_model.datascope import Datascope
+from a_model.company import Company
 from a_model.argparsers import SimulationParser
 from a_model import utils
 
@@ -19,11 +19,11 @@ from a_model import utils
 parser = SimulationParser(description=__doc__)
 args = parser.parse_args()
 
-# instantiate datascope
-datascope = Datascope(today=args.today)
+# instantiate company
+company = Company(today=args.today)
 
 # simulate cashflow for the rest of the year
-_, bonus_pool_outcomes, _ = datascope.simulate_monthly_cash(
+_, bonus_pool_outcomes, _ = company.simulate_monthly_cash(
     n_months=args.n_months,
     n_universes=args.n_universes,
     verbose=args.verbose,
@@ -33,9 +33,9 @@ _, bonus_pool_outcomes, _ = datascope.simulate_monthly_cash(
 eoy = datetime.date(datetime.date.today().year, 12, 31)
 person_bonuses = []
 for bonus_pool in bonus_pool_outcomes:
-    for person in datascope.iter_people(date=eoy):
+    for person in company.iter_people_and_partners(date=eoy):
         bonus = bonus_pool * person.net_fraction_of_profits(eoy)
-        person_bonuses.append((person.name.capitalize(), bonus))
+        person_bonuses.append((person.name.split()[0].capitalize(), bonus))
 
 # cast the data as a dataframe
 x, y = '', 'dividend + pre-tax bonus'
@@ -51,8 +51,8 @@ sns.stripplot(x=x, y=y, data=df,
               jitter=True, size=3, color=".3", linewidth=0, alpha=0.1)
 
 # add the goal lines for each person
-for i, person in enumerate(datascope.iter_people(date=eoy)):
-    goal = 12 * person.before_tax_target_bonus_dividends(eoy)
+for i, person in enumerate(company.iter_people_and_partners(date=eoy)):
+    goal = person.before_tax_target_bonus_dividends(eoy)
     ax.plot([i-0.5, i+0.5], [goal, goal], color='k', linestyle='--')
 
 # set the y-axis domain

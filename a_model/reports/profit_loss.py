@@ -13,11 +13,27 @@ class ProfitLoss(Report):
             max_col=self.get_max_cell().col-1,
         )
 
+    def combine_historical_values(self, *row_names):
+        result = self.get_historical_values(row_names[0])
+        result = map(list, result)
+        for row_name in row_names[1:]:
+            another_result = self.get_historical_values(row_name)
+            for i, (date, value) in enumerate(another_result):
+                assert result[i][0] == date
+                result[i][1] += value
+        return result
+
     def get_historical_revenues(self):
-        return self.get_historical_values('Gross Profit')
+        return self.combine_historical_values(
+            'Gross Profit',
+            'Total Other Income',
+        )
 
     def get_historical_costs(self):
-        return self.get_historical_values('Total Expenses')
+        return self.combine_historical_values(
+            'Total Expenses',
+            'Total Other Expenses',
+        )
 
     def get_historical_retirement_costs(self):
         return self.get_historical_values('401(k) Profit Sharing Contribution')

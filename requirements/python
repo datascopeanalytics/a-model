@@ -5,6 +5,8 @@ arrow
 beautifulsoup4
 gspread
 numpy
+scipy
+python-dateutil
 oauth2client
 PyOpenSSL
 requests

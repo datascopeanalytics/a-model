@@ -15,7 +15,7 @@ import numpy
 import matplotlib
 import matplotlib.patheffects as patheffects
 
-from a_model.datascope import Datascope
+from a_model.company import Company
 from a_model.argparsers import SimulationParser
 from a_model.utils import iter_end_of_months
 
@@ -23,14 +23,14 @@ from a_model.utils import iter_end_of_months
 parser = SimulationParser(description=__doc__)
 args = parser.parse_args()
 
-# instantiate datascope
-datascope = Datascope(today=args.today)
+# instantiate company
+company = Company(today=args.today)
 
 # get past year's worth of cash in bank
-historical_cash_in_bank = datascope.balance_sheet.get_historical_cash_in_bank()
+historical_cash_in_bank = company.balance_sheet.get_historical_cash_in_bank()
 
 # simulate cashflow for the rest of the year
-outcomes = datascope.simulate_monthly_cash(
+outcomes = company.simulate_monthly_cash(
     n_months=args.n_months,
     n_universes=args.n_universes,
     verbose=args.verbose,
@@ -43,8 +43,8 @@ quarterly_tax_outcomes = outcomes[2]
 # plot the 'bye bye' one because it never happens and, even if it did, its
 # likelihood can always be inferred by adding the rest of them
 eoy = datetime.date(args.today.year, 12, 31)
-months_until_eoy = datascope.profit_loss.get_months_from_now(eoy)
-outcomes = datascope.get_outcomes_in_month(
+months_until_eoy = company.profit_loss.get_months_from_now(eoy)
+outcomes = company.get_outcomes_in_month(
     months_until_eoy, monthly_cash_outcomes,
 )
 outcomes.popitem()
@@ -53,7 +53,7 @@ outcomes.popitem()
 historical_t, historical_cash = zip(*historical_cash_in_bank)
 max_cash = max(historical_cash)
 monthly_t = [historical_t[-1]]
-monthly_t += [t for t in datascope.iter_future_months(args.n_months)]
+monthly_t += [t for t in company.iter_future_months(args.n_months)]
 for monthly_cash in monthly_cash_outcomes:
     monthly_cash.insert(0, historical_cash[-1])
 median_monthly_cash = []
@@ -63,11 +63,11 @@ for month_of_cash in zip(*monthly_cash_outcomes):
 
 # set the domain of the graph
 t_domain = [
-    datascope.balance_sheet.start_date,
+    company.balance_sheet.start_date,
     max(monthly_t)+datetime.timedelta(days=1),
 ]
-yunit = datascope.line_of_credit
-ymax = math.ceil(max_cash / yunit) * yunit
+yunit = company.line_of_credit
+ymax = (math.ceil(max_cash / yunit) + 1) * yunit
 plt.axis(t_domain + [-yunit, ymax])
 ax = plt.gca()
 ax.set_autoscale_on(False)
@@ -114,7 +114,7 @@ outcome_region_params = {
     'linewidths': 0,
 }
 plt.fill_between(
-    t_domain, 0, -datascope.line_of_credit,
+    t_domain, 0, -company.line_of_credit,
     facecolor=outcome_colors[3],
     **outcome_region_params
 )
@@ -123,15 +123,14 @@ plt.fill_between(
 goal_dates, cash_buffers, cash_goals = [], [], []
 eoy_cash_buffer, eoy_cash_goal = None, None
 for date in iter_end_of_months(t_domain[0], t_domain[1]):
-    cash_buffer = datascope.get_cash_buffer(date)
+    cash_buffer = company.get_cash_buffer(date)
     if date.month == 1:
         goal_dates.append(datetime.date(date.year, date.month, 1))
         cash_buffers.append(cash_buffer)
         cash_goals.append(cash_buffer)
     goal_dates.append(date)
     cash_buffers.append(cash_buffer)
-    target_monthly_profit = datascope.after_tax_target_profit(date)
-    cash_goals.append(cash_buffer + date.month * target_monthly_profit)
+    cash_goals.append(company.get_cash_goal(date))
     if date == eoy:
         eoy_cash_buffer = cash_buffers[-1]
         eoy_cash_goal = cash_goals[-1]
@@ -161,7 +160,7 @@ ys = [
     (ymax + eoy_cash_goal) / 2,
     (eoy_cash_goal + cash_buffer) / 2,
     cash_buffer/2,
-    -datascope.line_of_credit / 2,
+    -company.line_of_credit / 2,
 ]
 for key, y, color in zip(outcomes, ys, outcome_colors):
     plt.text(
