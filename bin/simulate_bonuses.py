@@ -24,11 +24,7 @@ company = Company(today=args.today)
 
 # simulate cashflow for the rest of the year
 _, bonus_pool_outcomes, _ = company.simulate_monthly_cash(
-    n_months=args.n_months,
-    n_universes=args.n_universes,
-    verbose=args.verbose,
-    ontime_payment=args.ontime_payment,
-    ontime_completion=args.ontime_completion,
+    **args.simulate_monthly_cash_kwargs()
 )
 
 # slice the data to get the eoy cash

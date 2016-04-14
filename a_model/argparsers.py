@@ -52,6 +52,17 @@ class SyncParser(BaseParser):
         )
 
 
+class SimulationNamespace(argparse.Namespace):
+    def simulate_monthly_cash_kwargs(self):
+        return {
+            'n_months': self.n_months,
+            'n_universes': self.n_universes,
+            'verbose': self.verbose,
+            'ontime_payment': self.ontime_payment,
+            'ontime_completion': self.ontime_completion,
+        }
+
+
 class SimulationParser(BaseParser):
 
     def __init__(self, *args, **kwargs):
@@ -92,11 +103,14 @@ class SimulationParser(BaseParser):
             help='print more information during the simulations',
         )
 
-    def parse_args(self, *args, **kwargs):
-        result = super(SimulationParser, self).parse_args(*args, **kwargs)
-        if result.ontime:
-            result.ontime_completion = result.ontime_payment = result.ontime
-        return result
+    def parse_args(self):
+        namespace = super(SimulationParser, self).parse_args(
+            namespace=SimulationNamespace()
+        )
+        if namespace.ontime:
+            namespace.ontime_completion = namespace.ontime
+            namespace.ontime_payment = namespace.ontime
+        return namespace
 
 
 class HiringParser(SimulationParser):

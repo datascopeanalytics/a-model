@@ -30,11 +30,7 @@ def get_all_n00b_outcomes():
         if n00b > 0:
             company.add_person("n00b_%d" % n00b)
         monthly_cash_outputs, _, _ = company.simulate_monthly_cash(
-            n_months=args.n_months,
-            n_universes=args.n_universes,
-            verbose=args.verbose,
-            ontime_payment=args.ontime_payment,
-            ontime_completion=args.ontime_completion,
+            **args.simulate_monthly_cash_kwargs()
         )
 
         # create a data structure to store the information in a relevant way

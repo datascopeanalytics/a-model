@@ -31,11 +31,7 @@ historical_cash_in_bank = company.balance_sheet.get_historical_cash_in_bank()
 
 # simulate cashflow for the rest of the year
 outcomes = company.simulate_monthly_cash(
-    n_months=args.n_months,
-    n_universes=args.n_universes,
-    verbose=args.verbose,
-    ontime_payment=args.ontime_payment,
-    ontime_completion=args.ontime_completion,
+    **args.simulate_monthly_cash_kwargs()
 )
 monthly_cash_outcomes = outcomes[0]
 bonus_pool_outcomes = outcomes[1]
