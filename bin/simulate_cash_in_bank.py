@@ -52,8 +52,10 @@ historical_t, historical_cash = zip(*historical_cash_in_bank)
 max_cash = max(historical_cash)
 monthly_t = [historical_t[-1]]
 monthly_t += [t for t in company.iter_future_months(args.n_months)]
-for monthly_cash in monthly_cash_outcomes:
+monthly_t.insert(months_until_eoy, eoy+datetime.timedelta(days=1))
+for monthly_cash, bonus_pool in zip(monthly_cash_outcomes, bonus_pool_outcomes):
     monthly_cash.insert(0, historical_cash[-1])
+    monthly_cash.insert(months_until_eoy, monthly_cash[months_until_eoy] + bonus_pool)
 median_monthly_cash = []
 for month_of_cash in zip(*monthly_cash_outcomes):
     median_monthly_cash.append(numpy.median(month_of_cash))
