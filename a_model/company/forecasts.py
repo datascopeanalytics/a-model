@@ -2,7 +2,7 @@ import random
 import collections
 
 from dateutil.relativedelta import relativedelta
-
+import numpy
 
 class ForecastCompanyMixin(object):
     """This Mixin holds everything related to forecasting cashflow into the
@@ -21,7 +21,7 @@ class ForecastCompanyMixin(object):
         def ontime_noise():
             """Clients rarely pay early and tend to pay late"""
             # TODO: can measure this and make it a not crappy model
-            return random.randint(0, 3)
+            return random.randint(0, 2)
 
         def work_completion_noise():
             """The end of projects can sometimes drag on a bit, delaying
@@ -39,7 +39,7 @@ class ForecastCompanyMixin(object):
         # extremely certain. The biggest question here is whether people will
         # pay on time.
         for date, balance in self.unpaid_invoices:
-            months_from_now = self._get_months_from_now(date)
+            months_from_now = self._get_months_from_now(date) - 1
 
             # we are presumably actively bugging people about overdue invoices,
             # so these should be paid relatively soon
@@ -68,9 +68,11 @@ class ForecastCompanyMixin(object):
         """Simulate datascope's costs over time
         """
 
-        # get fixed costs from P&L and treat it like a constant
+        # get fixed costs from P&L and treat it like a constant. only use the
+        # last 12 months of historical per-person costs to better calibrate for
+        # recent changes in expenses.
         fixed_cost = self.profit_loss.get_average_fixed_cost()
-        per_person_costs = self.get_historical_per_person_costs()
+        per_person_costs = self.get_historical_per_person_costs()[-12:]
 
         # variable costs (i) scale with the number of people and (ii) vary
         # quite a bit more.
@@ -167,6 +169,7 @@ class ForecastCompanyMixin(object):
 
             # record and return the cash in the bank at the end of the month
             monthly_cash.append(cash)
+
         return monthly_cash, bonus_pool, quarterly_taxes
 
     def _simulate_single_universe_monthly_cash(self, universe, n_months):

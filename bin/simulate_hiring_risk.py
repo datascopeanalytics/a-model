@@ -23,7 +23,7 @@ company = Company(today=args.today)
 
 # simulate finances in our current situation and by adding up to n_n00bs new
 # datascopers
-@decorators.read_or_run
+# @decorators.read_or_run
 def get_all_n00b_outcomes():
     all_n00b_outcomes = []
     for n00b in range(0, args.n_n00bs+1):
