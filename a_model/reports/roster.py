@@ -16,8 +16,10 @@ class Roster(Report):
             values = [cell.value for cell in row]
             values[1] = cast_as_date(values[1])
             values[2] = cast_as_date(values[2])
-            values[3] = cast_as_date(values[3])
-            values[4] = cast_as_float(values[4])
+            values[3] = cast_as_float(values[3])
+            values[4] = cast_as_bool(values[4])
+            values[5] = cast_as_date(values[5])
+            values[6] = cast_as_float(values[6])
             yield Person(None, *values)
 
 
@@ -43,3 +45,10 @@ def cast_as_float(float_or_str):
         return float(float_or_str)
     else:
         raise TypeError('unknown type to cast as float')
+
+
+def cast_as_bool(value):
+    if isinstance(value, (float, int, long)):
+        return bool(value)
+    else:
+        raise TypeError('unknown type to cast as bool')

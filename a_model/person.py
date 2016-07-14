@@ -3,13 +3,17 @@ import datetime
 
 
 class Person(object):
-    def __init__(self, datascope, name, start_date=None,
-                 end_date=None, partner_date=None, ownership=0.0):
+    def __init__(self, datascope, name,
+                 start_date=None, end_date=None,
+                 fraction_time=1.0, bonus_eligible=True,
+                 partner_date=None, ownership=0.0):
         # TODO: rename self.datascope -> self.company everywhere
         self.datascope = datascope
         self.name = name
         self.start_date = start_date or datetime.date.today()
         self.end_date = end_date
+        self.fraction_time = fraction_time
+        self.bonus_eligible = bonus_eligible
         self.partner_date = partner_date
         self.ownership = ownership
 
@@ -28,6 +32,9 @@ class Person(object):
 
     def is_active_or_partner(self, date):
         return self.is_active(date) or self.is_partner(date)
+
+    def is_eligible_for_bonus(self, date):
+        tktk
 
     def tax_rate(self, date):
         """calculate the approximate tax rate for this person using the IRS tax
@@ -101,7 +108,7 @@ class Person(object):
         # add one to the difference to include beg_of_year
         numerator = (date - start_date).days + 1.0
         denominator = (end_of_year - beg_of_year).days + 1.0
-        return numerator / denominator
+        return self.fraction_time * numerator / denominator
 
     def fraction_datascope_year(self, date):
         """returns the fraction of all datascopers' year that this person has
