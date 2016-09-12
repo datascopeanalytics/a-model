@@ -75,24 +75,37 @@ class BaseCompany(object):
             if person.is_partner(date):
                 yield person
 
+    def iter_401k_eligible(self, date):
+        for person in self.iter_people(date):
+            dt = date - person.start_date
+            if float(dt.days) / 30 > 6 and person.fraction_time == 1:
+                yield person
+
+    def _person_counter(self, iterator):
+        count = 0.0
+        for person in iterator:
+            count += person.fraction_time
+        return count
+
     def n_people(self, date):
         """number of people that are active datascopers"""
-        return len([person for person in self.iter_people(date)])
+        return self._person_counter(self.iter_people(date))
 
     def n_people_and_partners(self, date):
         """number of people or partners at Datacope"""
-        return len([person for person in self.iter_people_and_partners(date)])
+        return self._person_counter(self.iter_people_and_partners(date))
 
     def n_partners(self, date):
-        return len([person for person in self.iter_partners(date)])
+        return self._person_counter(self.iter_partners(date))
+
+    def n_people_401k_eligible(self, date):
+        return self._person_counter(self.iter_401k_eligible(date))
 
     #                                                                  BENEFITS
     def get_401k_contribution(self, date):
         # TODO: also need to even up partner safe harbor contributions
         # (shouldn't be more than a couple thousand)
-        #
-        # TODO: should only do this for 401k eligible people
-        return self.n_people(date) * self.retirement_contribution
+        return self.n_people_401k_eligible(date) * self.retirement_contribution
 
     #                                                          BASIC FINANCIALS
     def average_historical_costs(self):
