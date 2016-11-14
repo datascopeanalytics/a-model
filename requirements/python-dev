@@ -6,3 +6,4 @@
 pep8
 nose
 ipdb
+flake8

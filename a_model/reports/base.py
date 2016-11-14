@@ -5,14 +5,11 @@
 import os
 import sys
 import datetime
-import glob
 import time
 import itertools
 import operator
 import json
-import math
 import re
-import time
 import csv
 
 from bs4 import BeautifulSoup
@@ -178,15 +175,23 @@ class Report(object):
 
     def download_from_quickbooks(self, browser):
         browser.get(self.url)
-        iframe = browser.find_element_by_tag_name('iframe')
-        browser.switch_to_frame(iframe)
-        iframe2 = browser.find_element_by_tag_name('iframe')
-        browser.switch_to_frame(iframe2)
-        table = browser.find_element_by_id('rptBodyTable')
-        table_html = table.get_attribute('innerHTML')
+
+        # get the HTML out of the report
+        if browser.find_element_by_id('legacyframe'):
+            iframe = browser.find_element_by_tag_name('iframe')
+            browser.switch_to_frame(iframe)
+            iframe2 = browser.find_element_by_tag_name('iframe')
+            browser.switch_to_frame(iframe2)
+            table = browser.find_element_by_id('rptBodyTable')
+            table_html = table.get_attribute('innerHTML')
+            browser.switch_to_default_content()
+        else:
+            table_html = ''
+            for table in browser.find_elements_by_tag_name('table'):
+                table_html += table.get_attribute('innerHTML')
+
         self.extract_table_from_html(table_html)
         self.save_csv()
-        browser.switch_to_default_content()
 
     def extract_table_from_html(self, table_html):
         soup = BeautifulSoup(table_html, 'html.parser')
