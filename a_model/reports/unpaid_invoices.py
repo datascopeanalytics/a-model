@@ -14,11 +14,10 @@ class UnpaidInvoices(Report):
             return self._cached_projected_payments
         self._cached_projected_payments = projected_payments = []
         self.load_table()
-
-        min_row = 1
-        max_row = self.get_max_cell().row - 1
-        date_cells = self.iter_cells_in_col(5, min_row, max_row)
-        balance_cells = self.iter_cells_in_col(7, min_row, max_row)
+        min_row = 3
+        max_row = self.get_max_cell().row - 2
+        date_cells = self.iter_cells_in_col(4, min_row, max_row)
+        balance_cells = self.iter_cells_in_col(6, min_row, max_row)
         for date_cell, balance_cell in zip(date_cells, balance_cells):
             if date_cell.value:
                 projected_payments.append((
