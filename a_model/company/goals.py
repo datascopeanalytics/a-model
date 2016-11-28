@@ -136,7 +136,7 @@ class GoalCompanyMixin(object):
             # estimate things?
             if cash > cash_goal:
                 outcomes[keys[0]] += 1
-            elif cash > cash_buffer:
+            elif cash >= cash_buffer:
                 outcomes[keys[1]] += 1
             elif cash > 0:
                 outcomes[keys[2]] += 1
