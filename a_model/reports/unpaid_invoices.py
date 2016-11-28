@@ -1,4 +1,5 @@
 from .base import Report
+from .exceptions import ReportError
 
 
 class UnpaidInvoices(Report):
@@ -24,6 +25,12 @@ class UnpaidInvoices(Report):
                     self.get_date_from_cell(date_cell),
                     balance_cell.value,
                 ))
+
+        # error checking to make sure we're reading the unpaid invoices
+        # correctly
+        if not projected_payments or sum(zip(*projected_payments)[1]) == 0.0:
+            raise ReportError('not reading invoice_projections.csv correctly')
+
         return projected_payments
 
     def __iter__(self):

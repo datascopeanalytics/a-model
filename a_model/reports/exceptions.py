@@ -16,3 +16,7 @@ class ColNotFound(Exception):
         return (
             'could not find a col named "%(col_name)s"'
         ) % vars(self)
+
+
+class ReportError(Exception):
+    pass
