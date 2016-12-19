@@ -14,6 +14,7 @@ import csv
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 import gspread
 from oauth2client.client import SignedJwtAssertionCredentials
 from dateutil.relativedelta import relativedelta
@@ -177,7 +178,13 @@ class Report(object):
         browser.get(self.url)
 
         # get the HTML out of the report
-        if browser.find_element_by_id('legacyframe'):
+        try:
+            browser.find_element_by_id('legacyframe')
+        except NoSuchElementException:
+            table_html = ''
+            for table in browser.find_elements_by_tag_name('table'):
+                table_html += table.get_attribute('innerHTML')
+        else:
             iframe = browser.find_element_by_tag_name('iframe')
             browser.switch_to_frame(iframe)
             iframe2 = browser.find_element_by_tag_name('iframe')
@@ -185,10 +192,6 @@ class Report(object):
             table = browser.find_element_by_id('rptBodyTable')
             table_html = table.get_attribute('innerHTML')
             browser.switch_to_default_content()
-        else:
-            table_html = ''
-            for table in browser.find_elements_by_tag_name('table'):
-                table_html += table.get_attribute('innerHTML')
 
         self.extract_table_from_html(table_html)
         self.save_csv()
