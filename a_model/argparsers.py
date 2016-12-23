@@ -140,3 +140,6 @@ class CalculateBonusParser(BaseParser):
             default='bonus.csv',
             help='the input spreadsheet to use for the bonus calculation',
         )
+
+class BreakdownExpensesParser(BaseParser):
+    pass
