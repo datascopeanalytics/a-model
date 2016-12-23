@@ -13,14 +13,20 @@ class ProfitLoss(Report):
             max_col=self.get_max_cell().col-1,
         )
 
+    def combine_historical_values_pair(self, result, another_result):
+        for i, (date, value) in enumerate(another_result):
+            assert result[i][0] == date
+            result[i][1] += value
+        return result
+
     def combine_historical_values(self, *row_names):
         result = self.get_historical_values(row_names[0])
         result = map(list, result)
         for row_name in row_names[1:]:
-            another_result = self.get_historical_values(row_name)
-            for i, (date, value) in enumerate(another_result):
-                assert result[i][0] == date
-                result[i][1] += value
+            result = self.combine_historical_values_pair(
+                result,
+                self.get_historical_values(row_name),
+            )
         return result
 
     def get_historical_revenues(self):
@@ -61,24 +67,26 @@ class ProfitLoss(Report):
         historical_costs = self.get_historical_costs()
         return self._get_ytd_value(historical_costs)
 
+    def get_historical_office_costs(self):
+        return self.combine_historical_values(
+            'Rent Expense',
+            'Total Utilities',  # jacked by cloud computing resources
+            'Internet',
+        )
+
     def get_historical_fixed_costs(self):
-        fixed_cost_accounts = [
+        historical_other_fixed_costs = self.combine_historical_values(
             'Marketing',
             'Public Relations',
             'Bookkeeping',
             'Accounting',
             'Registered Agent',
-            'Rent Expense',
-            'Total Utilities',
-        ]
-        historical_fixed_costs = []
-        for fixed_cost_account in fixed_cost_accounts:
-            historical_account = self.get_historical_values(fixed_cost_account)
-            if not historical_fixed_costs:
-                historical_fixed_costs = [0.0] * len(historical_account)
-            for i in range(len(historical_account)):
-                historical_fixed_costs[i] += historical_account[i][1]
-        return historical_fixed_costs
+        )
+        historical_office_costs = self.get_historical_office_costs()
+        return self.combine_historical_values_pair(
+            historical_other_fixed_costs,
+            historical_office_costs,
+        )
 
     def get_average_fixed_cost(self):
         historical_fixed_costs = self.get_historical_fixed_costs()
