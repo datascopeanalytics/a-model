@@ -14,12 +14,14 @@ class ProfitLoss(Report):
         )
 
     def combine_historical_values_pair(self, result, another_result):
+        assert len(result) == len(another_result)
         for i, (date, value) in enumerate(another_result):
             assert result[i][0] == date
             result[i][1] += value
         return result
 
     def combine_historical_values(self, *row_names):
+        self.load_table()
         result = self.get_historical_values(row_names[0])
         result = map(list, result)
         for row_name in row_names[1:]:
@@ -87,6 +89,19 @@ class ProfitLoss(Report):
             historical_other_fixed_costs,
             historical_office_costs,
         )
+
+    def get_historical_personnel_costs(self):
+        salary = self.combine_historical_values(
+            'Total Payroll Expenses',
+            'Total Guaranteed Payments',
+        )
+        benefits = self.combine_historical_values(
+            'Health Insurance',
+            '401(k) Profit Sharing Contribution',
+            '401(k) Safe Harbor Contribution',
+            '401(k) Safe Harbor Contribution - Partners',
+        )
+        return self.combine_historical_values_pair(salary, benefits)
 
     def get_average_fixed_cost(self):
         historical_fixed_costs = self.get_historical_fixed_costs()
