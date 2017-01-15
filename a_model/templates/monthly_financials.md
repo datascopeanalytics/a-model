@@ -1,3 +1,7 @@
+## tl;dr
+
+TKTK OVERARCHING UPDATE
+
 ## high level
 
 * YTD margin {{ "${:,.2f}".format(ytd_margin) }}
