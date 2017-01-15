@@ -13,3 +13,4 @@ requests
 selenium
 matplotlib
 seaborn
+jinja2
