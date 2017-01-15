@@ -69,6 +69,9 @@ class ProfitLoss(Report):
         historical_costs = self.get_historical_costs()
         return self._get_ytd_value(historical_costs)
 
+    def get_ytd_margin(self):
+        return self.get_ytd_revenue() - self.get_ytd_cost()
+
     def get_historical_office_costs(self):
         return self.combine_historical_values(
             'Rent Expense',
