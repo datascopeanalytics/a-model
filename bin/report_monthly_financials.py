@@ -15,10 +15,11 @@ args = parser.parse_args()
 
 # instantiate company
 company = Company(today=args.today)
+now = company.profit_loss.get_now()
 
 # margin
 ytd_margin = company.profit_loss.get_ytd_margin()
-last_ytd_margin = company.profit_loss.get_ytd_margin(months=-12)
+last_ytd_margin = company.profit_loss.get_ytd_margin(year=now.year-1)
 ytd_margin_growth = (ytd_margin - last_ytd_margin) / last_ytd_margin
 
 # TODO revenues

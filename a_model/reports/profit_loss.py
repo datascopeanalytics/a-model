@@ -52,25 +52,25 @@ class ProfitLoss(Report):
             ('column', 'monthly'),
         ) + self.get_date_range_customized_params()
 
-    def _get_ytd_value(self, historical_values):
+    def _get_ytd_value(self, historical_values, year=None):
         now = self.get_now()
         ytd_value = 0.0
+        year = year or now.year
         for date, value in reversed(historical_values):
-            if now.year > date.year:
-                break
-            ytd_value += value
+            if date.year == year and date.month <= now.month:
+                ytd_value += value
         return ytd_value
 
-    def get_ytd_revenue(self):
+    def get_ytd_revenue(self, year=None):
         historical_revenues = self.get_historical_revenues()
-        return self._get_ytd_value(historical_revenues)
+        return self._get_ytd_value(historical_revenues, year=year)
 
-    def get_ytd_cost(self):
+    def get_ytd_cost(self, year=None):
         historical_costs = self.get_historical_costs()
-        return self._get_ytd_value(historical_costs)
+        return self._get_ytd_value(historical_costs, year=year)
 
-    def get_ytd_margin(self):
-        return self.get_ytd_revenue() - self.get_ytd_cost()
+    def get_ytd_margin(self, year=None):
+        return self.get_ytd_revenue(year=year) - self.get_ytd_cost(year=year)
 
     def get_historical_office_costs(self):
         return self.combine_historical_values(
