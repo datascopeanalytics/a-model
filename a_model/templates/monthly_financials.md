@@ -9,3 +9,8 @@ For reference, here are links to [last month's](TKTK) (TKTK) and [last year's](T
 - [Accounts receivable](https://docs.google.com/spreadsheets/d/1zZxzkGlJvVwj8435NCd2T42mtR7KcAp55a88S5AfFDQ/edit#gid=205071454) {{  "${:,.2f}".format(total_ar) }} (+TKTK% year-over-year; +TKTK% versus last month)
 - [Invoice projections](https://docs.google.com/spreadsheets/d/1zZxzkGlJvVwj8435NCd2T42mtR7KcAp55a88S5AfFDQ/edit#gid=257739164) {{ "${:,.2f}".format(total_invoice_projections) }} (+TKTK% year-over-year; +TKTK% versus last month)
 - **Contracted revenue for {{ contracted_revenue_year }}: {{ "${:,.2f}".format(contracted_revenue) }}**
+
+## projected cashflow
+TKTK ADD IMAGE HERE
+
+## sales pipeline
