@@ -17,6 +17,8 @@ args = parser.parse_args()
 company = Company(today=args.today)
 now = company.profit_loss.get_now()
 
+# TODO: get the gdrive links from the report instead of adding hard links
+
 # margin
 ytd_margin = company.profit_loss.get_ytd_margin()
 last_ytd_margin = company.profit_loss.get_ytd_margin(year=now.year-1)
@@ -28,10 +30,10 @@ last_ytd_revenue = company.profit_loss.get_ytd_revenue(year=now.year-1)
 ytd_revenue_growth = (ytd_revenue - last_ytd_revenue) / last_ytd_revenue
 
 # accounts receivable
-ar_total = company.ar_aging.get_total()
+total_ar = company.ar_aging.get_total()
 
-# TODO invoice projectsions through november
-
+# invoice projections through november
+total_invoice_projections = company.invoice_projections.get_total()
 
 # TODO estimated revenue in this fiscal year
 

@@ -10,4 +10,6 @@ For reference, here are links to [last month's](TKTK) (TKTK) and [last year's](T
 
 * [year-to-date revenue](https://docs.google.com/spreadsheets/d/1zZxzkGlJvVwj8435NCd2T42mtR7KcAp55a88S5AfFDQ/edit#gid=1427044766) {{ "${:,.2f}".format(ytd_revenue) }} ({{ "{:.0f}%".format(100 * ytd_revenue_growth) }})
 
-* [Accounts receivable](https://docs.google.com/spreadsheets/d/1zZxzkGlJvVwj8435NCd2T42mtR7KcAp55a88S5AfFDQ/edit#gid=205071454) {{  "${:,.2f}".format(ar_total) }} (TKTK% year-over-year; TKTK% versus last month)
+* [Accounts receivable](https://docs.google.com/spreadsheets/d/1zZxzkGlJvVwj8435NCd2T42mtR7KcAp55a88S5AfFDQ/edit#gid=205071454) {{  "${:,.2f}".format(total_ar) }} (TKTK% year-over-year; TKTK% versus last month)
+
+* [Invoice projections](https://docs.google.com/spreadsheets/d/1zZxzkGlJvVwj8435NCd2T42mtR7KcAp55a88S5AfFDQ/edit#gid=257739164) {{ "${:,.2f}".format(total_invoice_projections) }} (TKTK% year-over-year; TKTK% versus last month)
