@@ -27,8 +27,8 @@ ytd_revenue = company.profit_loss.get_ytd_revenue()
 last_ytd_revenue = company.profit_loss.get_ytd_revenue(year=now.year-1)
 ytd_revenue_growth = (ytd_revenue - last_ytd_revenue) / last_ytd_revenue
 
-# TODO accounts receivable
-
+# accounts receivable
+ar_total = company.ar_aging.get_total()
 
 # TODO invoice projectsions through november
 
