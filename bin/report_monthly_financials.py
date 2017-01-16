@@ -35,8 +35,16 @@ total_ar = company.ar_aging.get_total()
 # invoice projections through november
 total_invoice_projections = company.invoice_projections.get_total()
 
-# TODO estimated revenue in this fiscal year
-
+# total contracted revenue in this fiscal year
+if now.month == 12:
+    contracted_revenue_year = now.year + 1
+    contracted_revenue = total_ar + total_invoice_projections
+elif now.month == 11:
+    contracted_revenue_year = now.year
+    contracted_revenue = ytd_revenue + total_ar
+else:
+    contracted_revenue_year = now.year
+    contracted_revenue = ytd_revenue + total_ar + total_invoice_projections
 
 # TODO finalize sales pipeline
 
