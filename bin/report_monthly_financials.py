@@ -5,6 +5,7 @@ into a slack post and shared with the broader team.
 """
 
 import jinja2
+from trello import TrelloClient
 
 from a_model.company import Company
 from a_model.argparsers import ReportFinancialsParser
@@ -47,6 +48,12 @@ else:
     contracted_revenue = ytd_revenue + total_ar + total_invoice_projections
 
 # TODO finalize sales pipeline
+# client = TrelloClient(
+#     api_key='your-key',
+#     api_secret='your-secret',
+#     token='your-oauth-token-key',
+#     token_secret='your-oauth-token-secret'
+# )
 
 
 # TODO proposal pipeline
