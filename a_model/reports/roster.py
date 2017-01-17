@@ -20,6 +20,7 @@ class Roster(Report):
             values[4] = cast_as_bool(values[4])
             values[5] = cast_as_date(values[5])
             values[6] = cast_as_float(values[6])
+            values = values[:7]
             yield Person(None, *values)
 
 
