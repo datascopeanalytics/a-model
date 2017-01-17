@@ -104,5 +104,8 @@ class ProfitLoss(Report):
         return self.combine_historical_values_pair(salary, benefits)
 
     def get_average_fixed_cost(self):
-        historical_fixed_costs = self.get_historical_fixed_costs()
-        return sum(historical_fixed_costs) / len(historical_fixed_costs)
+        total, n = 0.0, 0
+        for date, amount in self.get_historical_fixed_costs():
+            total += amount
+            n += 1
+        return total / n
