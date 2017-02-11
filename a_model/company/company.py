@@ -126,7 +126,7 @@ class BaseCompany(object):
         historical_costs = self.profit_loss.get_historical_costs()
         dates, costs = zip(*historical_costs)
         fixed_costs = self.profit_loss.get_historical_fixed_costs()
-        _, fixed_costs = zip(*retirement_costs)
+        _, fixed_costs = zip(*fixed_costs)
         retirement_costs = self.profit_loss.get_historical_retirement_costs()
         _, retirement_costs = zip(*retirement_costs)
         iterator = zip(dates, costs, fixed_costs, retirement_costs)
