@@ -173,8 +173,8 @@ with open(args.output_csv, 'w') as stream:
         totals['collective_bonus'] += collective_bonus
         totals['award_bonus'] += award_bonus
         write_row(
-            writer,
-            person.name, dividends, collective_bonus, award_bonus, person_total,
+            writer, person.name, dividends, collective_bonus, award_bonus,
+            person_total,
         )
 
         # TODO: actually send the emails
