@@ -137,8 +137,13 @@ class CalculateBonusParser(BaseParser):
         )
         self.add_argument(
             '-i', '--input-csv',
-            default='bonus.csv',
+            default='bonus_input.csv',
             help='the input spreadsheet to use for the bonus calculation',
+        )
+        self.add_argument(
+            '-o', '--output-csv',
+            default='bonus_payments.csv',
+            help='the output spreadsheet to use for bonus calculation',
         )
 
 class BreakdownExpensesParser(BaseParser):

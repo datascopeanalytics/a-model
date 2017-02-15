@@ -36,6 +36,7 @@ if args.prepare_csv:
             'name', 'ownership', 'fraction of year', 'n golden six packs',
             'golden six pack awards'
         ))
+        # TODO: this does not print out former partners that have left
         for person in company.iter_people_and_partners(end_of_last_year):
             f = person.fraction_of_year(end_of_last_year)
             if f > 0:
@@ -93,6 +94,17 @@ with open(args.input_csv, 'rU') as stream:
         person = PersonMock(row)
         people.append(person)
 
+def write_row(writer, *row):
+    if len(row) == 1:
+        print ''.join(row)
+    else:
+        if isinstance(row[1], (float, long, int)):
+            fmt = "{:>20} {:12,.2f} {:12,.2f} {:12,.2f} {:12,.2f}"
+        else:
+            fmt = "{:>20} {:>12} {:>12} {:>12} {:>12}"
+        print fmt.format(*row)
+    writer.writerow(row)
+
 # print out the bonuses for each person
 total_time = sum([person.fraction_of_year for person in people])
 total_golden_six_packs = sum([person.n_golden_six_packs for person in people])
@@ -102,26 +114,28 @@ total_time_bonus = pool_size * (1 - f) - total_golden_six_pack_value
 totals = {'dividends': 0.0, 'time_bonus': 0.0, 'award_bonus': 0.0}
 print "BONUSES FOR", end_of_last_year.year
 print ''
-print "{:>20} {:>12} {:>12} {:>12} {:>12}".format(
-    'name', 'dividends', 'time bonus', 'award bonus', 'total'
-)
-for person in people:
-    proportion_time = person.fraction_of_year / total_time
-    time_bonus = proportion_time * total_time_bonus
-    award_bonus = person.n_golden_six_packs * golden_six_pack_value
-    dividends = f * pool_size * person.ownership
-    person_total = dividends + time_bonus + award_bonus
-    totals['dividends'] += dividends
-    totals['time_bonus'] += time_bonus
-    totals['award_bonus'] += award_bonus
-    print "{:>20} {:12,.2f} {:12,.2f} {:12,.2f} {:12,.2f}".format(
-        person.name, dividends, time_bonus, award_bonus, person_total,
+with open(args.output_csv, 'w') as stream:
+    writer = csv.writer(stream)
+    write_row(
+        writer, 'name', 'dividends', 'time bonus', 'award bonus', 'total'
     )
-print ''
-print "{:>20} {:12,.2f} {:12,.2f} {:12,.2f} {:12,.2f}".format(
-    'TOTAL',
-    totals['dividends'],
-    totals['time_bonus'],
-    totals['award_bonus'],
-    sum(totals.values()),
-)
+
+    for person in people:
+        proportion_time = person.fraction_of_year / total_time
+        time_bonus = proportion_time * total_time_bonus
+        award_bonus = person.n_golden_six_packs * golden_six_pack_value
+        dividends = f * pool_size * person.ownership
+        person_total = dividends + time_bonus + award_bonus
+        totals['dividends'] += dividends
+        totals['time_bonus'] += time_bonus
+        totals['award_bonus'] += award_bonus
+        write_row(
+            writer,
+            person.name, dividends, time_bonus, award_bonus, person_total,
+        )
+
+    write_row(writer, '')
+    write_row(
+        writer, 'TOTAL', totals['dividends'], totals['time_bonus'],
+        totals['award_bonus'], sum(totals.values()),
+    )
