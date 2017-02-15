@@ -12,6 +12,8 @@ year.
 import datetime
 import csv
 
+import jinja2
+
 from a_model import reports
 from a_model.company import Company
 from a_model.argparsers import CalculateBonusParser
@@ -60,6 +62,13 @@ class PersonMock(object):
         self.n_golden_six_packs = self.cast_as_float(row['n golden six packs'])
         self.golden_six_packs = row['golden six pack awards'].split(',')
 
+    @property
+    def is_partner(self):
+        return self.ownership > 0
+
+    def n_months(self):
+        return self.fraction_of_year * 12
+
     def cast_as_float(self, s):
         if s == '':
             return 0.0
@@ -77,7 +86,7 @@ with open(args.input_csv, 'rU') as stream:
             'expected first row of spreadsheet to specify '
             '"profit sharing pool"'
         )
-    pool_size = float(row[1])
+    profit_sharing_pool = float(row[1])
 
     # get the golden six pack value
     line = stream.readline()
@@ -105,37 +114,51 @@ def write_row(writer, *row):
         print fmt.format(*row)
     writer.writerow(row)
 
+# render and report results
+env = jinja2.Environment(
+    loader=jinja2.PackageLoader('a_model', 'templates'),
+    autoescape=jinja2.select_autoescape(['html', 'xml'])
+)
+email_template = env.get_template('bonus_email.txt')
+
 # print out the bonuses for each person
 total_time = sum([person.fraction_of_year for person in people])
 total_golden_six_packs = sum([person.n_golden_six_packs for person in people])
 total_golden_six_pack_value = total_golden_six_packs * golden_six_pack_value
 f = company.fraction_profit_for_dividends
-total_time_bonus = pool_size * (1 - f) - total_golden_six_pack_value
-totals = {'dividends': 0.0, 'time_bonus': 0.0, 'award_bonus': 0.0}
+dividend_pool = profit_sharing_pool * f
+bonus_pool = profit_sharing_pool * (1 - f)
+total_collective_bonus = bonus_pool - total_golden_six_pack_value
+totals = {'dividends': 0.0, 'collective_bonus': 0.0, 'award_bonus': 0.0}
 print "BONUSES FOR", end_of_last_year.year
 print ''
 with open(args.output_csv, 'w') as stream:
     writer = csv.writer(stream)
     write_row(
-        writer, 'name', 'dividends', 'time bonus', 'award bonus', 'total'
+        writer, 'name', 'dividends', 'collective bonus', 'award bonus', 'total'
     )
-
     for person in people:
         proportion_time = person.fraction_of_year / total_time
-        time_bonus = proportion_time * total_time_bonus
+        collective_bonus = proportion_time * total_collective_bonus
         award_bonus = person.n_golden_six_packs * golden_six_pack_value
-        dividends = f * pool_size * person.ownership
-        person_total = dividends + time_bonus + award_bonus
+        dividends = dividend_pool * person.ownership
+        person_total = dividends + collective_bonus + award_bonus
         totals['dividends'] += dividends
-        totals['time_bonus'] += time_bonus
+        totals['collective_bonus'] += collective_bonus
         totals['award_bonus'] += award_bonus
         write_row(
             writer,
-            person.name, dividends, time_bonus, award_bonus, person_total,
+            person.name, dividends, collective_bonus, award_bonus, person_total,
         )
+
+        # TODO: actually send the emails
+        if args.send_emails:
+            raise NotImplementedError('havent set up email sending yet')
+            print email_template.render(**locals())
+
 
     write_row(writer, '')
     write_row(
-        writer, 'TOTAL', totals['dividends'], totals['time_bonus'],
+        writer, 'TOTAL', totals['dividends'], totals['collective_bonus'],
         totals['award_bonus'], sum(totals.values()),
     )

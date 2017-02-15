@@ -1,0 +1,14 @@
+Hey {{person.name}},
+
+This past year we had ${{'{:,.0f}'.format(bonus_pool)}} in the bonus pool. We reserve roughly "an iPad's worth of value" for each Golden Six Pack, or ${{'{:,.0f}'.format(golden_six_pack_value)}} per Golden Six Pack, and the rest of the bonus pool is divvied up among all Datascope colleagues proportional to the amount of time they were with us last year (your "collective bonus").
+
+In {{end_of_last_year.year}}, your bonus ended up being ${{'{:,.2f}'.format(collective_bonus)}} for your collective bonus ({{'{:,.1f}'.format(person.n_months())}} months){% if award_bonus %} and ${{'{:,.2f}'.format(award_bonus)}} for your Golden Six Packs ({{', '.join(person.golden_six_packs)}}){% endif %}.
+
+{% if person.is_partner %}As a partner, you are also eligible for dividends. Total dividends were ${{'{:,.0f}'.format(dividend_pool)}} and as a {{'{:.2f}'.format(100*person.ownership)}}% owner in Datascope in {{end_of_last_year.year}}, you also receive ${{'{:,.2f}'.format(dividends)}}.
+
+{% endif %}In total, you will receive for ${{'{:,.2f}'.format(person_total)}} which will be deposited during the next pay cycle.
+
+Thanks again for being an awesome colleague!
+
+Very Truly Yours,
+Datascope

@@ -145,6 +145,11 @@ class CalculateBonusParser(BaseParser):
             default='bonus_payments.csv',
             help='the output spreadsheet to use for bonus calculation',
         )
+        self.add_argument(
+            '--send-emails',
+            action='store_true',
+            help='send emails to people',
+        )
 
 
 class BreakdownExpensesParser(BaseParser):
