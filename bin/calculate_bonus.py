@@ -30,9 +30,11 @@ end_of_last_year = datetime.date(args.today.year-1, 12, 31)
 if args.prepare_csv:
     with open(args.input_csv, 'w') as stream:
         writer = csv.writer(stream)
-        writer.writerow(('total bonus pool', 0))
+        writer.writerow(('profit sharing pool', 0))
+        writer.writerow(('golden six pack amount', 0))
         writer.writerow((
-            'name', 'ownership', 'fraction of year', 'award bonus'
+            'name', 'ownership', 'fraction of year', 'n golden six packs',
+            'golden six pack awards'
         ))
         for person in company.iter_people_and_partners(end_of_last_year):
             f = person.fraction_of_year(end_of_last_year)
@@ -42,6 +44,7 @@ if args.prepare_csv:
                     person.ownership,
                     f,
                     0,
+                    '',
                 ))
         print args.input_csv, "contains starting point for bonus calculation"
         print "edit that spreadsheet and then re-run this command without -p"
@@ -53,7 +56,8 @@ class PersonMock(object):
         self.name = row['name']
         self.ownership = self.cast_as_float(row['ownership'])
         self.fraction_of_year = self.cast_as_float(row['fraction of year'])
-        self.award_bonus = self.cast_as_float(row['award bonus'])
+        self.n_golden_six_packs = self.cast_as_float(row['n golden six packs'])
+        self.golden_six_packs = row['golden six pack awards'].split(',')
 
     def cast_as_float(self, s):
         if s == '':
@@ -63,13 +67,26 @@ class PersonMock(object):
 # read the bonus pool spreadsheet
 people = []
 with open(args.input_csv, 'rU') as stream:
+
+    # get the bonus pool amount
     line = stream.readline()
-    row = line.split(',', 1)
-    if row[0] != 'total bonus pool':
+    row = line.split(',')
+    if row[0] != 'profit sharing pool':
         raise ValueError(
-            'expected first row of spreadsheet to specify bonus pool size'
+            'expected first row of spreadsheet to specify '
+            '"profit sharing pool"'
         )
     pool_size = float(row[1])
+
+    # get the golden six pack value
+    line = stream.readline()
+    row = line.split(',')
+    if row[0] != 'golden six pack value':
+        raise ValueError((
+            'expected second row of spreadsheet to specify '
+            '"golden six pack value"'
+        ))
+    golden_six_pack_value = float(row[1])
 
     reader = csv.DictReader(stream)
     for row in reader:
@@ -78,30 +95,30 @@ with open(args.input_csv, 'rU') as stream:
 
 # print out the bonuses for each person
 total_time = sum([person.fraction_of_year for person in people])
-total_award = sum([person.award_bonus for person in people])
+total_golden_six_packs = sum([person.n_golden_six_packs for person in people])
+total_golden_six_pack_value = total_golden_six_packs * golden_six_pack_value
+f = company.fraction_profit_for_dividends
+total_time_bonus = pool_size * (1 - f) - total_golden_six_pack_value
 totals = {'dividends': 0.0, 'time_bonus': 0.0, 'award_bonus': 0.0}
 print "BONUSES FOR", end_of_last_year.year
 print ''
-print "{:>12} {:>12} {:>12} {:>12} {:>12}".format(
+print "{:>20} {:>12} {:>12} {:>12} {:>12}".format(
     'name', 'dividends', 'time bonus', 'award bonus', 'total'
 )
-f = company.fraction_profit_for_dividends
-F = company.fraction_time_bonus
 for person in people:
     proportion_time = person.fraction_of_year / total_time
-    proportion_award = person.award_bonus / total_award
+    time_bonus = proportion_time * total_time_bonus
+    award_bonus = person.n_golden_six_packs * golden_six_pack_value
     dividends = f * pool_size * person.ownership
-    time_bonus = (1.0 - f) * F * pool_size * proportion_time
-    award_bonus = (1.0 - f) * (1.0 - F) * pool_size * proportion_award
     person_total = dividends + time_bonus + award_bonus
     totals['dividends'] += dividends
     totals['time_bonus'] += time_bonus
     totals['award_bonus'] += award_bonus
-    print "{:>12} {:12,.2f} {:12,.2f} {:12,.2f} {:12,.2f}".format(
+    print "{:>20} {:12,.2f} {:12,.2f} {:12,.2f} {:12,.2f}".format(
         person.name, dividends, time_bonus, award_bonus, person_total,
     )
 print ''
-print "{:>12} {:12,.2f} {:12,.2f} {:12,.2f} {:12,.2f}".format(
+print "{:>20} {:12,.2f} {:12,.2f} {:12,.2f} {:12,.2f}".format(
     'TOTAL',
     totals['dividends'],
     totals['time_bonus'],
