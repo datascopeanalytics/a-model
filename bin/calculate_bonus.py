@@ -11,6 +11,11 @@ year.
 
 import datetime
 import csv
+import os
+import sys
+import smtplib
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEText import MIMEText
 
 import jinja2
 
@@ -103,6 +108,7 @@ with open(args.input_csv, 'rU') as stream:
         person = PersonMock(row)
         people.append(person)
 
+
 def write_row(writer, *row):
     if len(row) == 1:
         print ''.join(row)
@@ -114,12 +120,32 @@ def write_row(writer, *row):
         print fmt.format(*row)
     writer.writerow(row)
 
-# render and report results
+
+# def send_email(server, person, subject, body):
+#     # http://naelshiab.com/tutorial-send-email-python/
+#     msg = MIMEMultipart()
+#     msg['From'] = os.environ['GMAIL_EMAIL']
+#     msg['To'] = person.email
+#     msg['Subject'] = subject
+#     msg.attach(MIMEText(body, 'plain'))
+#     server.sendmail(os.environ['GMAIL_EMAIL'], person.email, msg.as_string())
+
+
+# render email for bonuses
 env = jinja2.Environment(
     loader=jinja2.PackageLoader('a_model', 'templates'),
     autoescape=jinja2.select_autoescape(['html', 'xml'])
 )
 email_template = env.get_template('bonus_email.txt')
+
+# prepare email server for bonuses
+# http://naelshiab.com/tutorial-send-email-python/
+if args.send_emails:
+    print >> sys.stderr, "NOTE: SENDING EMAILS ISNT WORKING YET DUE TO ISSUE"
+    print >> sys.stderr, "WITH GMAIL."
+    # server = smtplib.SMTP('smtp.gmail.com', 587)
+    # server.starttls()
+    # server.login(os.environ['GMAIL_EMAIL'], os.environ['GMAIL_PASSWORD'])
 
 # print out the bonuses for each person
 total_time = sum([person.fraction_of_year for person in people])
@@ -153,12 +179,19 @@ with open(args.output_csv, 'w') as stream:
 
         # TODO: actually send the emails
         if args.send_emails:
-            raise NotImplementedError('havent set up email sending yet')
-            print email_template.render(**locals())
-
+            subject = "%d profit sharing" % end_of_last_year.year
+            body = email_template.render(**locals())
+            print >> sys.stderr, subject
+            print >> sys.stderr, body
+            # send_email(server, person.email, subject, body)
 
     write_row(writer, '')
     write_row(
         writer, 'TOTAL', totals['dividends'], totals['collective_bonus'],
         totals['award_bonus'], sum(totals.values()),
     )
+
+# TODO: close email server
+# # close the email server
+# if args.send_emails:
+#     server.quit()
