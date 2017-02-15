@@ -1,3 +1,5 @@
+import datetime
+
 from .base import Report
 
 
@@ -38,3 +40,19 @@ class InvoiceProjections(Report):
                     "projected invoice in the past. Try specifying --today"
                 ))
             yield date, amount
+
+    def get_total(self, date=None):
+        """Get the total expected invoices through `date`. By default, `date`
+        is expected to be November of the current fiscal year.
+        """
+        # if this is the report for november or december, this should be the
+        # projections for the next fiscal year
+        now = self.get_now()
+        date = date or datetime.date(now.year, 11, 30)
+        if date <= now:
+            date = datetime.date(now.year+1, 11, 30)
+        total = 0.0
+        for invoice_date, amount in self:
+            if invoice_date <= date:
+                total += amount
+        return total

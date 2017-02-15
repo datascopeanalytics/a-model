@@ -12,3 +12,7 @@ class ARAging(Report):
         return (
             ('rptId', 'AR_AGING'),
         ) + self.get_report_date_customized_params()
+
+    def get_total(self):
+        self.load_table()
+        return self.cells[-1].value

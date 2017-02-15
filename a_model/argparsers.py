@@ -146,5 +146,10 @@ class CalculateBonusParser(BaseParser):
             help='the output spreadsheet to use for bonus calculation',
         )
 
+
 class BreakdownExpensesParser(BaseParser):
+    pass
+
+
+class ReportFinancialsParser(BaseParser):
     pass

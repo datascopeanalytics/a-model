@@ -13,3 +13,5 @@ requests
 selenium
 matplotlib
 seaborn
+jinja2
+py-trello
