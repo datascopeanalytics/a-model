@@ -8,9 +8,9 @@ numpy
 scipy
 python-dateutil
 oauth2client
-PyOpenSSL
+PyOpenSSL>=16.2.0
 requests
-selenium
+selenium>=3.3.1
 matplotlib
 seaborn
 jinja2
