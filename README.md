@@ -13,6 +13,7 @@ tied to Datascope's.
    ```sh
    mkvirtualenv a-model
    pip install -r requirements/python-dev
+   brew install geckodriver
    ```
 
 2. Update some environment variables to be able to run the scripts in the `bin`
