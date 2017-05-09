@@ -39,22 +39,25 @@ class ProfitLoss(Report):
 
     def get_historical_costs(self):
 
-        all_expenses = self.combine_historical_values(
+        expenses = self.combine_historical_values(
             'Total Expenses',
             'Total Other Expenses',
         )
 
-        outside_services = self.combine_historical_values(
+        expenses_to_exclude = self.combine_historical_values(
             'Outside Services',
         )
 
-        all_expenses_less_outside_services = []
+        assert len(expenses) == len(expenses_to_exclude)
 
-        for i, (date,cost) in enumerate(all_expenses):
-            adjusted_expenses =  all_expenses[i][1] - outside_services[i][1]
-            all_expenses_less_outside_services.append((date,adjusted_expenses))
+        adjusted_expenses = []
 
-        return all_expenses_less_outside_services
+        for i, (date,cost) in enumerate(expenses):
+            assert expenses_to_exclude[i][0] == date
+            adjusted_expense =  expenses[i][1] - expenses_to_exclude[i][1]
+            adjusted_expenses.append((date,adjusted_expense))
+
+        return adjusted_expenses
 
     def get_historical_retirement_costs(self):
         return self.get_historical_values('401(k) Profit Sharing Contribution')
