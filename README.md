@@ -9,6 +9,9 @@ tied to Datascope's.
 
 ## quickstart
 
+0.  `brew install geckodriver` or `brew upgrade geckodriver`. Make sure you
+    are on `geckodriver 0.16.1` or newer. 
+
 1. Create a virtualenv and install the requirements
    ```sh
    mkvirtualenv a-model
