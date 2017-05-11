@@ -139,6 +139,7 @@ class BaseCompany(object):
         for date, variable_cost in variable_costs:
             per_person_cost = variable_cost / self.n_people(date)
             historical_per_person_costs.append(per_person_cost)
+
         return historical_per_person_costs
 
     def revenue(self, date):

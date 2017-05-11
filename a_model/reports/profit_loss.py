@@ -38,13 +38,50 @@ class ProfitLoss(Report):
         )
 
     def get_historical_costs(self):
-        return self.combine_historical_values(
+
+        expenses = self.combine_historical_values(
             'Total Expenses',
             'Total Other Expenses',
         )
 
+        expenses_to_exclude = self.combine_historical_values(
+            'Outside Services',
+        )
+
+        assert len(expenses) == len(expenses_to_exclude)
+
+        adjusted_expenses = []
+
+        for i, (date,cost) in enumerate(expenses):
+            assert expenses_to_exclude[i][0] == date
+            adjusted_expense =  expenses[i][1] - expenses_to_exclude[i][1]
+            adjusted_expenses.append((date,adjusted_expense))
+
+        return adjusted_expenses
+
     def get_historical_retirement_costs(self):
-        return self.get_historical_values('401(k) Profit Sharing Contribution')
+
+        kk = self.get_historical_values('401(k) Profit Sharing Contribution')
+        #
+        # ll = []
+        #
+        # import datetime
+        # from collections import defaultdict
+        # retirement_costs_by_year = defaultdict(int)
+        #
+        # for date, retirement_costs in kk:
+        #     retirement_costs_by_year[date.year] += retirement_costs
+        #
+        # for date, retirement_costs in kk:
+        #     if date.year <= 2016:
+        #         avg_monthly_cost = retirement_costs_by_year[date.year]/12
+        #         cost_tuplue = (date,avg_monthly_cost)
+        #     else:
+        #         cost_tuplue = (date,retirement_costs)
+        #
+        #     ll.append(cost_tuplue)
+
+        return kk
 
     def get_qbo_query_params(self):
         return (
@@ -104,6 +141,8 @@ class ProfitLoss(Report):
             '401(k) Safe Harbor Contribution',
             '401(k) Safe Harbor Contribution - Partners',
         )
+
+
         return self.combine_historical_values_pair(salary, benefits)
 
     def get_average_fixed_cost(self):
